@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,13 +27,11 @@ import com.clinicadmin.dto.DoctorServicesDTO;
 import com.clinicadmin.dto.DoctorSlotDTO;
 import com.clinicadmin.dto.DoctorSubServiceDTO;
 import com.clinicadmin.dto.DoctorsDTO;
-import com.clinicadmin.dto.NotificationDTO;
 import com.clinicadmin.dto.ResBody;
 import com.clinicadmin.dto.Response;
 import com.clinicadmin.entity.DoctorLoginCredentials;
 import com.clinicadmin.entity.DoctorSlot;
 import com.clinicadmin.entity.Doctors;
-import com.clinicadmin.exceptions.ResourceNotFoundException;
 import com.clinicadmin.feignclient.AdminServiceClient;
 import com.clinicadmin.feignclient.NotificationFeign;
 import com.clinicadmin.feignclient.ServiceFeignClient;
@@ -538,8 +537,9 @@ public class DoctorServiceImpl implements DoctorService {
 	// ----------------- Helper Methods ------------------------
 
 	private String generateDoctorId() {
-		long count = doctorsRepository.count(); // Get the current count of doctors
-		return "DC_" + (count + 1); // Increment the count by 1 and prefix with "DC_"
+		String doctorId = "DC_" + UUID.randomUUID().toString().substring(0, 8);
+ // Get the current count of doctors
+		return doctorId; 
 	}
 
 	private String generateStructuredPassword() {
@@ -1004,7 +1004,7 @@ public class DoctorServiceImpl implements DoctorService {
 		try {
 		return notificationFeign.sendNotificationToClinic(hospitalId);
 		}catch(FeignException e) {
-			ResBody<List<NotificationDTO>> res = new ResBody<List<NotificationDTO>>(ExtractFeignMessage.clearMessage(e),e.status(),null);
+			ResBody<List<String>> res = new ResBody<List<String>>(ExtractFeignMessage.clearMessage(e),e.status(),null);
 			return ResponseEntity.status(e.status()).body(res);}
 		}
 

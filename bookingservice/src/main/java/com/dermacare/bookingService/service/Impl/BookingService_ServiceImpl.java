@@ -2,6 +2,7 @@ package com.dermacare.bookingService.service.Impl;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Random;
@@ -100,43 +101,63 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 	@Override
 	public List<BookingResponse> getBookedServices(String mobileNumber) {
 		List<Booking> bookings = repository.findByMobileNumber(mobileNumber);
+		List<Booking> reversedBookings = new ArrayList<>();
+		for(int i = bookings.size()-1; i >= 0; i--) {
+			reversedBookings.add(bookings.get(i));
+		}
 		if (bookings == null  || bookings.isEmpty()) {
 			return null;
 		}
-		return toResponses(bookings);
+		return toResponses(reversedBookings);
 	}
 	
 	@Override
 	public List<BookingResponse> getAllBookedServices() {
 		List<Booking> bookings = repository.findAll();
+		List<Booking> reversedBookings = new ArrayList<>();
+		for(int i = bookings.size()-1; i >= 0; i--) {
+			reversedBookings.add(bookings.get(i));
+		}
 		if (bookings == null  || bookings.isEmpty()) {
 			return null;
 		}
-		return toResponses(bookings);
+		return toResponses(reversedBookings);
 	}
 
 	@Override
 	public List<BookingResponse> bookingByDoctorId(String doctorId) {
 		List<Booking> bookings = repository.findByDoctorId(doctorId);
+		List<Booking> reversedBookings = new ArrayList<>();
+		for(int i = bookings.size()-1; i >= 0; i--) {
+			reversedBookings.add(bookings.get(i));
+		}
 		if (bookings == null  || bookings.isEmpty()) {
 			return null;
 		}
-		return toResponses(bookings);
+		return toResponses(reversedBookings);
 	}
 
 	@Override
 	public List<BookingResponse> bookingByServiceId(String serviceId) {
 		List<Booking> bookings = repository.findBySubServiceId(serviceId);
+		List<Booking> reversedBookings = new ArrayList<>();
+		for(int i = bookings.size()-1; i >= 0; i--) {
+			reversedBookings.add(bookings.get(i));
+		}
 		if (bookings == null  || bookings.isEmpty()) {
 			return null;
 		}
-		return toResponses(bookings);
+		return toResponses(reversedBookings);
 	}
 	
 
 	@Override
 	public List<BookingResponse> bookingByClinicId(String clinicId) {
 		List<Booking> bookings = repository.findByClinicId(clinicId);
+		List<Booking> reversedBookings = new ArrayList<>();
+		for(int i = bookings.size()-1; i >= 0; i--) {
+			reversedBookings.add(bookings.get(i));
+		}
 		if(bookings==null || bookings.isEmpty()) {
 		 return null;
 		}

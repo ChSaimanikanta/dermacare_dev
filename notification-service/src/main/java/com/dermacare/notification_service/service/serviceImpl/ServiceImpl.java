@@ -4,12 +4,16 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TimeZone;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -59,10 +63,11 @@ public class ServiceImpl implements ServiceInterface{
 	}
 		
 		
-	public String sendNotification(BookingResponse booking) {
+	public void sendNotification(BookingResponse booking) {
 		String title=buildTitle(booking);
 		String body =buildBody(booking);
-		return appNotification.sendPushAppNotification(booking.getDoctorDeviceId(),title,body);
+		appNotification.sendPushNotification(booking.getDoctorDeviceId(),title,body, "BOOKING",
+			    "BookingScreen","default");
 	}
 	
 	
@@ -72,9 +77,9 @@ public class ServiceImpl implements ServiceInterface{
 			DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
 			String currentDate = LocalDate.now().format(dateFormatter);	
 			notificationEntity.setDate(currentDate);
-			LocalTime currentTime = LocalTime.now();
+			ZonedDateTime istTime = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
 		    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm a");
-		    String formattedTime = currentTime.format(formatter);
+		    String formattedTime = istTime.format(formatter);
 		    notificationEntity.setTime(formattedTime);
 		    notificationEntity.setData(new ObjectMapper().convertValue(booking,Booking.class));
 			notificationEntity.setActions(new String[]{"Accept", "Reject"});
@@ -113,14 +118,14 @@ public class ServiceImpl implements ServiceInterface{
 		}
 		if(eligibleNotifications!=null && !eligibleNotifications.isEmpty() ) {
 		res = new ResBody<List<NotificationDTO>>("Notification sent Successfully",200,reversedEligibleNotifications);	
-		 sendAlertNotifications();
+		
 		}else {
 			res = new ResBody<List<NotificationDTO>>("NotificationInfo Not Found",200,null);
 			}}catch(Exception e) {
 		res = new ResBody<List<NotificationDTO>>(e.getMessage(),500,null);
 	}
 		return res;
-		}
+	}
 				
 
 	
@@ -151,14 +156,22 @@ public class ServiceImpl implements ServiceInterface{
 	
 	 private boolean timeDifference(String notificationTime) {			
 		   try {
-			   Date now = new Date();
-			   SimpleDateFormat inputFormat = new SimpleDateFormat("hh:mm a");   
+			 
+			   SimpleDateFormat inputFormat = new SimpleDateFormat("hh:mm a"); 
+			   
+			   ZonedDateTime istTime = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
+		        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm a");
+		        String formattedTimeByZone = istTime.format(formatter);			   
+		        Date formattedCurrentTime = inputFormat.parse(formattedTimeByZone);		        
 		       SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm");
-		      String presentTime = simpleDateFormat.format(now);
-		      Date date = inputFormat.parse(notificationTime);
-		      String modifiednotificationTime = simpleDateFormat.format(date);
+		       String modifiedcurrentTime = simpleDateFormat.format(formattedCurrentTime);
+		       		      
+		      Date date = inputFormat.parse(notificationTime);		      
+		      SimpleDateFormat simpleDateFormatForNotificationTime = new SimpleDateFormat("HH:mm");
+		      String modifiednotificationTime = simpleDateFormatForNotificationTime.format(date);
+		      
 		       Date nTime = simpleDateFormat.parse(modifiednotificationTime);
-		       Date cTime = simpleDateFormat.parse(presentTime);
+		       Date cTime = simpleDateFormat.parse(modifiedcurrentTime);
 		       
 		       System.out.println(nTime);
 		       System.out.println(cTime);
@@ -203,12 +216,13 @@ public class ServiceImpl implements ServiceInterface{
 		                    repository.save(notificationEntity);
 		                    try {
 		                        if (b.getCustomerDeviceId() != null) {
-		                            appNotification.sendPushAppNotification(
+		                            appNotification.sendPushNotification(
 		                                b.getCustomerDeviceId(),
 		                                " Hello " + b.getName(),
 		                                b.getDoctorName() + " Accepted Your Appointment For " +
-		                                b.getSubServiceName() + " on " + b.getServiceDate() + " at " + b.getServicetime()
-		                            );
+		                                b.getSubServiceName() + " on " + b.getServiceDate() + " at " + b.getServicetime(),
+		                                "BOOKING SUCCESS",
+		                			    "BookingVerificationScreen","default" );
 		                        }
 		                    } catch (Exception ex) {}
 		                    break;
@@ -221,11 +235,13 @@ public class ServiceImpl implements ServiceInterface{
 		                    repository.save(notificationEntity);
 		                    try {
 		                        if (b.getCustomerDeviceId() != null) {
-		                            appNotification.sendPushAppNotification(
+		                            appNotification.sendPushNotification(
 		                                b.getCustomerDeviceId(),
 		                                " Hello " + b.getName(),
 		                                b.getDoctorName() + " Rejected Your Appointment For " +
-		                                b.getSubServiceName() + " on " + b.getServiceDate() + " at " + b.getServicetime()
+		                                b.getSubServiceName() + " on " + b.getServiceDate() + " at " + b.getServicetime(),
+		                                "BOOKING REJECT",
+		                			    "BookingVerificationScreen","default"
 		                            );
 		                        }
 		                    } catch (Exception ex) {}		                
@@ -268,32 +284,42 @@ public class ServiceImpl implements ServiceInterface{
 	 @Scheduled(fixedRate = 1 * 60 * 1000)
 	 public void sendAlertNotifications() {		 
 		 try {
-			 System.out.println("method invoked");
+			 System.out.println("sendAlertNotifications method invoked");
 			 List<NotificationEntity> notifications = repository.findAll();
 			 DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 				String currentDate = LocalDate.now().format(dateFormatter);
 		        for (NotificationEntity notification : notifications) {
 		            if ("Confirmed".equalsIgnoreCase(notification.getData().getStatus()) && notification.isAlerted() == false 
-		             && notification.getData().getServiceDate().equals(currentDate) && calculateTimeDifferenceForAlertNotification(notification.getData().getServicetime())) {            	
+		             && notification.getData().getServiceDate().equals(currentDate) && calculateTimeDifferenceForAlertNotification(notification.getData().getServicetime())) {
+		            if(notification.getData().getConsultationType().equalsIgnoreCase("online consultation") ||
+		            notification.getData().getConsultationType().equalsIgnoreCase("video consultation")) {
 		            sendAlertPushNotification(notification.getData().getBookingId());
 		            notification.setAlerted(true);
-		            repository.save(notification);}}
+		            repository.save(notification);}}}
 		 }catch(Exception e) {}
  }
 	
 	 
 	 
-	 private boolean calculateTimeDifferenceForAlertNotification(String serviceTime) {			
-		   try {
-			   Date now = new Date();
-			   SimpleDateFormat inputFormat = new SimpleDateFormat("hh:mm a");
-		       SimpleDateFormat simpleDateFormat
-		           = new SimpleDateFormat("HH:mm");
-		      String presentTime = simpleDateFormat.format(now);
-		      Date date = inputFormat.parse(serviceTime);
-		      String modifiedServiceTime = simpleDateFormat.format(date);		      
+	 private boolean calculateTimeDifferenceForAlertNotification(String serviceTime) {	
+		 
+		   try {		   
+             SimpleDateFormat inputFormat = new SimpleDateFormat("hh:mm a"); ////used for convert string to date object
+			   
+			   ZonedDateTime istTime = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
+		        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm a");
+		        String formattedTimeByZone = istTime.format(formatter);	////current asia time generated.present in form of string		   
+		        Date formattedCurrentTime = inputFormat.parse(formattedTimeByZone);	////converting String to date object	        
+		       SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm");////converting form 12 hrs to 24 hrs
+		       String modifiedcurrentTime = simpleDateFormat.format(formattedCurrentTime);
+		       		      
+		      Date serviceTimeStringToDteObject = inputFormat.parse(serviceTime);		      
+		      SimpleDateFormat simpleDateFormatForNotificationTime = new SimpleDateFormat("HH:mm");
+		      String modifiedServiceTime = simpleDateFormatForNotificationTime.format(serviceTimeStringToDteObject);
+		      
 		       Date sTime = simpleDateFormat.parse(modifiedServiceTime );
-		       Date cTime = simpleDateFormat.parse(presentTime);
+		       Date cTime = simpleDateFormat.parse(modifiedcurrentTime);
+		       
 		       System.out.println(sTime);
 		       System.out.println(cTime);
 		       long differenceInMilliSeconds
@@ -302,6 +328,7 @@ public class ServiceImpl implements ServiceInterface{
 		       long differenceInMinutes
 		           = differenceInMilliSeconds / (60 * 1000);///it wont ignores hours convert then into minutes
 		       System.out.println(differenceInMinutes);
+		       
 		       if(differenceInMinutes != 0 && differenceInMinutes >= 1 &&  differenceInMinutes <= 5  ) {
 		    	   return true;
 		    	 }else{
@@ -314,19 +341,24 @@ public class ServiceImpl implements ServiceInterface{
 	 private void sendAlertPushNotification(String appointmentId) {
 		 try {
 			 ResponseEntity<ResponseStructure<BookingResponse>> res = bookServiceFeign.getBookedService(appointmentId);
-		        BookingResponse b = res.getBody().getData();		     		             
+		        BookingResponse b = res.getBody().getData();
+		        System.out.println(b.getCustomerDeviceId());
+		        System.out.println(b.getDoctorDeviceId());
 		        if (b != null) {
 		        	 try {
 	                        if(b.getCustomerDeviceId() != null && b.getDoctorDeviceId() != null) {
-	                            appNotification.sendPushAppNotification(
+	                            appNotification.sendPushNotification(
 	                                b.getCustomerDeviceId(),
 	                                " Hello " + b.getName()+ "," ,
-	                                b.getDoctorName() + " Connect With You Through Video Call within 5 Minutes ");
+	                                b.getDoctorName() + " Connect With You Through Video Call within 5 Minutes ", "Alert",
+	                			    "AlertScreen","default");
 	                      
-	                            appNotification.sendPushAppNotification(
+	                            appNotification.sendPushNotification(
 	                                b.getDoctorDeviceId(),
 	                                " Hello " +b.getDoctorName()+ "," , " You Have a Video Consultation within 5 Minutes With " +
-	                                b.getName());
+	                                b.getName(), "Alert",
+	                			    "AlertScreen","default");
+	                            
 	                            System.out.println("Notification sent to doctor and customer");
 	                    }}catch (Exception ex) {}
 		        	 }

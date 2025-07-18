@@ -7,6 +7,7 @@ import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,8 +21,6 @@ import com.clinicadmin.dto.DoctorAvailabilityStatusDTO;
 import com.clinicadmin.dto.DoctorLoginDTO;
 import com.clinicadmin.dto.DoctorSlotDTO;
 import com.clinicadmin.dto.DoctorsDTO;
-import com.clinicadmin.dto.NotificationDTO;
-import com.clinicadmin.dto.ResBody;
 import com.clinicadmin.dto.Response;
 import com.clinicadmin.dto.UpdateSlotRequestDTO;
 import com.clinicadmin.service.DoctorNoteService;
@@ -122,7 +121,7 @@ public class DoctorController {
 	 */
 	@PutMapping("/updateDoctor/{doctorId}")
 	public ResponseEntity<Response> updateDoctorById(@PathVariable String doctorId,
-			@Valid @RequestBody DoctorsDTO dto) {
+			@Validated(RequiredChecks.class) @RequestBody DoctorsDTO dto) {
 		dto.trimAllDoctorFields();
 		Response response = doctorService.upDateDoctorById(doctorId, dto);
 		return ResponseEntity.status(response.getStatus()).body(response);
