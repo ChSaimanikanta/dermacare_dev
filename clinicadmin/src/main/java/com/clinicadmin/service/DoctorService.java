@@ -1,5 +1,7 @@
 package com.clinicadmin.service;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import com.clinicadmin.dto.ChangeDoctorPasswordDTO;
 import com.clinicadmin.dto.DoctorAvailabilityStatusDTO;
@@ -37,5 +39,7 @@ Response getAllDoctorsBySubserviceId(String subServiceId);
 public boolean makingFalseDoctorSlot(String doctorId, String date, String time);
 
 public ResponseEntity<?> notificationToClinic(String hospitalId);
-
+public Response getRecommendedClinicsAndDoctors();
+Response getBestDoctorBySubService(String subServiceId);
+Response getRecommendedClinicsAndDoctors(List<String> keyPointsFromUser);
 }
