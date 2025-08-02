@@ -129,7 +129,7 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 	public ResponseEntity<?> getAppointsByInput(String input) {
 		ResponseStructure<List<BookingResponse>> res = new ResponseStructure<List<BookingResponse>>();
 		try {
-			List<Booking> existingBooking = repository.findByNameOrBookingIdOrPatientId(input);
+			List<Booking> existingBooking = repository.findByNameIgnoreCaseOrBookingIdOrPatientId(input);
 			if(existingBooking != null && !existingBooking.isEmpty() ) {
 			List<BookingResponse> respnse = new ObjectMapper().convertValue(existingBooking, new TypeReference<List<BookingResponse>>() {});
 			res.setStatusCode(200);

@@ -34,19 +34,19 @@ public class ProbableDiagnosisController {
 	return ResponseEntity.status(response.getStatus()).body(response);
 	}
 	
-	@GetMapping("getDisease/{id}")
+	@GetMapping("getDisease/{id}/{hospitalId}")
 	public ResponseEntity<Response> getDiseaseByDiseaseId(@PathVariable String id, @PathVariable String hospitalId){
 		Response response=probableDiagnosisService.getDiseaseById(id,hospitalId);
 		return ResponseEntity.status(response.getStatus()).body(response);
 	}
 	
-	@DeleteMapping("deleteDisease/{id}")
+	@DeleteMapping("deleteDisease/{id}/{hospitalId}")
 	public ResponseEntity<Response> deleteDiseaseByDiseaseId(@PathVariable String id,@PathVariable String hospitalId){
 		Response response =probableDiagnosisService.deleteDiseaseById(id,hospitalId);
 		return ResponseEntity.status(response.getStatus()).body(response);
 	}
 	
-	@PutMapping("updateDisease/{id}")
+	@PutMapping("updateDisease/{id}/{hospitalId}")
 	public ResponseEntity<Response> updateDiseaseByDiseaseId(@PathVariable String id, @PathVariable String hospitalId, @RequestBody ProbableDiagnosisDTO dto){
 		Response response = probableDiagnosisService.updateDiseaseById(id,hospitalId, dto);
 		return ResponseEntity.status(response.getStatus()).body(response);
