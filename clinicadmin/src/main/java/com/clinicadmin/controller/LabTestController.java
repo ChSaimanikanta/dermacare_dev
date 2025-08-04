@@ -9,37 +9,37 @@ import com.clinicadmin.dto.Response;
 import com.clinicadmin.service.LabTestService;
 
 @RestController
-@RequestMapping("/clinic-admin/labtest")
+@RequestMapping("/clinic-admin")
 public class LabTestController {
 
     @Autowired
     private LabTestService labTestService;
 
-    @PostMapping("/addLabTest")
+    @PostMapping("/labtest/addLabTest")
     public ResponseEntity<Response> addLabTest(@RequestBody LabTestDTO dto) {
         Response response = labTestService.addLabTest(dto);
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 
-    @GetMapping("/getAllLabTests")
+    @GetMapping("/labtest/getAllLabTests")
     public ResponseEntity<Response> getAllLabTests() {
         Response response = labTestService.getAllLabTests();
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 
-    @GetMapping("getLabTestById/{id}/{hospitalId}")
+    @GetMapping("/labtest/getLabTestById/{id}/{hospitalId}")
     public ResponseEntity<Response> getLabTestById(@PathVariable String id, @PathVariable String hospitalId) {
         Response response = labTestService.getLabTestById(id, hospitalId);
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 
-    @DeleteMapping("deleteLabTest/{id}/{hospitalId}")
+    @DeleteMapping("/labtest/deleteLabTest/{id}/{hospitalId}")
     public ResponseEntity<Response> deleteLabTest(@PathVariable String id,@PathVariable String hospitalId) {
         Response response = labTestService.deleteLabTestById(id,hospitalId);
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 
-    @PutMapping("updateLabTest/{id}/{hospitalId}")
+    @PutMapping("/labtest/updateLabTest/{id}/{hospitalId}")
     public ResponseEntity<Response> updateLabTest(@PathVariable String id,@PathVariable String hospitalId, @RequestBody LabTestDTO dto) {
         Response response = labTestService.updateLabTestById(id,hospitalId, dto);
         return ResponseEntity.status(response.getStatus()).body(response);
