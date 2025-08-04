@@ -1214,59 +1214,66 @@ public class DoctorServiceImpl implements DoctorService {
 
 	@Override
 	public Response getRecommendedClinicsAndDoctors(List<String> keyPointsFromUser) {
-		ResponseEntity<Response> responseEntity = adminServiceClient.getHospitalUsingRecommendentaion();
-		Response responseBody = responseEntity.getBody();
+	    ResponseEntity<Response> responseEntity = adminServiceClient.getHospitalUsingRecommendentaion();
+	    Response responseBody = responseEntity.getBody();
 
-		List<ClinicWithDoctorsDTO> result = new ArrayList<>();
+	    List<ClinicWithDoctorsDTO> result = new ArrayList<>();
 
-		if (responseBody != null && responseBody.isSuccess()) {
-			Object rawData = responseBody.getData();
+	    if (responseBody != null && responseBody.isSuccess()) {
+	        Object rawData = responseBody.getData();
 
-			List<ClinicWithDoctorsDTO> clinics = new ObjectMapper().convertValue(rawData,
-					new TypeReference<List<ClinicWithDoctorsDTO>>() {
-					});
+	        List<ClinicWithDoctorsDTO> clinics = new ObjectMapper().convertValue(rawData,
+	                new TypeReference<List<ClinicWithDoctorsDTO>>() {
+	                });
+System.out.println(clinics);
+	        for (ClinicWithDoctorsDTO clinic : clinics) {
+	            List<DoctorsDTO> matchedDoctors = new ArrayList<>();
 
-			for (ClinicWithDoctorsDTO clinic : clinics) {
-				List<DoctorsDTO> matchedDoctors = new ArrayList<>();
+	            List<DoctorsDTO> doctorsList = clinic.getDoctors();
+	            if (doctorsList == null || doctorsList.isEmpty()) {
+	                continue; // Skip this clinic if doctors list is null or empty
+	            }
 
-				for (DoctorsDTO doctor : clinic.getDoctors()) {
-					if (isDoctorRelevant(doctor, keyPointsFromUser)) {
-						matchedDoctors.add(doctor);
-					}
-				}
+	            for (DoctorsDTO doctor : doctorsList) {
+	                if (isDoctorRelevant(doctor, keyPointsFromUser)) {
+	                    matchedDoctors.add(doctor);
+	                }
+	            }
+System.out.println(matchedDoctors);
+	            if (!matchedDoctors.isEmpty()) {
+	                ClinicWithDoctorsDTO matchedClinic = new ClinicWithDoctorsDTO();
+	                matchedClinic.setHospitalId(clinic.getHospitalId());
+	                matchedClinic.setName(clinic.getName());
+	                matchedClinic.setAddress(clinic.getAddress());
+	                matchedClinic.setCity(clinic.getCity());
+	                matchedClinic.setContactNumber(clinic.getContactNumber());
+	                matchedClinic.setHospitalOverallRating(clinic.getHospitalOverallRating());
+	                matchedClinic.setHospitalRegistrations(clinic.getHospitalRegistrations());
+	                matchedClinic.setOpeningTime(clinic.getOpeningTime());
+	                matchedClinic.setClosingTime(clinic.getClosingTime());
+	                matchedClinic.setHospitalLogo(clinic.getHospitalLogo());
+	                matchedClinic.setEmailAddress(clinic.getEmailAddress());
+	                matchedClinic.setWebsite(clinic.getWebsite());
+	                matchedClinic.setLicenseNumber(clinic.getLicenseNumber());
+	                matchedClinic.setIssuingAuthority(clinic.getIssuingAuthority());
+	                matchedClinic.setHospitalDocuments(clinic.getHospitalDocuments());
+	                matchedClinic.setContractorDocuments(clinic.getContractorDocuments());
+	                matchedClinic.setRecommended(clinic.isRecommended());
+	                matchedClinic.setDoctors(matchedDoctors);
 
-				if (!matchedDoctors.isEmpty()) {
-					ClinicWithDoctorsDTO matchedClinic = new ClinicWithDoctorsDTO();
-					matchedClinic.setHospitalId(clinic.getHospitalId());
-					matchedClinic.setName(clinic.getName());
-					matchedClinic.setAddress(clinic.getAddress());
-					matchedClinic.setCity(clinic.getCity());
-					matchedClinic.setContactNumber(clinic.getContactNumber());
-					matchedClinic.setHospitalOverallRating(clinic.getHospitalOverallRating());
-					matchedClinic.setHospitalRegistrations(clinic.getHospitalRegistrations());
-					matchedClinic.setOpeningTime(clinic.getOpeningTime());
-					matchedClinic.setClosingTime(clinic.getClosingTime());
-					matchedClinic.setHospitalLogo(clinic.getHospitalLogo());
-					matchedClinic.setEmailAddress(clinic.getEmailAddress());
-					matchedClinic.setWebsite(clinic.getWebsite());
-					matchedClinic.setLicenseNumber(clinic.getLicenseNumber());
-					matchedClinic.setIssuingAuthority(clinic.getIssuingAuthority());
-					matchedClinic.setHospitalDocuments(clinic.getHospitalDocuments());
-					matchedClinic.setContractorDocuments(clinic.getContractorDocuments());
-					matchedClinic.setRecommended(clinic.isRecommended());
-					matchedClinic.setDoctors(matchedDoctors);
+	                result.add(matchedClinic);
+	            }
+	        }
+	    }
 
-					result.add(matchedClinic);
-				}
-			}
-		}
-		Response response = new Response();
-		response.setSuccess(true);
-		response.setData(result);
-		response.setMessage("Matched doctors and clinics");
-		response.setStatus(HttpStatus.OK.value());
-		return response;
+	    Response response = new Response();
+	    response.setSuccess(true);
+	    response.setData(result);
+	    response.setMessage("Matched doctors and clinics");
+	    response.setStatus(HttpStatus.OK.value());
+	    return response;
 	}
+
 
 	private boolean isDoctorRelevant(DoctorsDTO doctor, List<String> keyPoints) {
 		for (String key : keyPoints) {
