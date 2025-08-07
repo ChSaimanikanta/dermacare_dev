@@ -1,4 +1,6 @@
-package com.dermacare.doctorservice.service;
+package com.dermacare.doctorservice.serviceimpl;
+
+
 
 import java.util.List;
 
@@ -13,6 +15,7 @@ import com.dermacare.doctorservice.dto.NotificationDTO;
 import com.dermacare.doctorservice.dto.NotificationResponse;
 import com.dermacare.doctorservice.dto.ResBody;
 import com.dermacare.doctorservice.feignclient.NotificationFeign;
+import com.dermacare.doctorservice.service.NotificationService;
 
 import feign.FeignException;
 

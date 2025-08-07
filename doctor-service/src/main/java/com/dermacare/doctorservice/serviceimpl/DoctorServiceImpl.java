@@ -1,12 +1,16 @@
-package com.dermacare.doctorservice.service;
+package com.dermacare.doctorservice.serviceimpl;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
 import com.dermacare.doctorservice.dto.ChangeDoctorPasswordDTO;
 import com.dermacare.doctorservice.dto.DoctorAvailabilityStatusDTO;
 import com.dermacare.doctorservice.dto.DoctorLoginDTO;
 import com.dermacare.doctorservice.dto.Response;
 import com.dermacare.doctorservice.feignclient.ClinicAdminServiceClient;
+import com.dermacare.doctorservice.service.DoctorService;
+
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 
@@ -125,5 +129,61 @@ public class DoctorServiceImpl implements DoctorService {
 					
 		}
     }
+	
+	
+	///NEW DOCTOR APIS
+	
+			public ResponseEntity<?> getAllDoctors(){
+				try {
+				return clinicAdminServiceClient.getAllDoctors();
+				}catch(Exception e) {
+					return ResponseEntity.status(500).body(e.getMessage());
+				}
+			}
+			
+			
+			public ResponseEntity<?> getDoctorById(String id){
+				try {
+				return clinicAdminServiceClient.getDoctorById(id);
+				}catch(Exception e) {
+					return ResponseEntity.status(500).body(e.getMessage());
+				}
+			}
+			
+			
+			public ResponseEntity<?> getDoctorByClinicAndDoctorId(String clinicId,
+					String doctorId){
+				try {
+				return clinicAdminServiceClient.getDoctorByClinicAndDoctorId(clinicId, doctorId);
+				}catch(Exception e) {
+					return ResponseEntity.status(500).body(e.getMessage());
+				}
+			}
+			
+			public ResponseEntity<?> getDoctorsByHospitalById(String clinicId){
+				try {
+				return clinicAdminServiceClient.getDoctorsByHospitalById(clinicId);
+				}catch(Exception e) {
+					return ResponseEntity.status(500).body(e.getMessage());
+				}
+			}
+			
+			
+			public ResponseEntity<?> getDoctorsBySubServiceId(String hsptlId,String subServiceId){
+				try {
+				return clinicAdminServiceClient.getDoctorsBySubServiceId(hsptlId, subServiceId);
+				}catch(Exception e) {
+					return ResponseEntity.status(500).body(e.getMessage());
+				}
+			}
+			
+			
+			public ResponseEntity<?> getAllDoctorsBySubServiceId(String subServiceId){
+				try {
+				return clinicAdminServiceClient.getAllDoctorsBySubServiceId(subServiceId);
+				}catch(Exception e) {
+					return ResponseEntity.status(500).body(e.getMessage());
+				}
+			}
 }
 

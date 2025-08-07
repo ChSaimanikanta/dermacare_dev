@@ -16,10 +16,12 @@ public class BookingRequset {
 	private String relation;
 	private String patientMobileNumber;
 	private String visitType;
+	private String patientAddress;
 	private String name;
 	private String age;
 	private String gender;
 	private String mobileNumber;
+	private String consultationExpiration;
 	private String customerDeviceId;
 	private String problem;
 	private String symptomsDuration;

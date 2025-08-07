@@ -1,4 +1,4 @@
-package com.dermacare.doctorservice.service;
+package com.dermacare.doctorservice.serviceimpl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

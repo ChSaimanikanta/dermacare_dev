@@ -20,7 +20,7 @@ public class ClinicWithDoctorsDTO {
 	private String city;
 	private String contactNumber;
 	private double hospitalOverallRating;
-	private String hospitalRegistrations;
+//	private String hospitalRegistrations;
 	private String openingTime;
 	private String closingTime;
 	private String hospitalLogo;
@@ -28,8 +28,8 @@ public class ClinicWithDoctorsDTO {
 	private String website;
 	private String licenseNumber;
 	private String issuingAuthority;
-	private List<String> hospitalDocuments;
-	private List<String> contractorDocuments;
+	private String hospitalDocuments;
+	private String contractorDocuments;
 	 private boolean recommended;
 	private List<DoctorsDTO> doctors;
 	
