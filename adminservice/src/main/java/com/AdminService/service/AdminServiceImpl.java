@@ -1,148 +1,85 @@
  package com.AdminService.service;
 
-
-
 import java.util.ArrayList;
-
 import java.util.Base64;
-
 import java.util.Collections;
-
 import java.util.HashMap;
-
 import java.util.List;
-
 import java.util.Map;
-
 import java.util.Optional;
-
 import java.util.Random;
-
 import java.util.regex.Matcher;
-
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.bson.types.ObjectId;
-
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.http.HttpStatus;
-
 import org.springframework.http.ResponseEntity;
-
 import org.springframework.stereotype.Service;
-
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.AdminService.dto.AdminHelper;
-
 import com.AdminService.dto.BookingResponse;
-
 import com.AdminService.dto.CategoryDto;
-
 import com.AdminService.dto.ClinicCredentialsDTO;
-
 import com.AdminService.dto.ClinicDTO;
-
 import com.AdminService.dto.CustomerDTO;
-
 import com.AdminService.dto.DoctorsDTO;
-
 import com.AdminService.dto.DoctortInfo;
-
+import com.AdminService.dto.QuestionAnswerDTO;
 import com.AdminService.dto.ServicesDto;
-
 import com.AdminService.dto.SubServicesDto;
-
 import com.AdminService.dto.SubServicesInfoDto;
-
 import com.AdminService.dto.UpdateClinicCredentials;
-
 import com.AdminService.entity.Admin;
-
 import com.AdminService.entity.Clinic;
-
 import com.AdminService.entity.ClinicCredentials;
-
+import com.AdminService.entity.QuestionAnswer;
+import com.AdminService.entity.QuetionsAndAnswerForAddClinic;
 import com.AdminService.feign.BookingFeign;
-
 import com.AdminService.feign.ClinicAdminFeign;
-
 import com.AdminService.feign.CssFeign;
-
 import com.AdminService.feign.CustomerFeign;
-
 import com.AdminService.repository.AdminRepository;
-
 import com.AdminService.repository.ClinicCredentialsRepository;
-
 import com.AdminService.repository.ClinicRep;
-
+import com.AdminService.repository.QuetionsAndAnswerForAddClinicRepository;
 import com.AdminService.util.ExtractFeignMessage;
-
 import com.AdminService.util.Response;
-
 import com.AdminService.util.ResponseStructure;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-
-
 import feign.FeignException;
-
-
-
-
-
 @Service
-
 public class AdminServiceImpl implements AdminService {
 
-
-
 	@Autowired
-
 	private AdminRepository adminRepository;
-
-	
-
 	@Autowired
 
 	private ClinicRep clinicRep;
-
-	
-
 	@Autowired
 
 	private ClinicCredentialsRepository clinicCredentialsRepository;
-
-	
 
 	@Autowired
 
 	private CssFeign cssFeign;
 
-	
-
 	@Autowired
 
 	private CustomerFeign customerFeign;
-
-	
 
 	@Autowired
 
 	private  ClinicAdminFeign clinicAdminFeign;
 
-	
-
 	@Autowired
 
 	private BookingFeign bookingFeign;
-
-	
-
-	
+	@Autowired
+	private QuetionsAndAnswerForAddClinicRepository quetionsAndAnswerForAddClinicRepository;
 
 	@Override
 
@@ -234,7 +171,6 @@ public class AdminServiceImpl implements AdminService {
 
 			}
 
-			
 
 			Optional<Admin> credentials = adminRepository.findByUsernameAndPassword(userName, password);
 
@@ -272,8 +208,6 @@ public class AdminServiceImpl implements AdminService {
 
 		}
 
-		
-
 	}
 
 	
@@ -309,12 +243,7 @@ public class AdminServiceImpl implements AdminService {
 	            return response;
 
 	        }
-
-
-
 	        Clinic savedClinic = new Clinic();
-
-
 
 	        savedClinic.setName(clinic.getName());
 
@@ -345,6 +274,15 @@ public class AdminServiceImpl implements AdminService {
 	        savedClinic.setHospitalOverallRating(0.0); // default rating on creation
 
 	        savedClinic.setSubscription(clinic.getSubscription());
+	        
+	        savedClinic.setFreeFollowUps(clinic.getFreeFollowUps());
+	        
+	        savedClinic.setLatitude(clinic.getLatitude());
+	        savedClinic.setLongitude(clinic.getLongitude());
+	        savedClinic.setWalkthrough(clinic.getWalkthrough());
+	        savedClinic.setNabhScore(clinic.getNabhScore());
+	        savedClinic.setBranch(clinic.getBranch());
+	        
 
 
 
@@ -437,9 +375,6 @@ public class AdminServiceImpl implements AdminService {
 	            savedClinic.setPharmacistCertificate(null);
 
 	        }
-
-
-
 	        // Medicines Handling
 
 	        savedClinic.setMedicinesSoldOnSite(clinic.getMedicinesSoldOnSite());
@@ -491,10 +426,8 @@ public class AdminServiceImpl implements AdminService {
 	            savedClinic.setDrugLicenseFormType(null);
 
 	        }
-
-
-
-	        // Consultation Expiration (required)
+	        
+ // Consultation Expiration (required)
 
 	        if (clinic.getConsultationExpiration() == null || clinic.getConsultationExpiration().isBlank()) {
 
@@ -573,19 +506,39 @@ public class AdminServiceImpl implements AdminService {
 	            throw new IllegalArgumentException("Invalid Base64 in one of the document fields: " + e.getMessage());
 
 	        }
-
-
-
 	        // Social Media Handles
-
-	        
 
 	        savedClinic.setInstagramHandle(clinic.getInstagramHandle());
 
 	        savedClinic.setTwitterHandle(clinic.getTwitterHandle());
 
 	        savedClinic.setFacebookHandle(clinic.getFacebookHandle());
+	        
+	        if (clinic.getOnboardingQA() != null && !clinic.getOnboardingQA().isEmpty()) {
+	            List<QuestionAnswerDTO> qaListDTO = clinic.getOnboardingQA(); // It's already a list
 
+	            // Convert DTO list to entity list, ignoring null questions
+	            List<QuestionAnswer> clinicQAList = qaListDTO.stream()
+	                .filter(dto -> dto != null && dto.getQuestion() != null && !dto.getQuestion().isBlank())
+	                .map(dto -> new QuestionAnswer(dto.getQuestion(), dto.isAnswer()))
+	                .collect(Collectors.toList());
+
+	            // Set onboarding QA for clinic
+	            QuetionsAndAnswerForAddClinic clinicQA = new QuetionsAndAnswerForAddClinic();
+	            clinicQA.setQuestionsAndAnswers(clinicQAList);
+	            savedClinic.setOnboardingQA(clinicQA);
+
+	            // Calculate score: count of true answers (rounded just in case)
+	            int totalQuestions = clinicQAList.size();
+	            double answeredCount = clinicQAList.stream().filter(QuestionAnswer::isAnswer).count();
+	            int roundedScore = (int) Math.round(answeredCount / 2.0);
+	            savedClinic.setScore(roundedScore);
+	            
+
+	            savedClinic.setScore(roundedScore);
+	            savedClinic.setQuestionCount(totalQuestions); 
+
+	        }
 
 
 	        // Save clinic entity
@@ -650,14 +603,7 @@ public class AdminServiceImpl implements AdminService {
 
 	}
 
-
-
-	    
-
 	@Override
-
-	
-
 	public Response getClinicById(String clinicId) {
 
 	    Response response = new Response();
@@ -695,10 +641,15 @@ public class AdminServiceImpl implements AdminService {
 	            clnc.setContactNumber(clinic.getContactNumber() != null ? clinic.getContactNumber() : "");
 
 	            clnc.setRecommended(clinic.isRecommended());
-
+	            clnc.setSubscription(clinic.getSubscription());            
 	            clnc.setHospitalOverallRating(clinic.getHospitalOverallRating());
-
-
+	            clnc.setFreeFollowUps(clinic.getFreeFollowUps());
+	            
+	            clnc.setLatitude(clinic.getLatitude());
+	            clnc.setLongitude(clinic.getLongitude());
+	            clnc.setWalkthrough(clinic.getWalkthrough());
+	            clnc.setNabhScore(clinic.getNabhScore());
+	            clnc.setBranch(clinic.getBranch());
 
 	            // Hospital Logo
 
@@ -941,8 +892,16 @@ public class AdminServiceImpl implements AdminService {
 	                clnc.setOpeningTime(clinic.getOpeningTime() != null ? clinic.getOpeningTime() : "");
 
 	                clnc.setRecommended(clinic.isRecommended());
+	                clnc.setSubscription(clinic.getSubscription());
 
 	                clnc.setHospitalOverallRating(clinic.getHospitalOverallRating());
+	                clnc.setFreeFollowUps(clinic.getFreeFollowUps());
+	                
+	                clnc.setLatitude(clinic.getLatitude());
+	                clnc.setLongitude(clinic.getLongitude());
+	                clnc.setWalkthrough(clinic.getWalkthrough());
+	                clnc.setNabhScore(clinic.getNabhScore());
+	                clnc.setBranch(clinic.getBranch());
 
 
 
@@ -959,7 +918,6 @@ public class AdminServiceImpl implements AdminService {
 	                );
 
 
-
 	                // Hospital Documents
 
 	                clnc.setHospitalDocuments(
@@ -971,8 +929,6 @@ public class AdminServiceImpl implements AdminService {
 	                        : ""
 
 	                );
-
-
 
 	                // Contractor Documents
 
@@ -1022,8 +978,6 @@ public class AdminServiceImpl implements AdminService {
 
 	                }
 
-
-
 	                // Pharmacist Certificate
 
 	                clnc.setHasPharmacist(clinic.getHasPharmacist() != null ? clinic.getHasPharmacist() : "");
@@ -1037,9 +991,6 @@ public class AdminServiceImpl implements AdminService {
 	                        : ""
 
 	                );
-
-
-
 	                // Extended Certifications
 
 	                clnc.setClinicType(clinic.getClinicType() != null ? clinic.getClinicType() : "");
@@ -1129,7 +1080,6 @@ public class AdminServiceImpl implements AdminService {
 	                );
 
 
-
 	                // Others – list of documents
 
 	                List<String> othersList = new ArrayList<>();
@@ -1175,9 +1125,6 @@ public class AdminServiceImpl implements AdminService {
 	                list.add(clnc);
 
 	            }
-
-
-
 	            response.setData(list);
 
 	            response.setMessage("Clinics fetched successfully");
@@ -1217,10 +1164,6 @@ public class AdminServiceImpl implements AdminService {
 
 
 	@Override
-
-	
-
-	
 
 		
 
@@ -1315,7 +1258,10 @@ public class AdminServiceImpl implements AdminService {
 	            if (clinic.getLicenseNumber() != null) savedClinic.setLicenseNumber(clinic.getLicenseNumber());
 
 	            if (clinic.getIssuingAuthority() != null) savedClinic.setIssuingAuthority(clinic.getIssuingAuthority());
-
+	            
+	            
+	            
+	           
 
 
 	            // Optional hospital ID update (not recommended usually)
@@ -1443,6 +1389,13 @@ public class AdminServiceImpl implements AdminService {
 	                savedClinic.setOthers(othersList);
 
 	            }
+	            
+	            savedClinic.setFreeFollowUps(clinic.getFreeFollowUps());
+	            savedClinic.setLatitude(clinic.getLatitude());
+	            savedClinic.setLongitude(clinic.getLongitude());
+	            if (clinic.getWalkthrough() != null) savedClinic.setWalkthrough(clinic.getWalkthrough());
+	            savedClinic.setNabhScore(clinic.getNabhScore());
+	            if (clinic.getBranch() != null) savedClinic.setBranch(clinic.getBranch());
 
 
 
@@ -1451,10 +1404,9 @@ public class AdminServiceImpl implements AdminService {
 	            if (clinic.getConsultationExpiration() != null && !clinic.getConsultationExpiration().isEmpty()) {
 
 	                savedClinic.setConsultationExpiration(clinic.getConsultationExpiration());
+	                
 
 	            }
-
-
 
 	            // Social Media
 
@@ -1656,8 +1608,6 @@ public class AdminServiceImpl implements AdminService {
 
         }
 
-
-
         return password.toString();
 
     }
@@ -1774,10 +1724,6 @@ public class AdminServiceImpl implements AdminService {
 
     }
 
-
-
-    
-
     @Override
 
     public Response updateClinicCredentials(UpdateClinicCredentials credentials,String userName) {
@@ -1867,13 +1813,8 @@ public class AdminServiceImpl implements AdminService {
         return response;}
 
     }
-
-
-
     @Override
-
     public Response deleteClinicCredentials(String userName ) {
-
         Response response = new Response();
 
         try {
@@ -1919,8 +1860,6 @@ public class AdminServiceImpl implements AdminService {
         return response;
 
     }
-
-    
 
     @Override
 
