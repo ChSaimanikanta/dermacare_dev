@@ -149,13 +149,10 @@ public class DoctorController {
 	// ----------------------------Doctor
 	// Login----------------------------------------------------------
 	@PostMapping("/doctorLogin")
-	    public  Response updateDoctorById( @RequestBody @Valid DoctorLoginDTO loginDTO) {
-
-	    Response response =  doctorService.login(loginDTO);
-
-	    return response;
-
-	    }
+	public ResponseEntity<Response> updateDoctorById(@Valid @RequestBody DoctorLoginDTO loginDTO) {
+		Response response = doctorService.login(loginDTO);
+		return ResponseEntity.status(response.getStatus()).body(response);
+	}
 
 	// -------------------------Change
 	// Password----------------------------------------------------------
@@ -333,5 +330,12 @@ public class DoctorController {
 
 		    Response response = doctorService.getRecommendedClinicsAndDoctors(keyPointList);
 		    return ResponseEntity.status(response.getStatus()).body(response);
+		}
+//	----------------- Get All doctors with respective their clinic---------------------
+		@GetMapping("/clinics/getAllDoctorWithRespectiveClinics")
+		public ResponseEntity<Response> getAllDoctorWithRespectiveClinics(){
+			  Response response = doctorService.getAllDoctorsWithRespectiveClinic();
+			    return ResponseEntity.status(response.getStatus()).body(response);
+			
 		}
 }
