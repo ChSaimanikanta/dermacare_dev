@@ -2,6 +2,7 @@ package com.clinicadmin.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,7 +18,7 @@ import com.clinicadmin.service.ProbableDiagnosisService;
 
 @RestController
 @RequestMapping("/clinic-admin")
-//Origin(origins = { "http://localhost:3000", "http://localhost:3001", "http://127.0.0.1:5500" })
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
 public class ProbableDiagnosisController {
 	@Autowired
 	private ProbableDiagnosisService probableDiagnosisService;

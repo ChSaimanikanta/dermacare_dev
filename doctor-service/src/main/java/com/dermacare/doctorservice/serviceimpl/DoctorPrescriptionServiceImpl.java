@@ -1,6 +1,7 @@
 package com.dermacare.doctorservice.serviceimpl;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -240,23 +241,37 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
         }
     }
 
+
+
     @Override
     public Response searchMedicinesByName(String keyword) {
         try {
             if (keyword == null || keyword.trim().isEmpty()) {
-                return new Response(false, null, "Keyword must not be empty", HttpStatus.BAD_REQUEST.value());
+                return new Response(false, null,
+                        "Keyword must not be empty",
+                        HttpStatus.BAD_REQUEST.value());
             }
 
             String normalizedKeyword = keyword.trim().replaceAll("\\s+", " ").toLowerCase();
 
-            // Get only medicines that exactly match the searched keyword
-            List<MedicineDTO> matchedMedicines = repository.findAll().stream()
+            // Flatten all medicines, filter exact match
+            Optional<Medicine> latestMedicine = repository.findAll().stream()
                 .flatMap(prescription -> Optional.ofNullable(prescription.getMedicines())
                                                  .orElse(List.of())
                                                  .stream())
                 .filter(medicine -> medicine.getName() != null &&
                     medicine.getName().trim().replaceAll("\\s+", " ").toLowerCase().equals(normalizedKeyword))
-                .map(m -> new MedicineDTO(
+                // pick latest one by ID (assuming higher ID = newer)
+                .max(Comparator.comparing(Medicine::getId));
+
+            if (latestMedicine.isEmpty()) {
+                return new Response(false, null,
+                        "No medicine found with exact name: " + keyword,
+                        HttpStatus.NOT_FOUND.value());
+            }
+
+            Medicine m = latestMedicine.get();
+            MedicineDTO dto = new MedicineDTO(
                     m.getId(),
                     m.getName(),
                     m.getDose(),
@@ -265,20 +280,17 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
                     m.getFood(),
                     m.getRemindWhen(),
                     m.getTimes()
-                ))
-                .collect(Collectors.toList());
+            );
 
-            if (matchedMedicines.isEmpty()) {
-                return new Response(false, null, "No medicine found with exact name: " + keyword, HttpStatus.NOT_FOUND.value());
-            }
-
-            return new Response(true, matchedMedicines, "Medicine found", HttpStatus.OK.value());
+            return new Response(true, List.of(dto), "Medicine found", HttpStatus.OK.value());
 
         } catch (Exception e) {
-            return new Response(false, null, "Error searching medicine: " + e.getMessage(),
+            return new Response(false, null,
+                    "Error searching medicine: " + e.getMessage(),
                     HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
     }
+    
     @Override
     public Response deleteMedicineById(String medicineId) {
         try {
