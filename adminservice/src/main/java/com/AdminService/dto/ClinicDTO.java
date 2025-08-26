@@ -1,4 +1,5 @@
 package com.AdminService.dto;
+
 import java.util.List;
 
 import com.AdminService.entity.QuetionsAndAnswerForAddClinic;
@@ -11,115 +12,106 @@ import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-@Data 
+
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class ClinicDTO {
 
-    private String hospitalId;
+	private String hospitalId;
 
-    @NotBlank(message = "Hospital name is required")
-    private String name;
+	@NotBlank(message = "Hospital name is required")
+	private String name;
 
-    @NotBlank(message = "Address is required")
-    private String address;
+	@NotBlank(message = "Address is required")
+	private String address;
 
-    @NotBlank(message = "City is required")
-    private String city;
-    
-    private double hospitalOverallRating;
+	@NotBlank(message = "City is required")
+	private String city;
 
-    @NotBlank(message = "Contact number is required")
-    @Pattern(regexp = "^[0-9]{10}$", message = "Contact number must be 10 digits")
-    private String contactNumber;
+	private double hospitalOverallRating;
 
-    @NotBlank(message = "Opening time is required")
-    private String openingTime;
+	@NotBlank(message = "Contact number is required")
+	@Pattern(regexp = "^[0-9]{10}$", message = "Contact number must be 10 digits")
+	private String contactNumber;
 
-    @NotBlank(message = "Closing time is required")
-    private String closingTime;
+	@NotBlank(message = "Opening time is required")
+	private String openingTime;
 
-    @NotBlank(message = "Hospital logo (Base64) is required")
-    private String hospitalLogo;
+	@NotBlank(message = "Closing time is required")
+	private String closingTime;
 
-    @NotBlank(message = "Email is required")
-    @Email(message = "Invalid email format")
-    private String emailAddress;
+	@NotBlank(message = "Hospital logo (Base64) is required")
+	private String hospitalLogo;
 
-   // @URL(message = "Invalid website URL")
-    private String website;
+	@NotBlank(message = "Email is required")
+	@Email(message = "Invalid email format")
+	private String emailAddress;
 
-    @NotBlank(message = "License number is required")
-    private String licenseNumber;
+	// @URL(message = "Invalid website URL")
+	private String website;
 
-    @NotBlank(message = "Issuing authority is required")
-    private String issuingAuthority;
+	@NotBlank(message = "License number is required")
+	private String licenseNumber;
 
-    @NotNull(message = "Contractor documents must not be null")
-    private String contractorDocuments;
+	@NotBlank(message = "Issuing authority is required")
+	private String issuingAuthority;
 
-    @NotNull(message = "Hospital documents must not be null")
-    private String hospitalDocuments;
+	@NotNull(message = "Contractor documents must not be null")
+	private String contractorDocuments;
 
-    private boolean recommended;
+	@NotNull(message = "Hospital documents must not be null")
+	private String hospitalDocuments;
 
-    // Registration Certificates
-    private String clinicalEstablishmentCertificate;
-    private String businessRegistrationCertificate;
+	private boolean recommended;
 
-    // Clinic Type Info
-    @NotBlank(message = "Clinic type is required")
-    private String clinicType; // Proprietorship, Partnership, LLP, Pvt Ltd
+	// Registration Certificates
+	private String clinicalEstablishmentCertificate;
+	private String businessRegistrationCertificate;
 
-    // Medicines Handling
-    private String medicinesSoldOnSite;
-    private String drugLicenseCertificate; // Base64
-    private String drugLicenseFormType; // Form 20 or 21
+	// Clinic Type Info
+	@NotBlank(message = "Clinic type is required")
+	private String clinicType; // Proprietorship, Partnership, LLP, Pvt Ltd
 
-    // Pharmacist Info
-    private String hasPharmacist; // Yes/No/NA
-    private String pharmacistCertificate; // Base64
+	// Medicines Handling
+	private String medicinesSoldOnSite;
+	private String drugLicenseCertificate; // Base64
+	private String drugLicenseFormType; // Form 20 or 21
 
-    // Other Licenses
-    private String biomedicalWasteManagementAuth; // SPCB
-    private String tradeLicense; // Municipality
-    private String fireSafetyCertificate; // Fire Dept
-    private String professionalIndemnityInsurance; // Insurance
-    private String gstRegistrationCertificate;
-    @NotBlank(message = "Consultation expiration is required")
-    private String consultationExpiration;
-    
-    private String subscription;
+	// Pharmacist Info
+	private String hasPharmacist; // Yes/No/NA
+	private String pharmacistCertificate; // Base64
 
+	// Other Licenses
+	private String biomedicalWasteManagementAuth; // SPCB
+	private String tradeLicense; // Municipality
+	private String fireSafetyCertificate; // Fire Dept
+	private String professionalIndemnityInsurance; // Insurance
+	private String gstRegistrationCertificate;
+	@NotBlank(message = "Consultation expiration is required")
+	private String consultationExpiration;
 
-    // Allow multiple documents for 'others'
-    
-    @NotNull(message = "'Others' documents must not be null")
-    
-    private List<String> others;
-    
-    @Min(value = 0, message = "freeFollowUps must be zero or positive")
-    
-    private int freeFollowUps = 0;    
-    
-    
-    private double latitude;
-    private double longitude;
-    private int nabhScore;
-    private String branch;
-    @NotBlank(message = "Walkthrough URL is required")
-    @Pattern(regexp = "^(http|https)://.*$", message = "Walkthrough must be a valid URL")
-    private String walkthrough;
-    private String qaId;
-    
-private int score;
-    
-    private int questionCount;
-    private List<QuestionAnswerDTO> onboardingQA;
+	private String subscription;
 
-    
-    // Social Media
-    private String instagramHandle;
-    private String twitterHandle;
-    private String facebookHandle;
+	// Allow multiple documents for 'others'
+
+	@NotNull(message = "'Others' documents must not be null")
+
+	private List<String> others;
+
+	@Min(value = 0, message = "freeFollowUps must be zero or positive")
+
+	private int freeFollowUps = 0;
+	private double latitude;
+	private double longitude;
+	private int nabhScore;
+	private String branch;
+	@NotBlank(message = "Walkthrough URL is required")
+	@Pattern(regexp = "^(http|https)://.*$", message = "Walkthrough must be a valid URL")
+	private String walkthrough;
+
+	// Social Media
+	private String instagramHandle;
+	private String twitterHandle;
+	private String facebookHandle;
 }

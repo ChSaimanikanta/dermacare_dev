@@ -60,7 +60,7 @@ import jakarta.validation.Valid;
 
 @RequestMapping("/admin")
 
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
+// @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
 
 public class AdminController {
 	@Autowired
@@ -944,6 +944,16 @@ public ResponseEntity<Object> getDoctorInfoByDoctorId(@PathVariable String docto
 	public ResponseEntity<Response>getHospitalUsingRecommendentaion(){
 
 		Response response = serviceImpl.getClinicsByRecommondation();
+
+		 return ResponseEntity.status(response.getStatus()).body(response);
+
+	}
+	
+	@GetMapping("/clinics/firstRecommendedTureClincs")
+
+	public ResponseEntity<Response>firstRecommendedTureClincs(){
+
+		Response response = serviceImpl.getAllRecommendClinicThenAnotherClincs();
 
 		 return ResponseEntity.status(response.getStatus()).body(response);
 

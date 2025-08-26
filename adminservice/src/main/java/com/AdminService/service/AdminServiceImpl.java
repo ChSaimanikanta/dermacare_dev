@@ -3149,10 +3149,91 @@ public class AdminServiceImpl implements AdminService {
 
   	}
 
-		
+//	---------------------------get All Clincs first recommonded then another clincs----------------------------------
+  	@Override
+  	public Response getAllRecommendClinicThenAnotherClincs() {
+  	    Response response = new Response();
+  	    try {
+  	        List<Clinic> clinics = clinicRep.findAllByOrderByRecommendedDescNameAsc();
+
+  	        List<ClinicDTO> dtoList = clinics.stream().map(clinic -> {
+  	            ClinicDTO dto = new ClinicDTO();
+
+  	            dto.setHospitalId(clinic.getHospitalId());
+  	            dto.setName(clinic.getName());
+  	            dto.setAddress(clinic.getAddress());
+  	            dto.setCity(clinic.getCity());
+  	            dto.setHospitalOverallRating(clinic.getHospitalOverallRating());
+  	            dto.setContactNumber(clinic.getContactNumber());
+  	            dto.setOpeningTime(clinic.getOpeningTime());
+  	            dto.setClosingTime(clinic.getClosingTime());
+
+  	            // Convert byte[] → Base64
+  	            dto.setHospitalLogo(clinic.getHospitalLogo() != null ? Base64.getEncoder().encodeToString(clinic.getHospitalLogo()) : null);
+  	            dto.setEmailAddress(clinic.getEmailAddress());
+  	            dto.setWebsite(clinic.getWebsite());
+  	            dto.setLicenseNumber(clinic.getLicenseNumber());
+  	            dto.setIssuingAuthority(clinic.getIssuingAuthority());
+
+  	            dto.setContractorDocuments(clinic.getContractorDocuments() != null ? Base64.getEncoder().encodeToString(clinic.getContractorDocuments()) : null);
+  	            dto.setHospitalDocuments(clinic.getHospitalDocuments() != null ? Base64.getEncoder().encodeToString(clinic.getHospitalDocuments()) : null);
+
+  	            dto.setRecommended(clinic.isRecommended());
+  	            dto.setClinicalEstablishmentCertificate(clinic.getClinicalEstablishmentCertificate() != null ? Base64.getEncoder().encodeToString(clinic.getClinicalEstablishmentCertificate()) : null);
+  	            dto.setBusinessRegistrationCertificate(clinic.getBusinessRegistrationCertificate() != null ? Base64.getEncoder().encodeToString(clinic.getBusinessRegistrationCertificate()) : null);
+
+  	            dto.setClinicType(clinic.getClinicType());
+  	            dto.setMedicinesSoldOnSite(clinic.getMedicinesSoldOnSite());
+  	            dto.setDrugLicenseCertificate(clinic.getDrugLicenseCertificate() != null ? Base64.getEncoder().encodeToString(clinic.getDrugLicenseCertificate()) : null);
+  	            dto.setDrugLicenseFormType(clinic.getDrugLicenseFormType() != null ? Base64.getEncoder().encodeToString(clinic.getDrugLicenseFormType()) : null);
+
+  	            dto.setHasPharmacist(clinic.getHasPharmacist());
+  	            dto.setPharmacistCertificate(clinic.getPharmacistCertificate() != null ? Base64.getEncoder().encodeToString(clinic.getPharmacistCertificate()) : null);
+
+  	            dto.setBiomedicalWasteManagementAuth(clinic.getBiomedicalWasteManagementAuth() != null ? Base64.getEncoder().encodeToString(clinic.getBiomedicalWasteManagementAuth()) : null);
+  	            dto.setTradeLicense(clinic.getTradeLicense() != null ? Base64.getEncoder().encodeToString(clinic.getTradeLicense()) : null);
+  	            dto.setFireSafetyCertificate(clinic.getFireSafetyCertificate() != null ? Base64.getEncoder().encodeToString(clinic.getFireSafetyCertificate()) : null);
+  	            dto.setProfessionalIndemnityInsurance(clinic.getProfessionalIndemnityInsurance() != null ? Base64.getEncoder().encodeToString(clinic.getProfessionalIndemnityInsurance()) : null);
+  	            dto.setGstRegistrationCertificate(clinic.getGstRegistrationCertificate() != null ? Base64.getEncoder().encodeToString(clinic.getGstRegistrationCertificate()) : null);
+
+  	            dto.setConsultationExpiration(clinic.getConsultationExpiration());
+  	            dto.setSubscription(clinic.getSubscription());
+
+  	            // Convert List<byte[]> → List<String>
+  	            dto.setOthers(clinic.getOthers() != null ?
+  	                    clinic.getOthers().stream()
+  	                            .map(b -> Base64.getEncoder().encodeToString(b))
+  	                            .collect(Collectors.toList())
+  	                    : null);
+
+  	            dto.setFreeFollowUps(clinic.getFreeFollowUps());
+  	            dto.setLatitude(clinic.getLatitude());
+  	            dto.setLongitude(clinic.getLongitude());
+  	            dto.setNabhScore(clinic.getNabhScore());
+  	            dto.setBranch(clinic.getBranch());
+  	            dto.setWalkthrough(clinic.getWalkthrough());
+
+  	            dto.setInstagramHandle(clinic.getInstagramHandle());
+  	            dto.setTwitterHandle(clinic.getTwitterHandle());
+  	            dto.setFacebookHandle(clinic.getFacebookHandle());
+
+  	            return dto;
+  	        }).collect(Collectors.toList());
+
+  	        response.setSuccess(true);
+  	        response.setData(dtoList);
+  	        response.setMessage("Clinics fetched successfully (Recommended first).");
+  	        response.setStatus(200);
+
+  	    } catch (Exception e) {
+  	        response.setSuccess(false);
+  	        response.setMessage("Error occurred while fetching clinics: " + e.getMessage());
+  	        response.setStatus(500);
+  	    }
+  	    return response;
+  	}
 
 }
-
 
 
 

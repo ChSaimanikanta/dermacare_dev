@@ -10,7 +10,6 @@ import com.clinicadmin.service.TreatmentService;
 
 @RestController
 @RequestMapping("/clinic-admin")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
 public class TreatmentController {
 
     @Autowired

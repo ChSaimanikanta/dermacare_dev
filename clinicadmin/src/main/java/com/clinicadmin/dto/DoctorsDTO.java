@@ -110,6 +110,10 @@ public class DoctorsDTO {
 	
 	private boolean associatedWithIADVC;
 	
+private String associationsOrMemberships; 
+	
+    private String branch;
+    
 	private ConsultationTypeDTO Consultation;
 	
     public void trimAllDoctorFields() {
@@ -143,4 +147,5 @@ public class DoctorsDTO {
             ? list.stream().map(this::trim).collect(Collectors.toList())
             : null;
     }
+    
 }

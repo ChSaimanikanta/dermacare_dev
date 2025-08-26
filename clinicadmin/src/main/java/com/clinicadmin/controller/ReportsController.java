@@ -16,7 +16,7 @@ import com.clinicadmin.service.ReportsService;
 
 @RestController
 @RequestMapping("/clinic-admin")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
+//Origin(origins = {"http://localhost:3000", "http://localhost:3001"})
 public class ReportsController {
 
     @Autowired

@@ -29,22 +29,23 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
         try {
             // ✅ 1. Validate input
             if (dto == null || dto.getMedicines() == null || dto.getMedicines().isEmpty()) {
-                return new Response(false, null, "Prescription must have at least one medicine", HttpStatus.BAD_REQUEST.value());
+                return new Response(false, null,
+                        "Prescription must have at least one medicine",
+                        HttpStatus.BAD_REQUEST.value());
             }
 
             if (dto.getClinicId() == null || dto.getClinicId().isBlank()) {
-                return new Response(false, null, "Clinic ID is required", HttpStatus.BAD_REQUEST.value());
+                return new Response(false, null,
+                        "Clinic ID is required",
+                        HttpStatus.BAD_REQUEST.value());
             }
 
-            // If you have a separate ClinicRepository, validate against it
-            // boolean clinicExists = clinicRepository.existsById(dto.getClinicId());
-            // if (!clinicExists) {
-            //     return new Response(false, null, "Invalid Clinic ID", HttpStatus.NOT_FOUND.value());
-            // }
+            // ✅ 2. Fetch existing prescription for this clinic
+            List<DoctorPrescription> prescriptions = repository.findByClinicId(dto.getClinicId());
 
-            DoctorPrescription entity = (dto.getId() != null && !dto.getId().isBlank())
-                    ? repository.findById(dto.getId()).orElse(new DoctorPrescription())
-                    : new DoctorPrescription();
+            DoctorPrescription entity = prescriptions.isEmpty()
+                    ? new DoctorPrescription()
+                    : prescriptions.get(0); // only one prescription per clinic
 
             entity.setClinicId(dto.getClinicId());
 
@@ -54,6 +55,7 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
             boolean updatedExistingMedicine = false;
             boolean addedNewMedicine = false;
 
+            // ✅ 3. Loop through incoming medicines
             for (MedicineDTO incomingMed : dto.getMedicines()) {
                 if (incomingMed == null || incomingMed.getName() == null || incomingMed.getName().isBlank()) {
                     continue;
@@ -61,47 +63,24 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
 
                 String normalizedName = incomingMed.getName().trim().replaceAll("\\s+", " ").toLowerCase();
 
-                // Find existing medicine in ANY prescription
-                Medicine foundMedicine = repository.findAll().stream()
-                        .flatMap(pres -> Optional.ofNullable(pres.getMedicines()).orElse(List.of()).stream())
+                Optional<Medicine> existingMedOpt = existingMedicines.stream()
                         .filter(m -> m.getName() != null &&
                                 m.getName().trim().replaceAll("\\s+", " ").toLowerCase().equals(normalizedName))
-                        .findFirst()
-                        .orElse(null);
+                        .findFirst();
 
-                if (foundMedicine != null) {
+                if (existingMedOpt.isPresent()) {
+                    // ✅ Update existing medicine
+                    Medicine existingMed = existingMedOpt.get();
+                    existingMed.setDose(incomingMed.getDose());
+                    existingMed.setDuration(incomingMed.getDuration());
+                    existingMed.setNote(incomingMed.getNote());
+                    existingMed.setFood(incomingMed.getFood());
+                    existingMed.setRemindWhen(incomingMed.getRemindWhen());
+                    existingMed.setTimes(incomingMed.getTimes());
+
                     updatedExistingMedicine = true;
-
-                    // ✅ Update details of found medicine everywhere
-                    repository.findAll().forEach(pres -> {
-                        if (pres.getMedicines() != null) {
-                            pres.getMedicines().forEach(m -> {
-                                if (m.getName() != null &&
-                                        m.getName().trim().replaceAll("\\s+", " ").toLowerCase().equals(normalizedName)) {
-                                    m.setDose(incomingMed.getDose());
-                                    m.setDuration(incomingMed.getDuration());
-                                    m.setNote(incomingMed.getNote());
-                                    m.setFood(incomingMed.getFood());
-                                    m.setRemindWhen(incomingMed.getRemindWhen());
-                                    m.setTimes(incomingMed.getTimes());
-                                }
-                            });
-                            repository.save(pres);
-                        }
-                    });
-
-                    // Add to current prescription if not already there
-                    boolean existsInCurrent = existingMedicines.stream()
-                            .anyMatch(m -> m.getName() != null &&
-                                    m.getName().trim().replaceAll("\\s+", " ").toLowerCase().equals(normalizedName));
-
-                    if (!existsInCurrent) {
-                        existingMedicines.add(foundMedicine);
-                    }
                 } else {
-                    addedNewMedicine = true;
-
-                    // ✅ Create new medicine
+                    // ✅ Add new medicine
                     existingMedicines.add(new Medicine(
                             UUID.randomUUID().toString(),
                             incomingMed.getName().trim(),
@@ -112,12 +91,15 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
                             incomingMed.getRemindWhen(),
                             incomingMed.getTimes()
                     ));
+                    addedNewMedicine = true;
                 }
             }
 
+            // ✅ 4. Save back the prescription
             entity.setMedicines(existingMedicines);
             DoctorPrescription saved = repository.save(entity);
 
+            // ✅ 5. Build response DTO
             DoctorPrescriptionDTO responseDTO = new DoctorPrescriptionDTO();
             responseDTO.setId(saved.getId());
             responseDTO.setClinicId(saved.getClinicId());
@@ -129,10 +111,9 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
                     .collect(Collectors.toList())
             );
 
-          
             String finalMessage;
             if (updatedExistingMedicine && addedNewMedicine) {
-                finalMessage = "Prescription created and existing medicines updated successfully";
+                finalMessage = "Prescription updated with new and existing medicines";
             } else if (updatedExistingMedicine) {
                 finalMessage = "Existing medicines updated successfully";
             } else if (addedNewMedicine) {
@@ -144,11 +125,11 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
             return new Response(true, responseDTO, finalMessage, HttpStatus.CREATED.value());
 
         } catch (Exception e) {
-            return new Response(false, null, "Failed to create/update prescription: " + e.getMessage(),
+            return new Response(false, null,
+                    "Failed to create/update prescription: " + e.getMessage(),
                     HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
     }
-
 
 
     // Helper method to update medicine details

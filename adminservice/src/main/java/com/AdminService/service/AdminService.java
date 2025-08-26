@@ -93,4 +93,6 @@ public Response getBookingByDoctorId(String doctorId);
 public Response getDoctorInfoByDoctorId(String doctorId);
 
 public Response getClinicsByRecommondation();
+
+Response getAllRecommendClinicThenAnotherClincs();
 }
