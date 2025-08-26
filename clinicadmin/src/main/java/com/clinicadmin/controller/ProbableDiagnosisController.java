@@ -17,7 +17,7 @@ import com.clinicadmin.service.ProbableDiagnosisService;
 
 @RestController
 @RequestMapping("/clinic-admin")
-//Origin(origins = { "http://localhost:3000", "http://localhost:3001", "http://127.0.0.1:5500" })
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
 public class ProbableDiagnosisController {
 	@Autowired
 	private ProbableDiagnosisService probableDiagnosisService;

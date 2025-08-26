@@ -22,6 +22,7 @@ import com.dermacare.bookingService.util.ResponseStructure;
 
 @RestController
 @RequestMapping("/v1")
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
 public class BookingServiceController {
 
 
