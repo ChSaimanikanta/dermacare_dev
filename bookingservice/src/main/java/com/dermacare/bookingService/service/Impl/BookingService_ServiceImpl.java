@@ -70,6 +70,7 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 				b.setStatus("Confirmed");
 				b.setServicetime(request.getServicetime());
 				b.setServiceDate(request.getServiceDate());
+				b.setVisitType(request.getVisitType());
 				Booking ety = repository.save(b);
 				ety.setReports(null);
 				ety.setNotes(null);

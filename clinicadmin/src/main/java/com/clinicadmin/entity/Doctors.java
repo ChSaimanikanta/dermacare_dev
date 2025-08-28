@@ -51,9 +51,8 @@ public class Doctors {
 	private boolean recommendation;
 	private String doctorSignature;
 	private boolean associatedWithIADVC;
-private String associationsOrMemberships; 
-	
-    private String branch;
+	private String associationsOrMemberships;
+	private String branch;
 	private ConsultationType Consultation;
-	
+
 }

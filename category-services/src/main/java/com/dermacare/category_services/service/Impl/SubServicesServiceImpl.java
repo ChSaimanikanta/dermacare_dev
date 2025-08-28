@@ -90,7 +90,7 @@ public class SubServicesServiceImpl implements SubServicesService {
 	    double discountAmount = CalculateDiscountAmount(entity.getDiscountPercentage(), entity.getPrice());
 	    double taxAmount = CalculateTaxAmount(entity.getTaxPercentage(), entity.getPrice());
 	    double platformFee = calcualatePlatfomFee(entity.getPlatformFeePercentage(), entity.getPrice());
-	    double gstAmount = calcualatePlatfomFee(entity.getGst(), entity.getPrice());
+	    double gstAmount = calculateGST(entity.getGst(), entity.getPrice());
 
 	
 

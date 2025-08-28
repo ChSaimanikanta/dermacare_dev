@@ -68,6 +68,15 @@ public class DoctorSaveDetailsController {
         Response response = service.getVisitHistoryByPatientAndDoctor(patientId, doctorId);
         return ResponseEntity.status(response.getStatus()).body(response);
     }
+    
+    @GetMapping("/doctorIn-progressDetails/{patientId}/{bookingId}")
+    public ResponseEntity<Response> getInProgressDetails(
+            @PathVariable String patientId,
+            @PathVariable String bookingId) {
+        return ResponseEntity.ok(
+                service.getInProgressDetails(patientId, bookingId)
+        );
+    }
 
 
 }

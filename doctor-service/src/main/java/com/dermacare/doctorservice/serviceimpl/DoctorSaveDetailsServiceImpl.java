@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.dermacare.doctorservice.dermacaredoctorutils.VisitTypeUtil;
@@ -21,6 +22,7 @@ import com.dermacare.doctorservice.dto.FollowUpDetailsDTO;
 import com.dermacare.doctorservice.dto.MedicinesDTO;
 import com.dermacare.doctorservice.dto.PrescriptionDetailsDTO;
 import com.dermacare.doctorservice.dto.Response;
+import com.dermacare.doctorservice.dto.ResponseStructure;
 import com.dermacare.doctorservice.dto.SymptomDetailsDTO;
 import com.dermacare.doctorservice.dto.TestDetailsDTO;
 import com.dermacare.doctorservice.dto.TreatmentDetailsDTO;
@@ -497,37 +499,54 @@ public class DoctorSaveDetailsServiceImpl implements DoctorSaveDetailsService {
         }
     }
     
-    private String decodeAndSavePdf(String base64Pdf, String bookingId) {
+    @Override
+    public Response getInProgressDetails(String patientId, String bookingId) {
         try {
-            // Decode Base64
-            byte[] pdfBytes = Base64.getDecoder().decode(base64Pdf);
+            // 1. Fetch booking from Booking Service
+            ResponseEntity<ResponseStructure<BookingResponse>> bookingResponseEntity =
+                    bookingFeignClient.getBookedService(bookingId);
 
-            // Define file storage path (can be configured)
-            String fileName = "prescription_" + bookingId + "_" + System.currentTimeMillis() + ".pdf";
-            String storageDir = "/path/to/prescriptions"; // Change to your actual folder
-            java.nio.file.Path dirPath = java.nio.file.Paths.get(storageDir);
-            if (!java.nio.file.Files.exists(dirPath)) {
-                java.nio.file.Files.createDirectories(dirPath);
+            if (bookingResponseEntity == null || bookingResponseEntity.getBody() == null) {
+                return buildResponse(false, null,
+                        "Booking not found for ID " + bookingId,
+                        HttpStatus.NOT_FOUND.value());
             }
 
-            // Save file
-            java.nio.file.Path filePath = dirPath.resolve(fileName);
-            java.nio.file.Files.write(filePath, pdfBytes);
+            BookingResponse booking = bookingResponseEntity.getBody().getData();
 
-            // Return stored file path (or a URL if serving via API)
-            return filePath.toString();
+            // 2. Validate status
+            if (!"In-Progress".equalsIgnoreCase(booking.getStatus())) {
+                return buildResponse(false, null,
+                        "Booking is not In-Progress. Current status: " + booking.getStatus(),
+                        HttpStatus.BAD_REQUEST.value());
+            }
+
+            // 3. Fetch doctor details saved in your DB
+            List<DoctorSaveDetails> visits = repository.findByPatientIdAndBookingId(patientId, bookingId);
+
+            if (visits.isEmpty()) {
+                return buildResponse(false, null,
+                        "No doctor details found for patient " + patientId + " and booking " + bookingId,
+                        HttpStatus.NOT_FOUND.value());
+            }
+
+            List<DoctorSaveDetailsDTO> dtos = visits.stream()
+                    .map(this::convertToDto)
+                    .collect(Collectors.toList());
+
+            // 4. Build success response
+            return buildResponse(true, Map.of(
+                    "patientId", patientId,
+                    "bookingId", bookingId,
+                    "status", booking.getStatus(),
+                    "savedDetails", dtos
+            ), "In-Progress doctor details fetched successfully", HttpStatus.OK.value());
+
         } catch (Exception e) {
-            throw new RuntimeException("Failed to decode and save PDF", e);
+            return buildResponse(false, null,
+                    "Error fetching in-progress details: " + e.getMessage(),
+                    HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
     }
-    private String encodePdfToBase64(String filePath) {
-        try {
-            byte[] pdfBytes = java.nio.file.Files.readAllBytes(java.nio.file.Paths.get(filePath));
-            return Base64.getEncoder().encodeToString(pdfBytes);
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to encode PDF to Base64", e);
-        }
-    }
-
 
 }
