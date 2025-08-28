@@ -52,11 +52,11 @@ public class SubServicesDto {
 	private double taxAmount;
 
 	private double platformFee;
-	
+
 	private byte gst;
-	
+
 	private double gstAmount;
-	
+
 	private double consultationFee;
 
 	private double discountedCost; // price - discount Amount
@@ -64,5 +64,7 @@ public class SubServicesDto {
 	private double clinicPay; // Price - platformFee
 
 	private double finalCost; // taxAmount + discounedCost
+
+	private String consentFormType; // Generic or procedureConsent (1,2)
 
 }

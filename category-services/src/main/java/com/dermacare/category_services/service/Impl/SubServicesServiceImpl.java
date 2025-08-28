@@ -259,6 +259,10 @@ public class SubServicesServiceImpl implements SubServicesService {
 		if (domainService.getSubServiceId() != null) {
 			optionalSubService.setSubServiceId(new ObjectId(domainService.getSubServiceId()));
 		}
+		if(domainService.getConsentFormType() != null) {
+			optionalSubService.setConsentFormType(domainService.getConsentFormType());
+			
+		}
 		SubServices subServices = subServiceRepository.save(optionalSubService);
 		return HelperForConversion.toDto(subServices);
 	}
@@ -409,6 +413,7 @@ public class SubServicesServiceImpl implements SubServicesService {
 			dto.setConsultationFee(service.getConsultationFee());
 			dto.setClinicPay(service.getClinicPay());
 			dto.setFinalCost(service.getFinalCost());
+			dto.setConsentFormType(service.getConsentFormType());
 
 			dtoList.add(dto);
 		}

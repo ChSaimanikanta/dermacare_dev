@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.clinicadmin.dto.RatingsDTO;
 import com.clinicadmin.dto.Response;
 import com.clinicadmin.sevice.impl.RatingCalculationService;
 
