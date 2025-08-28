@@ -17,10 +17,10 @@ FROM openjdk:17-jdk-slim
 WORKDIR /app
 
 # Copy built JAR from the build stage
-COPY --from=build /app/target/euraka-server-0.0.1-SNAPSHOT.jar /app/euraka-server.jar
+COPY --from=build /app/target/eureka-server-0.0.1-SNAPSHOT.jar /app/eureka-server.jar
 
 # Expose the Eureka server port
 EXPOSE 8761
 
 # Run the Eureka server
-ENTRYPOINT ["java", "-jar", "euraka-server.jar"]
+ENTRYPOINT ["java", "-jar", "eureka-server.jar"]
