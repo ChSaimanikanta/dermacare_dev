@@ -55,7 +55,7 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
             boolean updatedExistingMedicine = false;
             boolean addedNewMedicine = false;
 
-            // ✅ 3. Loop through incoming medicines
+          
             for (MedicineDTO incomingMed : dto.getMedicines()) {
                 if (incomingMed == null || incomingMed.getName() == null || incomingMed.getName().isBlank()) {
                     continue;
@@ -75,6 +75,7 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
                     existingMed.setDuration(incomingMed.getDuration());
                     existingMed.setNote(incomingMed.getNote());
                     existingMed.setFood(incomingMed.getFood());
+                    existingMed.setMedicineType(incomingMed.getMedicineType());
                     existingMed.setRemindWhen(incomingMed.getRemindWhen());
                     existingMed.setTimes(incomingMed.getTimes());
 
@@ -88,6 +89,7 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
                             incomingMed.getDuration(),
                             incomingMed.getNote(),
                             incomingMed.getFood(),
+                            incomingMed.getMedicineType(),
                             incomingMed.getRemindWhen(),
                             incomingMed.getTimes()
                     ));
@@ -106,7 +108,7 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
             responseDTO.setMedicines(saved.getMedicines().stream()
                     .map(m -> new MedicineDTO(
                             m.getId(), m.getName(), m.getDose(), m.getDuration(),
-                            m.getNote(), m.getFood(), m.getRemindWhen(), m.getTimes()
+                            m.getNote(), m.getFood(),m.getMedicineType(), m.getRemindWhen(), m.getTimes()
                     ))
                     .collect(Collectors.toList())
             );
@@ -150,7 +152,7 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
                 DoctorPrescriptionDTO dto = new DoctorPrescriptionDTO();
                 dto.setId(p.getId());
                 List<MedicineDTO> meds = Optional.ofNullable(p.getMedicines()).orElse(List.of()).stream().map(m -> new MedicineDTO(
-                    m.getId(), m.getName(), m.getDose(), m.getDuration(), m.getNote(), m.getFood(), m.getRemindWhen(), m.getTimes()
+                    m.getId(), m.getName(), m.getDose(), m.getDuration(), m.getNote(), m.getFood(), m.getMedicineType(),m.getRemindWhen(), m.getTimes()
                 )).collect(Collectors.toList());
                 dto.setMedicines(meds);
                 return dto;
@@ -172,7 +174,7 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
                 DoctorPrescriptionDTO dto = new DoctorPrescriptionDTO();
                 dto.setId(p.getId());
                 List<MedicineDTO> meds = Optional.ofNullable(p.getMedicines()).orElse(List.of()).stream().map(m -> new MedicineDTO(
-                    m.getId(), m.getName(), m.getDose(), m.getDuration(), m.getNote(), m.getFood(), m.getRemindWhen(), m.getTimes()
+                    m.getId(), m.getName(), m.getDose(), m.getDuration(), m.getNote(), m.getFood(),m.getMedicineType(), m.getRemindWhen(), m.getTimes()
                 )).collect(Collectors.toList());
                 dto.setMedicines(meds);
 
@@ -196,7 +198,7 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
 
             if (!matches.isEmpty()) {
                 List<MedicineDTO> dtos = matches.stream().map(m -> new MedicineDTO(
-                    m.getId(), m.getName(), m.getDose(), m.getDuration(), m.getNote(), m.getFood(), m.getRemindWhen(), m.getTimes()
+                    m.getId(), m.getName(), m.getDose(), m.getDuration(), m.getNote(), m.getFood(),m.getMedicineType(), m.getRemindWhen(), m.getTimes()
                 )).collect(Collectors.toList());
 
                 return new Response(true, dtos, "Medicine found", HttpStatus.OK.value());
@@ -259,6 +261,7 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
                     m.getDuration(),
                     m.getNote(),
                     m.getFood(),
+                    m.getMedicineType(),
                     m.getRemindWhen(),
                     m.getTimes()
             );
@@ -313,7 +316,7 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
 
                 List<MedicineDTO> meds = Optional.ofNullable(p.getMedicines()).orElse(List.of()).stream()
                     .map(m -> new MedicineDTO(
-                        m.getId(), m.getName(), m.getDose(), m.getDuration(), m.getNote(), m.getFood(), m.getRemindWhen(), m.getTimes()
+                        m.getId(), m.getName(), m.getDose(), m.getDuration(), m.getNote(), m.getFood(),m.getMedicineType(), m.getRemindWhen(), m.getTimes()
                     )).collect(Collectors.toList());
                 dto.setMedicines(meds);
                 return dto;

@@ -17,6 +17,7 @@ public class Medicine {
     private String duration;
     private String note;
     private String food;
+    private MedicineType medicineType;
     private String remindWhen;
     private List<String> times;
 }

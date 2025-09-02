@@ -586,7 +586,7 @@ public class DoctorServiceImpl implements DoctorService {
 	// ----------------- Helper Methods ------------------------
 
 	private String generateDoctorId() {
-		String doctorId = "DC_" + UUID.randomUUID().toString().substring(0, 8);
+		String doctorId = "DC_" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
 		// Get the current count of doctors
 		return doctorId;
 	}

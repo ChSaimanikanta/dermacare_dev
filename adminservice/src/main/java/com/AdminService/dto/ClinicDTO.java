@@ -2,6 +2,7 @@ package com.AdminService.dto;
 
 import java.util.List;
 
+import com.AdminService.entity.Branch;
 import com.AdminService.entity.QuetionsAndAnswerForAddClinic;
 
 import jakarta.validation.constraints.Email;
@@ -64,7 +65,7 @@ public class ClinicDTO {
 	private String hospitalDocuments;
 
 	private boolean recommended;
-
+	
 	// Registration Certificates
 	private String clinicalEstablishmentCertificate;
 	private String businessRegistrationCertificate;
@@ -106,6 +107,7 @@ public class ClinicDTO {
 	private double longitude;
 	private int nabhScore;
 	private String branch;
+
 	@NotBlank(message = "Walkthrough URL is required")
 	@Pattern(regexp = "^(http|https)://.*$", message = "Walkthrough must be a valid URL")
 	private String walkthrough;

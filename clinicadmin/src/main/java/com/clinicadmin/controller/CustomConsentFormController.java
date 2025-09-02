@@ -29,7 +29,6 @@ public class CustomConsentFormController {
 	@PostMapping("/consent-form/{hospitalId}/{consentFormType}")
 	public ResponseEntity<Response> addConsentForm(@PathVariable String hospitalId, @PathVariable String consentFormType,
 			@RequestBody CustomConsentFormDTO dto) {
-
 		Response response = consentFormService.addCustomConsentForm(hospitalId, consentFormType, dto);
 		return ResponseEntity.status(response.getStatus()).body(response);
 	}
@@ -40,9 +39,8 @@ public class CustomConsentFormController {
 	@PutMapping("/consent-form/{hospitalId}/{consentFormType}")
 	public ResponseEntity<Response> updateConsentForm(@PathVariable String hospitalId, @PathVariable String consentFormType,
 			@RequestBody CustomConsentFormDTO dto) {
-		Response response =consentFormService.updateCustomConsentForm(hospitalId, consentFormType, dto);
+		Response response = consentFormService.updateCustomConsentForm(hospitalId, consentFormType, dto);
 		return ResponseEntity.status(response.getStatus()).body(response);
-		
 	}
 
 	// -------------------------------
@@ -59,7 +57,16 @@ public class CustomConsentFormController {
 	// -------------------------------
 	@GetMapping("/consent-form/{hospitalId}/subservice/{subServiceId}")
 	public ResponseEntity<Response> getProcedureConsentForm(@PathVariable String hospitalId, @PathVariable String subServiceId) {
-		Response response =consentFormService.getProcedureConsentForm(hospitalId, subServiceId);
+		Response response = consentFormService.getProcedureConsentForm(hospitalId, subServiceId);
+		return ResponseEntity.status(response.getStatus()).body(response);
+	}
+
+	// -------------------------------
+	// Get All Consent Forms by Hospital
+	// -------------------------------
+	@GetMapping("/consent-form/{hospitalId}")
+	public ResponseEntity<Response> getAllConsentFormsByHospital(@PathVariable String hospitalId) {
+		Response response = consentFormService.getAllConsentFormsByHospital(hospitalId);
 		return ResponseEntity.status(response.getStatus()).body(response);
 	}
 }

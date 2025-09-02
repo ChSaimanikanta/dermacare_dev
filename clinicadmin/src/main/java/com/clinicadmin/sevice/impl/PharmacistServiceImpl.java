@@ -1,0 +1,262 @@
+package com.clinicadmin.sevice.impl;
+
+import java.security.SecureRandom;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+
+import com.clinicadmin.dto.PharmacistDTO;
+import com.clinicadmin.dto.PharmacistLoginDTO;
+import com.clinicadmin.dto.ResetPharmacistLoginPasswordDTO;
+import com.clinicadmin.dto.Response;
+import com.clinicadmin.entity.Pharmacist;
+import com.clinicadmin.repository.PharmacistRepository;
+import com.clinicadmin.service.PharmacistService;
+
+@Service
+public class PharmacistServiceImpl implements PharmacistService {
+
+    @Autowired
+    private PharmacistRepository pharmacistRepository;
+
+    @Override
+    public Response pharmacistOnboarding(PharmacistDTO dto) {
+        Response response = new Response();
+        
+        if (pharmacistRepository.existsByContactNumber(dto.getContactNumber())) {
+            response.setSuccess(false);
+            response.setMessage("Pharmacist with this mobile number already exists");
+            response.setStatus(HttpStatus.BAD_REQUEST.value());
+            return response;
+        }
+
+        Pharmacist pharmacist = mapDtoToEntity(dto);
+        String pharmacistId = generatePharmacistId();
+        pharmacist.setPharmacistId(pharmacistId);
+
+        // username = contact number
+        String userName = dto.getContactNumber();
+        String password = generateStructuredPassword();
+
+        pharmacist.setUserName(userName);
+        pharmacist.setPassword(password);
+
+        Pharmacist saved = pharmacistRepository.save(pharmacist);
+        PharmacistDTO savedDTO = mapEntityToDto(saved);
+
+        savedDTO.setUserName(userName);
+        savedDTO.setPassword(password);
+
+        response.setSuccess(true);
+        response.setData(savedDTO);
+        response.setMessage("Pharmacist added successfully");
+        response.setStatus(HttpStatus.CREATED.value());
+        return response;
+    }
+
+    @Override
+    public Response getAllPharmacistsByDepartment(String department) {
+        Response response = new Response();
+        List<Pharmacist> list = pharmacistRepository.findByDepartment(department);
+
+        response.setSuccess(true);
+        response.setData(list.stream().map(this::mapEntityToDto).toList());
+        response.setMessage(list.isEmpty() ? "No Pharmacists found" : "Pharmacists fetched successfully");
+        response.setStatus(HttpStatus.OK.value());
+        return response;
+    }
+
+    @Override
+    public Response getPharmacistById(String pharmacistId) {
+        Response response = new Response();
+        return pharmacistRepository.findByPharmacistId(pharmacistId)
+                .map(pharmacist -> {
+                    response.setSuccess(true);
+                    response.setData(mapEntityToDto(pharmacist));
+                    response.setMessage("Pharmacist found");
+                    response.setStatus(HttpStatus.OK.value());
+                    return response;
+                })
+                .orElseGet(() -> {
+                    response.setSuccess(false);
+                    response.setMessage("Pharmacist not found");
+                    response.setStatus(HttpStatus.NOT_FOUND.value());
+                    return response;
+                });
+    }
+
+    @Override
+    public Response updatePharmacist(String pharmacistId, PharmacistDTO dto) {
+        Response response = new Response();
+
+        return pharmacistRepository.findByPharmacistId(pharmacistId).map(existing -> {
+            if (dto.getFullName() != null) existing.setFullName(dto.getFullName());
+            if (dto.getContactNumber() != null) existing.setContactNumber(dto.getContactNumber());
+            if (dto.getEmailID() != null) existing.setEmailID(dto.getEmailID());
+            if (dto.getDepartment() != null) existing.setDepartment(dto.getDepartment());
+            if (dto.getQualification() != null) existing.setQualification(dto.getQualification());
+            if (dto.getAddress() != null) existing.setAddress(dto.getAddress());
+            if (dto.getBankAccountDetails() != null) existing.setBankAccountDetails(dto.getBankAccountDetails());
+
+            Pharmacist updated = pharmacistRepository.save(existing);
+            response.setSuccess(true);
+            response.setData(mapEntityToDto(updated));
+            response.setMessage("Pharmacist updated successfully");
+            response.setStatus(HttpStatus.OK.value());
+            return response;
+        }).orElseGet(() -> {
+            response.setSuccess(false);
+            response.setMessage("Pharmacist not found");
+            response.setStatus(HttpStatus.NOT_FOUND.value());
+            return response;
+        });
+    }
+
+    @Override
+    public Response deletePharmacist(String pharmacistId) {
+        Response response = new Response();
+        Optional<Pharmacist> existing = pharmacistRepository.findByPharmacistId(pharmacistId);
+
+        if (existing.isPresent()) {
+            pharmacistRepository.deleteByPharmacistId(pharmacistId);
+            response.setSuccess(true);
+            response.setMessage("Pharmacist deleted successfully");
+            response.setStatus(HttpStatus.NO_CONTENT.value());
+        } else {
+            response.setSuccess(false);
+            response.setMessage("Pharmacist not found");
+            response.setStatus(HttpStatus.NOT_FOUND.value());
+        }
+        return response;
+    }
+
+    // ---------------- LOGIN ----------------
+    @Override
+    public Response pharmacistLogin(PharmacistLoginDTO loginDTO) {
+        Response response = new Response();
+        Optional<Pharmacist> pharmacist = pharmacistRepository.findByUserName(loginDTO.getUserName());
+
+        if (pharmacist.isPresent()) {
+            if (pharmacist.get().getPassword().equals(loginDTO.getPassword())) {
+                response.setSuccess(true);
+                response.setMessage("Login Successful");
+                response.setStatus(HttpStatus.OK.value());
+            } else {
+                response.setSuccess(false);
+                response.setMessage("Invalid password");
+                response.setStatus(HttpStatus.UNAUTHORIZED.value());
+            }
+        } else {
+            response.setSuccess(false);
+            response.setMessage("Invalid Username");
+            response.setStatus(HttpStatus.NOT_FOUND.value());
+        }
+        return response;
+    }
+
+    // ---------------- RESET PASSWORD ----------------
+    @Override
+    public Response resetLoginPassword(ResetPharmacistLoginPasswordDTO dto) {
+        Response response = new Response();
+        Optional<Pharmacist> pharmacistOpt = pharmacistRepository.findByUserName(dto.getUserName());
+
+        if (pharmacistOpt.isPresent()) {
+            Pharmacist pharmacist = pharmacistOpt.get();
+            if (pharmacist.getPassword().equals(dto.getCurrentPassword())) {
+                if (dto.getNewPassword().equals(dto.getConfirmPassword())) {
+					pharmacist.setPassword(dto.getNewPassword());
+                    pharmacistRepository.save(pharmacist);
+                    response.setSuccess(true);
+                    response.setMessage("Password updated successfully");
+                    response.setStatus(HttpStatus.OK.value());
+                } else {
+                    response.setSuccess(false);
+                    response.setMessage("New password and confirm password do not match");
+                    response.setStatus(HttpStatus.BAD_REQUEST.value());
+                }
+            } else {
+                response.setSuccess(false);
+                response.setMessage("Invalid current password");
+                response.setStatus(HttpStatus.UNAUTHORIZED.value());
+            }
+        } else {
+            response.setSuccess(false);
+            response.setMessage("Invalid Username");
+            response.setStatus(HttpStatus.NOT_FOUND.value());
+        }
+        return response;
+    }
+
+    // ---------------- Helper Methods ----------------
+    private Pharmacist mapDtoToEntity(PharmacistDTO dto) {
+        Pharmacist pharmacist = new Pharmacist();
+        pharmacist.setFullName(dto.getFullName());
+        pharmacist.setGender(dto.getGender());
+        pharmacist.setQualification(dto.getQualification());
+        pharmacist.setDateOfBirth(dto.getDateOfBirth());
+        pharmacist.setContactNumber(dto.getContactNumber());
+        pharmacist.setGovernmentId(dto.getGovernmentId());
+        pharmacist.setPharmacyLicense(dto.getPharmacyLicense());
+        pharmacist.setDPharmaOrBPharmaCertificate(dto.getDPharmaOrBPharmaCertificate());
+        pharmacist.setStatePharmacyCouncilRegistration(dto.getStatePharmacyCouncilRegistration());
+        pharmacist.setDateOfJoining(dto.getDateOfJoining());
+        pharmacist.setDepartment(dto.getDepartment());
+        pharmacist.setBankAccountDetails(dto.getBankAccountDetails());
+        pharmacist.setAddress(dto.getAddress());
+        pharmacist.setEmailID(dto.getEmailID());
+        pharmacist.setPreviousEmploymentHistory(dto.getPreviousEmploymentHistory());
+        pharmacist.setExperienceCertificates(dto.getExperienceCertificates());
+        pharmacist.setEmergencyContactNumber(dto.getEmergencyContactNumber());
+        return pharmacist;
+    }
+
+    private PharmacistDTO mapEntityToDto(Pharmacist pharmacist) {
+        PharmacistDTO dto = new PharmacistDTO();
+        dto.setId(pharmacist.getId().toString());
+        dto.setPharmacistId(pharmacist.getPharmacistId());
+        dto.setRole(pharmacist.getRole());
+        dto.setFullName(pharmacist.getFullName());
+        dto.setGender(pharmacist.getGender());
+        dto.setQualification(pharmacist.getQualification());
+        dto.setDateOfBirth(pharmacist.getDateOfBirth());
+        dto.setContactNumber(pharmacist.getContactNumber());
+        dto.setGovernmentId(pharmacist.getGovernmentId());
+        dto.setPharmacyLicense(pharmacist.getPharmacyLicense());
+        dto.setDPharmaOrBPharmaCertificate(pharmacist.getDPharmaOrBPharmaCertificate());
+        dto.setStatePharmacyCouncilRegistration(pharmacist.getStatePharmacyCouncilRegistration());
+        dto.setDateOfJoining(pharmacist.getDateOfJoining());
+        dto.setDepartment(pharmacist.getDepartment());
+        dto.setBankAccountDetails(pharmacist.getBankAccountDetails());
+        dto.setAddress(pharmacist.getAddress());
+        dto.setEmailID(pharmacist.getEmailID());
+        dto.setPreviousEmploymentHistory(pharmacist.getPreviousEmploymentHistory());
+        dto.setExperienceCertificates(pharmacist.getExperienceCertificates());
+        dto.setEmergencyContactNumber(pharmacist.getEmergencyContactNumber());
+        return dto;
+    }
+
+    private String generatePharmacistId() {
+        return "PH_" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    }
+
+    private String generateStructuredPassword() {
+        String[] words = { "Pharma" };
+        String specialChars = "@#$%&*!?";
+        String digits = "0123456789";
+        SecureRandom random = new SecureRandom();
+
+        String word = words[random.nextInt(words.length)];
+        String capitalizedWord = word.substring(0, 1).toUpperCase() + word.substring(1);
+
+        char specialChar = specialChars.charAt(random.nextInt(specialChars.length()));
+        StringBuilder numberPart = new StringBuilder();
+        for (int i = 0; i < 3; i++) {
+            numberPart.append(digits.charAt(random.nextInt(digits.length())));
+        }
+        return capitalizedWord + specialChar + numberPart;
+    }
+}

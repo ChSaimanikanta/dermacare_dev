@@ -296,6 +296,7 @@ public class DoctorSaveDetailsServiceImpl implements DoctorSaveDetailsService {
                                                         .dose(med.getDose())
                                                         .duration(med.getDuration())
                                                         .food(med.getFood())
+                                                        .medicineType(med.getMedicineType())
                                                         .note(med.getNote())
                                                         .remindWhen(med.getRemindWhen())
                                                         .times(med.getTimes())
@@ -307,7 +308,8 @@ public class DoctorSaveDetailsServiceImpl implements DoctorSaveDetailsService {
                 )
                 .visitType(dto.getVisitType())
                 .visitDateTime(dto.getVisitDateTime())
-                .build();
+                .prescriptionPdf(dto.getPrescriptionPdf())
+                                .build();
     }
 
     private String decodeIfBase64(String base64String) {
@@ -410,6 +412,7 @@ public class DoctorSaveDetailsServiceImpl implements DoctorSaveDetailsService {
                                                         .dose(med.getDose())
                                                         .duration(med.getDuration())
                                                         .food(med.getFood())
+                                                        .medicineType(med.getMedicineType())
                                                         .note(med.getNote())
                                                         .remindWhen(med.getRemindWhen())
                                                         .times(med.getTimes())
@@ -548,5 +551,4 @@ public class DoctorSaveDetailsServiceImpl implements DoctorSaveDetailsService {
                     HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
     }
-
 }

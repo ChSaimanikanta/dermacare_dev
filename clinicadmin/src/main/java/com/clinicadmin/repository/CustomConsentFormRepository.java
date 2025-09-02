@@ -1,5 +1,6 @@
 package com.clinicadmin.repository;
 
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
@@ -11,4 +12,6 @@ public interface CustomConsentFormRepository extends MongoRepository<CustomConse
 	Optional<CustomConsentForm> findByHospitalIdAndConsentFormType(String hospitalId, String consentFormType);
 
 	Optional<CustomConsentForm> findByHospitalIdAndSubServiceid(String hospitalId, String subServiceid);
+
+	List<CustomConsentForm> findByHospitalId(String hospitalId);
 }

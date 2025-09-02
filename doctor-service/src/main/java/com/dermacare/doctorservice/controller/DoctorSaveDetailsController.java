@@ -69,7 +69,7 @@ public class DoctorSaveDetailsController {
         return ResponseEntity.status(response.getStatus()).body(response);
     }
     
-    @GetMapping("/doctorIn-progressDetails/{patientId}/{bookingId}")
+    @GetMapping("/doctor In-progressDetails/{patientId}/{bookingId}")
     public ResponseEntity<Response> getInProgressDetails(
             @PathVariable String patientId,
             @PathVariable String bookingId) {
@@ -77,6 +77,5 @@ public class DoctorSaveDetailsController {
                 service.getInProgressDetails(patientId, bookingId)
         );
     }
-
 
 }

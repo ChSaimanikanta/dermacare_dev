@@ -11,4 +11,6 @@ public interface CustomConsentFormService {
 	Response getProcedureConsentForm(String hospitalId, String subServiceId);
 
 	Response getConsentForm(String hospitalId, String consentFormType);
+
+	Response getAllConsentFormsByHospital(String hospitalId);
 }

@@ -27,7 +27,6 @@ import com.AdminService.dto.ClinicDTO;
 import com.AdminService.dto.CustomerDTO;
 import com.AdminService.dto.DoctorsDTO;
 import com.AdminService.dto.DoctortInfo;
-import com.AdminService.dto.QuestionAnswerDTO;
 import com.AdminService.dto.ServicesDto;
 import com.AdminService.dto.SubServicesDto;
 import com.AdminService.dto.SubServicesInfoDto;
@@ -35,8 +34,6 @@ import com.AdminService.dto.UpdateClinicCredentials;
 import com.AdminService.entity.Admin;
 import com.AdminService.entity.Clinic;
 import com.AdminService.entity.ClinicCredentials;
-import com.AdminService.entity.QuestionAnswer;
-import com.AdminService.entity.QuetionsAndAnswerForAddClinic;
 import com.AdminService.feign.BookingFeign;
 import com.AdminService.feign.ClinicAdminFeign;
 import com.AdminService.feign.CssFeign;
@@ -44,13 +41,13 @@ import com.AdminService.feign.CustomerFeign;
 import com.AdminService.repository.AdminRepository;
 import com.AdminService.repository.ClinicCredentialsRepository;
 import com.AdminService.repository.ClinicRep;
-import com.AdminService.repository.QuetionsAndAnswerForAddClinicRepository;
 import com.AdminService.util.ExtractFeignMessage;
 import com.AdminService.util.Response;
 import com.AdminService.util.ResponseStructure;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import feign.FeignException;
+import feign.FeignException.FeignClientException;
 @Service
 public class AdminServiceImpl implements AdminService {
 
@@ -78,6 +75,8 @@ public class AdminServiceImpl implements AdminService {
 	@Autowired
 
 	private BookingFeign bookingFeign;
+	
+	
 //	@Autowired
 //	private QuetionsAndAnswerForAddClinicRepository quetionsAndAnswerForAddClinicRepository;
 
@@ -218,19 +217,22 @@ public class AdminServiceImpl implements AdminService {
 
 	        if (existingClinic != null) {
 
-	            response.setMessage("ContactNumber is already exist");
+	            response.setMessage("ContactNumber already exists");
 
 	            response.setSuccess(false);
 
-	            response.setStatus(409);
+	            response.setStatus(409); 
+	            
+	            
 
 	            return response;
 
 	        }
 	        Clinic savedClinic = new Clinic();
+	        //List<Branch> branch=new List<Branch>();
 
 	        savedClinic.setName(clinic.getName());
-
+	    
 	        savedClinic.setHospitalId(generateHospitalId()); // Generate new hospitalId
 
 	        savedClinic.setAddress(clinic.getAddress());
@@ -266,9 +268,8 @@ public class AdminServiceImpl implements AdminService {
 	        savedClinic.setWalkthrough(clinic.getWalkthrough());
 	        savedClinic.setNabhScore(clinic.getNabhScore());
 	        savedClinic.setBranch(clinic.getBranch());
+	       
 	        
-
-
 
 	        // Decode hospitalLogo
 
@@ -634,7 +635,7 @@ public class AdminServiceImpl implements AdminService {
 	            clnc.setWalkthrough(clinic.getWalkthrough());
 	            clnc.setNabhScore(clinic.getNabhScore());
 	            clnc.setBranch(clinic.getBranch());
-
+ 	           
 	            // Hospital Logo
 
 	            clnc.setHospitalLogo(
@@ -642,7 +643,6 @@ public class AdminServiceImpl implements AdminService {
 	                clinic.getHospitalLogo() != null ? Base64.getEncoder().encodeToString(clinic.getHospitalLogo()) : ""
 
 	            );
-
 
 
 	            // Hospital Documents (single)
@@ -821,16 +821,7 @@ public class AdminServiceImpl implements AdminService {
 
 
 
-
-
-
-
-
-
 	@Override
-
-	
-
 	public Response getAllClinics() {
 
 	    Response response = new Response();
@@ -886,9 +877,7 @@ public class AdminServiceImpl implements AdminService {
 	                clnc.setWalkthrough(clinic.getWalkthrough());
 	                clnc.setNabhScore(clinic.getNabhScore());
 	                clnc.setBranch(clinic.getBranch());
-
-
-
+	                
 	                // Hospital Logo
 
 	                clnc.setHospitalLogo(
@@ -1188,9 +1177,7 @@ public class AdminServiceImpl implements AdminService {
 	                }
 
 	            }
-
-
-
+                 
 	            // Hospital Logo
 
 	            if (clinic.getHospitalLogo() != null && !clinic.getHospitalLogo().isEmpty()) {
@@ -1379,8 +1366,8 @@ public class AdminServiceImpl implements AdminService {
 	            savedClinic.setLongitude(clinic.getLongitude());
 	            if (clinic.getWalkthrough() != null) savedClinic.setWalkthrough(clinic.getWalkthrough());
 	            savedClinic.setNabhScore(clinic.getNabhScore());
-	            if (clinic.getBranch() != null) savedClinic.setBranch(clinic.getBranch());
-
+	            savedClinic.setBranch(clinic.getBranch());
+	         
 
 
 	            // Consultation Expiration
@@ -2395,7 +2382,7 @@ public class AdminServiceImpl implements AdminService {
 
     	try {
 
-    		ResponseEntity<Response> res = cssFeign.getSubServiceByIdCategory(categoryId);
+    		ResponseEntity<Response> res = cssFeign.getSubServiceInfoByIdCategory(categoryId);
 
     		return res.getBody();
 
@@ -2425,7 +2412,7 @@ public class AdminServiceImpl implements AdminService {
 
     	try {
 
-    		ResponseEntity<Response> res = cssFeign.getSubServicesByServiceId(serviceId);
+    		ResponseEntity<Response> res = cssFeign.getSubServicesInfoByServiceId(serviceId);
 
     		return res.getBody();
 
@@ -2549,7 +2536,7 @@ public class AdminServiceImpl implements AdminService {
 
     	try {
 
-    		ResponseEntity<Response> res = cssFeign.getAllSubServices();
+    		ResponseEntity<Response> res = cssFeign.getAllSubServicesInfo();
 
     		return res.getBody();
 
@@ -3210,7 +3197,7 @@ public class AdminServiceImpl implements AdminService {
   	            dto.setLatitude(clinic.getLatitude());
   	            dto.setLongitude(clinic.getLongitude());
   	            dto.setNabhScore(clinic.getNabhScore());
-  	            dto.setBranch(clinic.getBranch());
+  	         
   	            dto.setWalkthrough(clinic.getWalkthrough());
 
   	            dto.setInstagramHandle(clinic.getInstagramHandle());
@@ -3232,6 +3219,122 @@ public class AdminServiceImpl implements AdminService {
   	    }
   	    return response;
   	}
+  	
+  	
+  	///PROCEDURE CRUD
+  	
+  	@Override
+	public ResponseEntity<ResponseStructure<SubServicesDto>> addService(String subServiceId, SubServicesDto dto) {
+		try {
+			ResponseEntity<ResponseStructure<SubServicesDto>> response = cssFeign.addService(subServiceId, dto);
+			return ResponseEntity.status(response.getBody().getStatusCode()).body(response.getBody());
+
+		} catch (FeignClientException ex) {
+			return buildErrorResponse(ex.getMessage(), ex.status());
+		} catch (FeignException e) {
+			return buildErrorResponse(ExtractFeignMessage.clearMessage(e), HttpStatus.INTERNAL_SERVER_ERROR.value());
+		}
+	}
+
+
+	@Override
+	public ResponseEntity<ResponseStructure<SubServicesDto>> getSubServiceByServiceId(String subServiceId) {
+
+		try {
+			ResponseEntity<ResponseStructure<SubServicesDto>> response = cssFeign
+					.getSubServiceByServiceId(subServiceId);
+			return ResponseEntity.status(response.getBody().getStatusCode()).body(response.getBody());}
+
+		catch (FeignException e) {
+			return buildErrorResponse(ExtractFeignMessage.clearMessage(e), HttpStatus.INTERNAL_SERVER_ERROR.value());
+		}
+
+	}
+
+	@Override
+	public ResponseEntity<ResponseStructure<SubServicesDto>> deleteSubService(String hospitalId, String subServiceId) {
+		try {
+			ResponseEntity<ResponseStructure<SubServicesDto>> response = cssFeign.deleteSubService(hospitalId,
+					subServiceId);
+			return ResponseEntity.status(response.getBody().getStatusCode()).body(response.getBody());}
+
+		catch (FeignException e) {
+			return buildErrorResponse(ExtractFeignMessage.clearMessage(e), HttpStatus.INTERNAL_SERVER_ERROR.value());
+		}
+	}
+
+	@Override
+	public ResponseEntity<ResponseStructure<SubServicesDto>> updateBySubServiceId(String hospitalId, String serviceId,
+			SubServicesDto domainServices) {
+		try {
+			ResponseEntity<ResponseStructure<SubServicesDto>> response = cssFeign.updateBySubServiceId(hospitalId,
+					serviceId, domainServices);
+			return ResponseEntity.status(response.getBody().getStatusCode()).body(response.getBody());
+
+		}catch (FeignException e) {
+			return buildErrorResponse(ExtractFeignMessage.clearMessage(e), HttpStatus.INTERNAL_SERVER_ERROR.value());
+		}
+	}
+
+	@Override
+	public ResponseEntity<ResponseStructure<SubServicesDto>> getSubServiceByServiceId(String hospitalId,
+			String subServiceId) {
+		try {
+			ResponseEntity<ResponseStructure<SubServicesDto>> response = cssFeign
+					.getSubServiceByServiceId(hospitalId, subServiceId);
+
+			return ResponseEntity.status(HttpStatus.OK).body(response.getBody());
+
+		} catch (FeignException e) {
+			return buildErrorResponse(ExtractFeignMessage.clearMessage(e), HttpStatus.INTERNAL_SERVER_ERROR.value());
+		}
+	}
+	
+	@Override
+	public ResponseEntity<ResponseStructure<List<SubServicesDto>>> getSubServiceByHospitalId(String hospitalId) {
+	    try {
+	        ResponseEntity<ResponseStructure<List<SubServicesDto>>> response =
+	        		cssFeign.getSubServiceByHospitalId(hospitalId); // ✅ FIXED here
+
+	        return ResponseEntity.status(HttpStatus.OK).body(response.getBody());
+
+	    } catch (FeignException e) {
+	        return buildErrorResponseList(ExtractFeignMessage.clearMessage(e), HttpStatus.INTERNAL_SERVER_ERROR.value());
+	    }
+	}
+
+	// === Helper methods ===
+
+	private ResponseEntity<ResponseStructure<SubServicesDto>> buildErrorResponse(String message, int statusCode) {
+		ResponseStructure<SubServicesDto> errorResponse = ResponseStructure.<SubServicesDto>builder().data(null)
+				.message(extractCleanMessage(message)).httpStatus(HttpStatus.valueOf(statusCode)).statusCode(statusCode)
+				.build();
+		return ResponseEntity.status(statusCode).body(errorResponse);
+	}
+
+	private ResponseEntity<ResponseStructure<List<SubServicesDto>>> buildErrorResponseList(String message,
+			int statusCode) {
+		ResponseStructure<List<SubServicesDto>> errorResponse = ResponseStructure.<List<SubServicesDto>>builder()
+				.data(null) // <-- changed from null to empty list
+				.message(extractCleanMessage(message)).httpStatus(HttpStatus.valueOf(statusCode)).statusCode(statusCode)
+				.build();
+		return ResponseEntity.status(statusCode).body(errorResponse);
+	}
+
+	private String extractCleanMessage(String rawMessage) {
+		// Try to extract the "message" value from JSON string if included
+		try {
+			int msgStart = rawMessage.indexOf("\"message\":\"");
+			if (msgStart != -1) {
+				int start = msgStart + 10;
+				int end = rawMessage.indexOf("\"", start);
+				return rawMessage.substring(start, end);
+			}
+		} catch (Exception ignored) {
+		}
+		return rawMessage;
+	}
+	
 
 }
 

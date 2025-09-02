@@ -15,5 +15,5 @@ public class CustomConsentFormDTO {
 	private String subServiceid;
 	private String subServiceName;
 	private String consentFormType; // Generic or procedureConsent (1,2)
-	private List<ConsentFormQuestionAndAnswers> consentFormQuetions;
+	private List<QuestionHeading> consentFormQuestions;
 }

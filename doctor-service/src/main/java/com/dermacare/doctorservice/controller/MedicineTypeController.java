@@ -1,0 +1,30 @@
+package com.dermacare.doctorservice.controller;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import com.dermacare.doctorservice.dto.MedicineTypeDTO;
+import com.dermacare.doctorservice.dto.Response;
+import com.dermacare.doctorservice.service.MedicineTypeService;
+
+@RestController
+@RequestMapping("/doctors")
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
+public class MedicineTypeController {
+
+    @Autowired
+    private MedicineTypeService service; // ✅ Autowired instead of final + constructor
+
+    @PostMapping("/search-or-add")
+    public ResponseEntity<Response> searchOrAddMedicineType(@RequestBody MedicineTypeDTO dto) {
+        Response response = service.searchOrAddMedicineType(dto);
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
+
+    @GetMapping("/getMedicineTypes/{clinicId}")
+    public ResponseEntity<Response> getMedicineTypes(@PathVariable String clinicId) {
+        Response response = service.getMedicineTypesByClinicId(clinicId);
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
+}

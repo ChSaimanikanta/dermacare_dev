@@ -1,5 +1,7 @@
 package com.clinicadmin.sevice.impl;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -13,7 +15,10 @@ import com.clinicadmin.feignclient.ServiceFeignClient;
 import com.clinicadmin.repository.CustomConsentFormRepository;
 import com.clinicadmin.service.CustomConsentFormService;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
+@Slf4j
 public class CustomConsentFormServiceImpl implements CustomConsentFormService {
 
     @Autowired
@@ -22,330 +27,238 @@ public class CustomConsentFormServiceImpl implements CustomConsentFormService {
     @Autowired
     private ServiceFeignClient serviceFeignClient;
 
+    // ------------------------------- Add Consent Form -------------------------------
     @Override
     public Response addCustomConsentForm(String hospitalId, String consentFormType, CustomConsentFormDTO dto) {
         Response response = new Response();
 
-        // -------------------------------
         // Basic Validations
-        // -------------------------------
         if (hospitalId == null || hospitalId.trim().isEmpty()) {
-            response.setSuccess(false);
-            response.setMessage("Hospital ID cannot be null or empty");
-            response.setStatus(400);
-            return response;
+            return buildErrorResponse("Hospital ID cannot be null or empty", 400);
         }
-
-        if (consentFormType == null || (!consentFormType.equals("1") && !consentFormType.equals("2"))) {
-            response.setSuccess(false);
-            response.setMessage("Invalid Consent Form Type. Allowed values: 1 (Generic), 2 (Procedure)");
-            response.setStatus(400);
-            return response;
+        if (!isValidConsentFormType(consentFormType)) {
+            return buildErrorResponse("Invalid Consent Form Type. Allowed values: 1 (Generic), 2 (Procedure)", 400);
         }
-//
-//        if (dto == null || dto.getConsentFormQuetions() == null || dto.getConsentFormQuetions().isEmpty()) {
-//            response.setSuccess(false);
-//            response.setMessage("Consent form questions cannot be empty");
-//            response.setStatus(400);
-//            return response;
-//        }
+        if (dto == null || dto.getConsentFormQuestions() == null || dto.getConsentFormQuestions().isEmpty()) {
+            return buildErrorResponse("Consent form questions cannot be empty", 400);
+        }
 
         try {
-            // -------------------------------
-            // Generic Consent Form (only one allowed per hospital)
-            // -------------------------------
+            // Generic Consent Form (only one per hospital)
             if (consentFormType.equals("1")) {
-                boolean exists = customConsentFormRepository
-                        .findByHospitalIdAndConsentFormType(hospitalId, "1")
-                        .isPresent();
-
-                if (exists) {
-                    response.setSuccess(false);
-                    response.setMessage("Generic Consent Form already exists for this hospital");
-                    response.setStatus(409); // Conflict
-                    return response;
+                if (customConsentFormRepository.findByHospitalIdAndConsentFormType(hospitalId, "1").isPresent()) {
+                    return buildErrorResponse("Generic Consent Form already exists for this hospital", 409);
                 }
 
                 CustomConsentForm newForm = new CustomConsentForm();
-                newForm.setConsentFormType(consentFormType);
                 newForm.setHospitalId(hospitalId);
-                newForm.setConsentFormQuetions(dto.getConsentFormQuetions());
-
+                newForm.setConsentFormType(consentFormType);
+                newForm.setConsentFormQuestions(dto.getConsentFormQuestions());                
                 CustomConsentForm savedForm = customConsentFormRepository.save(newForm);
+                CustomConsentFormDTO savedDTO =new CustomConsentFormDTO();
+                savedDTO.setId(savedForm.getId());
+                savedDTO.setHospitalId(savedForm.getHospitalId());
+                savedDTO.setConsentFormType(savedForm.getConsentFormType());
+                savedDTO.setConsentFormQuestions(savedForm.getConsentFormQuestions());
 
-                CustomConsentFormDTO resDTO = mapToDTO(savedForm);
-                response.setSuccess(true);
-                response.setData(resDTO);
-                response.setMessage("Generic Consent Questions added successfully");
-                response.setStatus(200);
+                return buildSuccessResponse(savedDTO, "Generic Consent Questions added successfully");
             }
 
-            // -------------------------------
             // Procedure Consent Form (only one per subService)
-            // -------------------------------
-            else if (consentFormType.equals("2")) {
+            else {
                 if (dto.getSubServiceid() == null) {
-                    response.setSuccess(false);
-                    response.setMessage("SubService ID is required for Procedure Consent Form");
-                    response.setStatus(400);
-                    return response;
+                    return buildErrorResponse("SubService ID is required for Procedure Consent Form", 400);
                 }
 
-                ResponseEntity<ResponseStructure<SubServicesDto>> subServiceResponse =
-                        serviceFeignClient.getSubServiceByServiceId(hospitalId, dto.getSubServiceid());
-
-                if (subServiceResponse == null || subServiceResponse.getBody() == null || subServiceResponse.getBody().getData() == null) {
-                    response.setSuccess(false);
-                    response.setMessage("SubService not found for ID: " + dto.getSubServiceid());
-                    response.setStatus(404);
-                    return response;
+                SubServicesDto subDTO = validateAndGetSubService(hospitalId, dto.getSubServiceid());
+                if (subDTO == null) {
+                    return buildErrorResponse("SubService not found for ID: " + dto.getSubServiceid(), 404);
                 }
 
-                SubServicesDto subDTO = subServiceResponse.getBody().getData();
-
-                boolean exists = customConsentFormRepository
-                        .findByHospitalIdAndSubServiceid(hospitalId, subDTO.getSubServiceId())
-                        .isPresent();
-
-                if (exists) {
-                    response.setSuccess(false);
-                    response.setMessage("Procedure Consent Form already exists for SubService: " + subDTO.getSubServiceName());
-                    response.setStatus(409); // Conflict
-                    return response;
+                if (customConsentFormRepository.findByHospitalIdAndSubServiceid(hospitalId, subDTO.getSubServiceId()).isPresent()) {
+                    return buildErrorResponse("Procedure Consent Form already exists for SubService: " + subDTO.getSubServiceName(), 409);
                 }
 
-                CustomConsentForm newForm = new CustomConsentForm();
-                newForm.setHospitalId(hospitalId);
-                newForm.setConsentFormType(consentFormType);
-                newForm.setSubServiceid(subDTO.getSubServiceId());
-                newForm.setSubServiceName(subDTO.getSubServiceName());
-                newForm.setConsentFormQuetions(dto.getConsentFormQuetions());
-
+                CustomConsentForm newForm = new CustomConsentForm(null, hospitalId, subDTO.getSubServiceId(), subDTO.getSubServiceName(),
+                        consentFormType, dto.getConsentFormQuestions());
                 CustomConsentForm savedForm = customConsentFormRepository.save(newForm);
 
-                CustomConsentFormDTO resDTO = mapToDTO(savedForm);
-                response.setSuccess(true);
-                response.setData(resDTO);
-                response.setMessage("Procedure Consent Questions added successfully");
-                response.setStatus(200);
+                return buildSuccessResponse(mapToDTO(savedForm), "Procedure Consent Questions added successfully");
             }
         } catch (Exception ex) {
-            response.setSuccess(false);
-            response.setMessage("Error while saving Consent Form: " + ex.getMessage());
-            response.setStatus(500);
+            log.error("Error while saving Consent Form", ex);
+            return buildErrorResponse("Error while saving Consent Form: " + ex.getMessage(), 500);
         }
-
-        return response;
     }
 
-    //------------------ helper method to map entity → DTO---------------------------------------------------
-    
-    private CustomConsentFormDTO mapToDTO(CustomConsentForm form) {
-        CustomConsentFormDTO dto = new CustomConsentFormDTO();
-        dto.setId(form.getId());
-        dto.setHospitalId(form.getHospitalId());
-        dto.setConsentFormType(form.getConsentFormType());
-        dto.setConsentFormQuetions(form.getConsentFormQuetions());
-        dto.setSubServiceid(form.getSubServiceid());
-        dto.setSubServiceName(form.getSubServiceName());
-        return dto;
-    }
-    
+    // ------------------------------- Update Consent Form -------------------------------
     @Override
     public Response updateCustomConsentForm(String hospitalId, String consentFormType, CustomConsentFormDTO dto) {
         Response response = new Response();
 
-        // -------------------------------
         // Basic Validations
-        // -------------------------------
         if (hospitalId == null || hospitalId.trim().isEmpty()) {
-            response.setSuccess(false);
-            response.setMessage("Hospital ID cannot be null or empty");
-            response.setStatus(400);
-            return response;
+            return buildErrorResponse("Hospital ID cannot be null or empty", 400);
         }
-
-        if (consentFormType == null || (!consentFormType.equals("1") && !consentFormType.equals("2"))) {
-            response.setSuccess(false);
-            response.setMessage("Invalid Consent Form Type. Allowed values: 1 (Generic), 2 (Procedure)");
-            response.setStatus(400);
-            return response;
+        if (!isValidConsentFormType(consentFormType)) {
+            return buildErrorResponse("Invalid Consent Form Type. Allowed values: 1 (Generic), 2 (Procedure)", 400);
         }
-
-        if (dto == null || dto.getConsentFormQuetions() == null || dto.getConsentFormQuetions().isEmpty()) {
-            response.setSuccess(false);
-            response.setMessage("Consent form questions cannot be empty");
-            response.setStatus(400);
-            return response;
+        if (dto == null || dto.getConsentFormQuestions() == null || dto.getConsentFormQuestions().isEmpty()) {
+            return buildErrorResponse("Consent form questions cannot be empty", 400);
         }
 
         try {
-            // -------------------------------
-            // Update Generic Consent Form
-            // -------------------------------
             if (consentFormType.equals("1")) {
-                CustomConsentForm existingForm = customConsentFormRepository
-                        .findByHospitalIdAndConsentFormType(hospitalId, "1")
-                        .orElse(null);
-
+                CustomConsentForm existingForm = customConsentFormRepository.findByHospitalIdAndConsentFormType(hospitalId, "1").orElse(null);
                 if (existingForm == null) {
-                    response.setSuccess(false);
-                    response.setMessage("Generic Consent Form not found for this hospital");
-                    response.setStatus(404);
-                    return response;
+                    return buildErrorResponse("Generic Consent Form not found for this hospital", 404);
                 }
 
-                existingForm.setConsentFormQuetions(dto.getConsentFormQuetions());
+                existingForm.setConsentFormQuestions(dto.getConsentFormQuestions());
                 CustomConsentForm updatedForm = customConsentFormRepository.save(existingForm);
-
-                CustomConsentFormDTO resDTO = mapToDTO(updatedForm);
-                response.setSuccess(true);
-                response.setData(resDTO);
-                response.setMessage("Generic Consent Form updated successfully");
-                response.setStatus(200);
-            }
-
-            // -------------------------------
-            // Update Procedure Consent Form
-            // -------------------------------
-            else if (consentFormType.equals("2")) {
+                return buildSuccessResponse(mapToDTO(updatedForm), "Generic Consent Form updated successfully");
+            } else {
                 if (dto.getSubServiceid() == null) {
-                    response.setSuccess(false);
-                    response.setMessage("SubService ID is required for Procedure Consent Form");
-                    response.setStatus(400);
-                    return response;
+                    return buildErrorResponse("SubService ID is required for Procedure Consent Form", 400);
                 }
 
-                ResponseEntity<ResponseStructure<SubServicesDto>> subServiceResponse =
-                        serviceFeignClient.getSubServiceByServiceId(hospitalId, dto.getSubServiceid());
-
-                if (subServiceResponse == null || subServiceResponse.getBody() == null || subServiceResponse.getBody().getData() == null) {
-                    response.setSuccess(false);
-                    response.setMessage("SubService not found for ID: " + dto.getSubServiceid());
-                    response.setStatus(404);
-                    return response;
+                SubServicesDto subDTO = validateAndGetSubService(hospitalId, dto.getSubServiceid());
+                if (subDTO == null) {
+                    return buildErrorResponse("SubService not found for ID: " + dto.getSubServiceid(), 404);
                 }
 
-                SubServicesDto subDTO = subServiceResponse.getBody().getData();
-
-                CustomConsentForm existingForm = customConsentFormRepository
-                        .findByHospitalIdAndSubServiceid(hospitalId, subDTO.getSubServiceId())
-                        .orElse(null);
-
+                CustomConsentForm existingForm = customConsentFormRepository.findByHospitalIdAndSubServiceid(hospitalId, subDTO.getSubServiceId()).orElse(null);
                 if (existingForm == null) {
-                    response.setSuccess(false);
-                    response.setMessage("Procedure Consent Form not found for SubService: " + subDTO.getSubServiceName());
-                    response.setStatus(404);
-                    return response;
+                    return buildErrorResponse("Procedure Consent Form not found for SubService: " + subDTO.getSubServiceName(), 404);
                 }
 
-                existingForm.setConsentFormQuetions(dto.getConsentFormQuetions());
+                existingForm.setConsentFormQuestions(dto.getConsentFormQuestions());
                 existingForm.setSubServiceName(subDTO.getSubServiceName());
 
                 CustomConsentForm updatedForm = customConsentFormRepository.save(existingForm);
-
-                CustomConsentFormDTO resDTO = mapToDTO(updatedForm);
-                response.setSuccess(true);
-                response.setData(resDTO);
-                response.setMessage("Procedure Consent Form updated successfully");
-                response.setStatus(200);
+                return buildSuccessResponse(mapToDTO(updatedForm), "Procedure Consent Form updated successfully");
             }
         } catch (Exception ex) {
-            response.setSuccess(false);
-            response.setMessage("Error while updating Consent Form: " + ex.getMessage());
-            response.setStatus(500);
+            log.error("Error while updating Consent Form", ex);
+            return buildErrorResponse("Error while updating Consent Form: " + ex.getMessage(), 500);
         }
-
-        return response;
     }
+
+    // ------------------------------- Get Consent Form -------------------------------
     @Override
     public Response getConsentForm(String hospitalId, String consentFormType) {
-        Response response = new Response();
-
-        try {
-            if (hospitalId == null || hospitalId.trim().isEmpty()) {
-                response.setSuccess(false);
-                response.setMessage("Hospital ID cannot be null or empty");
-                response.setStatus(400);
-                return response;
-            }
-
-            if (consentFormType == null || (!consentFormType.equals("1") && !consentFormType.equals("2"))) {
-                response.setSuccess(false);
-                response.setMessage("Invalid Consent Form Type. Allowed values: 1 (Generic), 2 (Procedure)");
-                response.setStatus(400);
-                return response;
-            }
-
-            // Generic Consent Form
-            if (consentFormType.equals("1")) {
-                CustomConsentForm form = customConsentFormRepository
-                        .findByHospitalIdAndConsentFormType(hospitalId, "1")
-                        .orElse(null);
-
-                if (form == null) {
-                    response.setSuccess(false);
-                    response.setMessage("Generic Consent Form not found for this hospital");
-                    response.setStatus(404);
-                    return response;
-                }
-
-                response.setSuccess(true);
-                response.setData(mapToDTO(form));
-                response.setMessage("Generic Consent Form retrieved successfully");
-                response.setStatus(200);
-            }
-        } catch (Exception ex) {
-            response.setSuccess(false);
-            response.setMessage("Error while fetching Consent Form: " + ex.getMessage());
-            response.setStatus(500);
+        if (hospitalId == null || hospitalId.trim().isEmpty()) {
+            return buildErrorResponse("Hospital ID cannot be null or empty", 400);
+        }
+        if (!isValidConsentFormType(consentFormType)) {
+            return buildErrorResponse("Invalid Consent Form Type. Allowed values: 1 (Generic), 2 (Procedure)", 400);
         }
 
-        return response;
+        try {
+            if (consentFormType.equals("1")) {
+                CustomConsentForm form = customConsentFormRepository.findByHospitalIdAndConsentFormType(hospitalId, "1").orElse(null);
+                if (form == null) {
+                    return buildErrorResponse("Generic Consent Form not found for this hospital", 404);
+                }
+                return buildSuccessResponse(mapToDTO(form), "Generic Consent Form retrieved successfully");
+            } else {
+                return buildErrorResponse("Use getProcedureConsentForm API for procedure type", 400);
+            }
+        } catch (Exception ex) {
+            log.error("Error while fetching Consent Form", ex);
+            return buildErrorResponse("Error while fetching Consent Form: " + ex.getMessage(), 500);
+        }
     }
 
     @Override
     public Response getProcedureConsentForm(String hospitalId, String subServiceId) {
-        Response response = new Response();
-
-        try {
-            if (hospitalId == null || hospitalId.trim().isEmpty()) {
-                response.setSuccess(false);
-                response.setMessage("Hospital ID cannot be null or empty");
-                response.setStatus(400);
-                return response;
-            }
-
-            if (subServiceId == null || subServiceId.trim().isEmpty()) {
-                response.setSuccess(false);
-                response.setMessage("SubService ID cannot be null or empty");
-                response.setStatus(400);
-                return response;
-            }
-
-            CustomConsentForm form = customConsentFormRepository
-                    .findByHospitalIdAndSubServiceid(hospitalId, subServiceId)
-                    .orElse(null);
-
-            if (form == null) {
-                response.setSuccess(false);
-                response.setMessage("Procedure Consent Form not found for SubService: " + subServiceId);
-                response.setStatus(404);
-                return response;
-            }
-
-            response.setSuccess(true);
-            response.setData(mapToDTO(form));
-            response.setMessage("Procedure Consent Form retrieved successfully");
-            response.setStatus(200);
-
-        } catch (Exception ex) {
-            response.setSuccess(false);
-            response.setMessage("Error while fetching Procedure Consent Form: " + ex.getMessage());
-            response.setStatus(500);
+        if (hospitalId == null || hospitalId.trim().isEmpty()) {
+            return buildErrorResponse("Hospital ID cannot be null or empty", 400);
+        }
+        if (subServiceId == null || subServiceId.trim().isEmpty()) {
+            return buildErrorResponse("SubService ID cannot be null or empty", 400);
         }
 
+        try {
+            CustomConsentForm form = customConsentFormRepository.findByHospitalIdAndSubServiceid(hospitalId, subServiceId).orElse(null);
+            if (form == null) {
+                return buildErrorResponse("Procedure Consent Form not found for SubService: " + subServiceId, 404);
+            }
+            return buildSuccessResponse(mapToDTO(form), "Procedure Consent Form retrieved successfully");
+        } catch (Exception ex) {
+            log.error("Error while fetching Procedure Consent Form", ex);
+            return buildErrorResponse("Error while fetching Procedure Consent Form: " + ex.getMessage(), 500);
+        }
+    }
+
+    // ------------------------------- Helper Methods -------------------------------
+    private boolean isValidConsentFormType(String type) {
+        return type != null && (type.equals("1") || type.equals("2"));
+    }
+
+    private SubServicesDto validateAndGetSubService(String hospitalId, String subServiceId) {
+        ResponseEntity<ResponseStructure<SubServicesDto>> subServiceResponse =
+                serviceFeignClient.getSubServiceByServiceId(hospitalId, subServiceId);
+
+        if (subServiceResponse != null && subServiceResponse.getBody() != null) {
+            return subServiceResponse.getBody().getData();
+        }
+        return null;
+    }
+
+    private CustomConsentFormDTO mapToDTO(CustomConsentForm form) {
+        return new CustomConsentFormDTO(
+                form.getId(),
+                form.getHospitalId(),
+                form.getSubServiceid(),
+                form.getSubServiceName(),
+                form.getConsentFormType(),
+                form.getConsentFormQuestions()
+        );
+    }
+
+    private Response buildErrorResponse(String message, int status) {
+        Response response = new Response();
+        response.setSuccess(false);
+        response.setMessage(message);
+        response.setStatus(status);
         return response;
+    }
+
+    private Response buildSuccessResponse(Object data, String message) {
+        Response response = new Response();
+        response.setSuccess(true);
+        response.setData(data);
+        response.setMessage(message);
+        response.setStatus(200);
+        return response;
+    }
+//    ---------------------------get all conset forms----------------------------------
+ // ------------------------------- Get All Consent Forms by Hospital -------------------------------
+    @Override
+    public Response getAllConsentFormsByHospital(String hospitalId) {
+        if (hospitalId == null || hospitalId.trim().isEmpty()) {
+            return buildErrorResponse("Hospital ID cannot be null or empty", 400);
+        }
+
+        try {
+            // Fetch all consent forms for the hospital
+            List<CustomConsentForm> forms = customConsentFormRepository.findByHospitalId(hospitalId);
+
+            if (forms == null || forms.isEmpty()) {
+                return buildErrorResponse("No Consent Forms found for Hospital ID: " + hospitalId, 404);
+            }
+
+            // Map entities to DTOs
+            List<CustomConsentFormDTO> formDTOs = forms.stream()
+                    .map(this::mapToDTO)
+                    .toList();
+
+            return buildSuccessResponse(formDTOs, "All Consent Forms retrieved successfully");
+        } catch (Exception ex) {
+            log.error("Error while fetching all Consent Forms for Hospital: {}", hospitalId, ex);
+            return buildErrorResponse("Error while fetching Consent Forms: " + ex.getMessage(), 500);
+        }
     }
 
 }

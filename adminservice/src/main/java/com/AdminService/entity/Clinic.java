@@ -4,6 +4,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.mapping.FieldType;
+
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -32,7 +34,7 @@ public class Clinic {
     private String website;
     private String licenseNumber;
     private String issuingAuthority;
-
+ 
     @Field(targetType = FieldType.BINARY)
     private byte[] contractorDocuments;
 
@@ -97,6 +99,7 @@ public class Clinic {
     private String walkthrough;
     private int nabhScore;
     private String branch;
+ 
 //    private int score;   
     // Social Media Handles
     private String instagramHandle;

@@ -1,0 +1,34 @@
+package com.AdminService.entity;
+
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor
+@AllArgsConstructor
+@Data
+@JsonIgnoreProperties(ignoreUnknown = true)
+@Document(collection="Branches")
+public class Branch {
+
+	@Id	
+	private String id;
+	private String clinicId;
+	private String branchId;
+	private String branchName;
+	private String address;
+	private String city;
+	private String contactNumber;
+	private String email;
+	private String latitude;
+	private String longitude;
+	private String virtualClinicTour;
+}
+
+
+
+
