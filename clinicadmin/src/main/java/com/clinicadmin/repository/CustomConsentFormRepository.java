@@ -9,7 +9,11 @@ import com.clinicadmin.entity.CustomConsentForm;
 
 @Repository
 public interface CustomConsentFormRepository extends MongoRepository<CustomConsentForm, String> {
-	Optional<CustomConsentForm> findByHospitalIdAndConsentFormType(String hospitalId, String consentFormType);
+	// For generic consent form (only one expected)
+    Optional<CustomConsentForm> findByHospitalIdAndConsentFormType(String hospitalId, String consentFormType);
+
+    // For procedure consent forms (multiple possible)
+    List<CustomConsentForm> findAllByHospitalIdAndConsentFormType(String hospitalId, String consentFormType);
 
 	Optional<CustomConsentForm> findByHospitalIdAndSubServiceid(String hospitalId, String subServiceid);
 
