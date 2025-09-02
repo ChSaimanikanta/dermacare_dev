@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @Data
 public class ConsentFormQuestionAndAnswers {
 	private String question;
-	private boolean answer;
+	private boolean answer=true;
 
 }
