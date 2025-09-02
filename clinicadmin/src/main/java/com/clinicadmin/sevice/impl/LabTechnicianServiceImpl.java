@@ -232,4 +232,37 @@ public class LabTechnicianServiceImpl implements LabTechnicianService {
         }
         return sb.toString();
     }
+ // ✅ Get all Lab Technicians by Clinic Id
+    @Override
+    public ResponseStructure<List<LabTechnicianRequestDTO>> getLabTechniciansByClinic(String clinicId) {
+        List<LabTechnicianEntity> entities = repository.findByClinicId(clinicId);
+
+        List<LabTechnicianRequestDTO> dtos = entities.stream()
+                .map(LabTechnicianMapper::toDTO)
+                .collect(Collectors.toList());
+
+        return ResponseStructure.buildResponse(
+                dtos,
+                dtos.isEmpty() ? "No lab technicians found for clinic " + clinicId
+                               : "Lab technicians retrieved successfully",
+                HttpStatus.OK,
+                HttpStatus.OK.value()
+        );
+    }
+
+    // ✅ Get single Lab Technician by Clinic Id and Technician Id
+    @Override
+    public ResponseStructure<LabTechnicianRequestDTO> getLabTechnicianByClinicAndId(String clinicId, String technicianId) {
+        LabTechnicianEntity entity = repository.findByClinicIdAndId(clinicId, technicianId)
+                .orElseThrow(() -> new RuntimeException(
+                        "Lab Technician not found with clinicId: " + clinicId + " and technicianId: " + technicianId));
+
+        LabTechnicianRequestDTO dto = LabTechnicianMapper.toDTO(entity);
+
+        return ResponseStructure.<LabTechnicianRequestDTO>builder()
+                .statusCode(200)
+                .message("Lab Technician data fetched successfully")
+                .data(dto)
+                .build();
+    }
 }

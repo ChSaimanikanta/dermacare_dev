@@ -7,6 +7,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -99,7 +100,7 @@ public class BranchServiceImpl implements BranchService{
 	}
 
 	@Override
-	public Response getBranchById(String branchId) {
+	public ResponseEntity<?> getBranchById(String branchId) {
 		
 		  Response response = new Response();
 	        try {
@@ -119,7 +120,7 @@ public class BranchServiceImpl implements BranchService{
 	            response.setSuccess(false);
 	            response.setStatus(500);
 	        }
-	        return response;
+	        return ResponseEntity.status(response.getStatus()).body(response);
 	}
 
 	@Override
@@ -187,6 +188,28 @@ public class BranchServiceImpl implements BranchService{
 	        return response;
 	}
 
-	
+	@Override
+	public  ResponseEntity<?> getBranchByClinicId(String clinicId) {
+		
+		  Response response = new Response();
+	        try {
+	            List<Branch> branch = branchRepository.findByClinicId(clinicId);
+	            if (branch != null && !branch.isEmpty() ) {
+	                response.setMessage("Branch found");
+	                response.setSuccess(true);
+	                response.setStatus(200);
+	                response.setData(branch);
+	            } else {
+	                response.setMessage("Branch not found");
+	                response.setSuccess(false);
+	                response.setStatus(404);
+	            }
+	        } catch (Exception e) {
+	            response.setMessage("Error fetching branch: " + e.getMessage());
+	            response.setSuccess(false);
+	            response.setStatus(500);
+	        }
+	        return ResponseEntity.status(response.getStatus()).body(response);
+	}	
 
 }

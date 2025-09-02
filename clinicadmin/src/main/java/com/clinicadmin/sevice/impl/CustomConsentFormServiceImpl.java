@@ -160,8 +160,18 @@ public class CustomConsentFormServiceImpl implements CustomConsentFormService {
                 if (form == null) {
                     return buildErrorResponse("Generic Consent Form not found for this hospital", 404);
                 }
+                
                 return buildSuccessResponse(mapToDTO(form), "Generic Consent Form retrieved successfully");
-            } else {
+            }
+            else if(consentFormType.equals("2")) {
+            	 CustomConsentForm form = customConsentFormRepository.findByHospitalIdAndConsentFormType(hospitalId, "2").orElse(null);
+                 if (form == null) {
+                     return buildErrorResponse("Procedure Consent Form not found for this hospital", 404);
+                 }
+                 
+                 return buildSuccessResponse(mapToDTO(form), "Procedure Consent Form retrieved successfully");
+            }
+            else {
                 return buildErrorResponse("Use getProcedureConsentForm API for procedure type", 400);
             }
         } catch (Exception ex) {

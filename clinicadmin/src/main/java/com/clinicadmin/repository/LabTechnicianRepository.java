@@ -32,4 +32,8 @@ public interface LabTechnicianRepository extends MongoRepository<LabTechnicianEn
 	// ⚠️ Not recommended in real apps, but useful for random password generation
 	boolean existsByPassword(String password);
 
+	Optional<LabTechnicianEntity> findByClinicIdAndId(String clinicId, String technicianId);
+
+	List<LabTechnicianEntity> findByClinicId(String clinicId);
+
 }

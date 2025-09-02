@@ -17,7 +17,7 @@ import com.AdminService.service.BranchServiceImpl;
 import com.AdminService.util.Response;
 
 @RestController
-@RequestMapping("/branch")
+@RequestMapping("/admin")
 @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
 public class BranchController {
 
@@ -26,10 +26,9 @@ public class BranchController {
 
    
     @GetMapping("/getBranchById/{branchId}")
-    public Response getBranchById(@PathVariable String branchId) {
-        Response response = serviceImpl.getBranchById(branchId);
-        return response;
-    }
+    public ResponseEntity<?> getBranchById(@PathVariable String branchId) {
+        return serviceImpl.getBranchById(branchId);
+       }
 
     @GetMapping("/getAllBranches")
     public ResponseEntity<?> getAllBranches() {
@@ -64,6 +63,12 @@ public class BranchController {
         } else {
             return null;
         }
+    }
+    
+    @GetMapping("/getBranchByClinicId/{clinicId}")
+    public  ResponseEntity<?> getBranchByClinicId(@PathVariable String clinicId) {
+     return serviceImpl.getBranchByClinicId(clinicId);
+       
     }
 }
 

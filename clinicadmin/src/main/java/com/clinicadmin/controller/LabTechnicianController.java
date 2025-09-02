@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -95,6 +95,23 @@ public class LabTechnicianController {
     public ResponseEntity<ResponseStructure<String>> deleteLabTechnician(@PathVariable String id) {
         ResponseStructure<String> response = service.deleteLabTechnician(id);
         return ResponseEntity.status(response.getHttpStatus()).body(response);
+    }
+ // ✅ Get all Lab Technicians by Clinic Id
+    @GetMapping("/getLabTechniciansByClinicById/{clinicId}")
+    public ResponseEntity<ResponseStructure<List<LabTechnicianRequestDTO>>> getLabTechniciansByClinic(
+            @PathVariable String clinicId) {
+        ResponseStructure<List<LabTechnicianRequestDTO>> response = service.getLabTechniciansByClinic(clinicId);
+        return ResponseEntity.status(response.getStatusCode()).body(response);
+    }
+
+
+    // ✅ Get a single Lab Technician by Clinic Id and Technician Id
+    @GetMapping("/getLabTechnicianByIdAndClinicId/{clinicId}/{technicianId}")
+    public ResponseEntity<ResponseStructure<LabTechnicianRequestDTO>> getLabTechnicianByClinicAndId(
+            @PathVariable String clinicId,
+            @PathVariable String technicianId) {
+        ResponseStructure<LabTechnicianRequestDTO> response = service.getLabTechnicianByClinicAndId(clinicId, technicianId);
+        return ResponseEntity.status(response.getStatusCode()).body(response);
     }
     
     

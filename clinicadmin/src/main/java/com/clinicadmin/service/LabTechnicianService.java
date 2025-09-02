@@ -25,4 +25,8 @@ public interface LabTechnicianService {
     // ✅ Reset Password method
     ResponseStructure<String> resetPassword(String username, LabTechnicanRestPassword resetRequest);
 
+	ResponseStructure<LabTechnicianRequestDTO> getLabTechnicianByClinicAndId(String clinicId, String technicianId);
+
+	ResponseStructure<List<LabTechnicianRequestDTO>> getLabTechniciansByClinic(String clinicId);
+
 }

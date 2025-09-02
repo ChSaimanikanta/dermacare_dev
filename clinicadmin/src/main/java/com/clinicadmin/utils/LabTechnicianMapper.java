@@ -1,7 +1,5 @@
 package com.clinicadmin.utils;
 
-
-
 import java.util.Base64;
 
 import com.clinicadmin.dto.LabTechnicianRequestDTO;
@@ -48,9 +46,9 @@ public class LabTechnicianMapper {
         return entity;
     }
 
-    // Convert Entity -> ResponseDTO (decode Base64 back to string)
+    // Convert Entity -> RequestDTO (decode Base64 back to string)
     public static LabTechnicianRequestDTO toResponseDTO(LabTechnicianEntity entity) {
-    	LabTechnicianRequestDTO dto = new LabTechnicianRequestDTO();
+        LabTechnicianRequestDTO dto = new LabTechnicianRequestDTO();
         dto.setId(entity.getId());
         dto.setFullName(entity.getFullName());
         dto.setGender(entity.getGender());
@@ -88,5 +86,10 @@ public class LabTechnicianMapper {
         dto.setVaccinationStatus(entity.getVaccinationStatus());
         dto.setPreviousEmploymentHistory(entity.getPreviousEmploymentHistory());
         return dto;
+    }
+
+    // ✅ Alias method so service can use LabTechnicianMapper::toDTO
+    public static LabTechnicianRequestDTO toDTO(LabTechnicianEntity entity) {
+        return toResponseDTO(entity);
     }
 }

@@ -9,4 +9,8 @@ public class IdGenerator {
       
         return "WB_" + UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
     }
+
+    public static String generateSecurityStaffId() {
+        return "SEC_" + UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
+    }
 }

@@ -330,7 +330,7 @@ public class DoctorServiceImpl implements DoctorService {
 			doctor.setRecommendation(dto.isRecommendation());
 			doctor.setAssociatedWithIADVC(dto.isAssociatedWithIADVC());
 			doctor.setAssociationsOrMemberships(dto.getAssociationsOrMemberships());
-			doctor.setBranch(dto.getBranch());
+			doctor.setBranches(dto.getBranches());
 
 			Doctors updatedDoctor = doctorsRepository.save(doctor);
 

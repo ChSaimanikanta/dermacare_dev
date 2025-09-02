@@ -52,7 +52,7 @@ public class Doctors {
 	private String doctorSignature;
 	private boolean associatedWithIADVC;
 	private String associationsOrMemberships;
-	private String branch;
+	private List<String> branches;
 	private ConsultationType Consultation;
 
 }
