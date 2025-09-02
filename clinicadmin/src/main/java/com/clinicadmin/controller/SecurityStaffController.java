@@ -64,5 +64,5 @@ public class SecurityStaffController {
     public ResponseEntity<ResponseStructure<String>> deleteSecurityStaff(@PathVariable String staffId) {
         ResponseStructure<String> response = service.deleteSecurityStaff(staffId);
         return new ResponseEntity<>(response, response.getHttpStatus());
-    }
+    }
 }
