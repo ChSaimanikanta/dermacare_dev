@@ -45,8 +45,20 @@ public class CustomConsentFormServiceImpl implements CustomConsentFormService {
 		if (dto == null || dto.getConsentFormQuestions() == null || dto.getConsentFormQuestions().isEmpty()) {
 			return buildErrorResponse("Consent form questions cannot be empty", 400);
 		}
+		
 
 		try {
+		    dto.getConsentFormQuestions().forEach(heading -> {
+		        if (heading.getQuestionsAndAnswers() != null) {
+		            heading.getQuestionsAndAnswers().forEach(qa -> {
+		            	if (qa.isAnswer() ) {  
+		            	    qa.setAnswer(true);       
+		            	}
+
+		            });
+		        }
+		    });
+
 			// Generic Consent Form (only one per hospital)
 			if (consentFormType.equals("1")) {
 				if (customConsentFormRepository.findByHospitalIdAndConsentFormType(hospitalId, "1").isPresent()) {
@@ -62,6 +74,7 @@ public class CustomConsentFormServiceImpl implements CustomConsentFormService {
 				savedDTO.setId(savedForm.getId());
 				savedDTO.setHospitalId(savedForm.getHospitalId());
 				savedDTO.setConsentFormType(savedForm.getConsentFormType());
+				
 				savedDTO.setConsentFormQuestions(savedForm.getConsentFormQuestions());
 
 				return buildSuccessResponse(savedDTO, "Generic Consent Questions added successfully");
@@ -284,6 +297,25 @@ public class CustomConsentFormServiceImpl implements CustomConsentFormService {
 			log.error("Error while fetching all Consent Forms for Hospital: {}", hospitalId, ex);
 			return buildErrorResponse("Error while fetching Consent Forms: " + ex.getMessage(), 500);
 		}
+	}
+	// ------------------------------- Delete Consent Form by ID -------------------------------
+	@Override
+	public Response deleteConsentFormById(String formId) {
+	    if (formId == null || formId.trim().isEmpty()) {
+	        return buildErrorResponse("Consent Form ID cannot be null or empty", 400);
+	    }
+
+	    try {
+	        return customConsentFormRepository.findById(formId)
+	                .map(form -> {
+	                    customConsentFormRepository.deleteById(formId);
+	                    return buildSuccessResponse(null, "Consent Form deleted successfully");
+	                })
+	                .orElseGet(() -> buildErrorResponse("Consent Form not found for ID: " + formId, 404));
+	    } catch (Exception ex) {
+	        log.error("Error while deleting Consent Form with ID: {}", formId, ex);
+	        return buildErrorResponse("Error while deleting Consent Form: " + ex.getMessage(), 500);
+	    }
 	}
 
 }

@@ -22,7 +22,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/clinic-admin")
-@CrossOrigin(origins = { "http://localhost:3000", "http://localhost:3001"})
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
 @RequiredArgsConstructor
 public class SecurityStaffController {
 

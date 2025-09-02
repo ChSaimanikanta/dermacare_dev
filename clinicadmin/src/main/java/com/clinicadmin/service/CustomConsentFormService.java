@@ -13,4 +13,6 @@ public interface CustomConsentFormService {
 	Response getConsentForm(String hospitalId, String consentFormType);
 
 	Response getAllConsentFormsByHospital(String hospitalId);
+
+	Response deleteConsentFormById(String formId);
 }
