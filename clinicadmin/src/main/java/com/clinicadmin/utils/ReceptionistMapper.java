@@ -56,8 +56,8 @@ public class ReceptionistMapper {
         dto.setRole(entity.getRole());
         dto.setAddress(entity.getAddress());
         dto.setEmergencyContact(entity.getEmergencyContact());
-        dto.setUserName(entity.getUserName());
-        dto.setPassword(entity.getPassword());
+//        dto.setUserName(entity.getUserName());
+//        dto.setPassword(entity.getPassword());
         dto.setFullName(entity.getFullName());
         dto.setDateOfBirth(entity.getDateOfBirth());
         dto.setContactNumber(entity.getContactNumber());
@@ -86,9 +86,9 @@ public class ReceptionistMapper {
         if (dto.getClinicId() != null) entity.setClinicId(dto.getClinicId());
         if (dto.getRole() != null) entity.setRole(dto.getRole());
         if (dto.getAddress() != null) entity.setAddress(dto.getAddress());
-        if (dto.getEmergencyContact() != null) entity.setEmergencyContact(dto.getEmergencyContact());
-        if (dto.getUserName() != null) entity.setUserName(dto.getUserName());
-        if (dto.getPassword() != null) entity.setPassword(dto.getPassword());
+//        if (dto.getEmergencyContact() != null) entity.setEmergencyContact(dto.getEmergencyContact());
+//        if (dto.getUserName() != null) entity.setUserName(dto.getUserName());
+//        if (dto.getPassword() != null) entity.setPassword(dto.getPassword());
         if (dto.getFullName() != null) entity.setFullName(dto.getFullName());
         if (dto.getDateOfBirth() != null) entity.setDateOfBirth(dto.getDateOfBirth());
         if (dto.getContactNumber() != null) entity.setContactNumber(dto.getContactNumber());
@@ -116,8 +116,8 @@ public class ReceptionistMapper {
         entity.setRole(dto.getRole() != null ? dto.getRole() : "RECEPTIONIST");
         entity.setAddress(dto.getAddress());
         entity.setEmergencyContact(dto.getEmergencyContact());
-        entity.setUserName(dto.getUserName() != null ? dto.getUserName() : dto.getContactNumber());
-        entity.setPassword(dto.getPassword());
+//        entity.setUserName(dto.getUserName() != null ? dto.getUserName() : dto.getContactNumber());
+//        entity.setPassword(dto.getPassword());
         entity.setFullName(dto.getFullName());
         entity.setDateOfBirth(dto.getDateOfBirth());
         entity.setContactNumber(dto.getContactNumber());

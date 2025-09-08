@@ -62,21 +62,21 @@ public class ReceptionistController {
     public ResponseStructure<String> deleteReceptionist(@PathVariable String id) {
         return service.deleteReceptionist(id);
     }
-    @PostMapping("/receptionistLogin")
-    public ResponseEntity<OnBoardResponse> login(@RequestBody ReceptionistRequestDTO request) {
-        OnBoardResponse response = service.login(request.getUserName(), request.getPassword());
-        return ResponseEntity.status(response.getHttpStatus()).body(response);
-    }
+//    @PostMapping("/receptionistLogin")
+//    public ResponseEntity<OnBoardResponse> login(@RequestBody ReceptionistRequestDTO request) {
+//        OnBoardResponse response = service.login(request.getUserName(), request.getPassword());
+//        return ResponseEntity.status(response.getHttpStatus()).body(response);
+//    }
 
 
-    @PutMapping("/receptionistReset-password/{contactNumber}")
-    public ResponseEntity<ResponseStructure<String>> resetPassword(
-            @PathVariable String contactNumber,
-            @RequestBody ReceptionistRestPassword request) {
-
-        ResponseStructure<String> response = service.resetPassword(contactNumber, request);
-        return ResponseEntity.status(response.getHttpStatus()).body(response);
-    }
+//    @PutMapping("/receptionistReset-password/{contactNumber}")
+//    public ResponseEntity<ResponseStructure<String>> resetPassword(
+//            @PathVariable String contactNumber,
+//            @RequestBody ReceptionistRestPassword request) {
+//
+//        ResponseStructure<String> response = service.resetPassword(contactNumber, request);
+//        return ResponseEntity.status(response.getHttpStatus()).body(response);
+//    }
     
  // ✅ Get all receptionists by clinicId
     

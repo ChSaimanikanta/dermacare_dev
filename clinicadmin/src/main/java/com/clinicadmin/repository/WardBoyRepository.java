@@ -13,7 +13,7 @@ public interface WardBoyRepository extends MongoRepository<WardBoy, String> {
 
 	Optional<WardBoy> findByContactNumber(String contactNumber);
 
-	Optional<WardBoy> findByUsername(String contactNumber);
+//	Optional<WardBoy> findByUsername(String contactNumber);
 
 	
 	List<WardBoy> findAllByClinicId(String clinicId);

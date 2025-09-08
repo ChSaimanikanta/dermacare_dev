@@ -37,7 +37,7 @@ public class Nurse {
 	private String emailId;
 	private String previousEmploymentHistory;
 	private String experienceCertificates;
-	private boolean vaccinationStatus;
+	private String vaccinationStatus;
 	private InsuranceOrESIDetails insuranceOrESIdetails;
 	private String emergencyContactNumber;
 	private String shiftTimingOrAvailability;

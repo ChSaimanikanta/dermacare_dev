@@ -63,7 +63,7 @@ public class LabTechnicianRequestDTO {
     private String userName;
     private String password;
     
-    private String role;
+    private String role ="LAB_TECHNICIAN";
     
     private Map<String, List<String>> permissions;
 

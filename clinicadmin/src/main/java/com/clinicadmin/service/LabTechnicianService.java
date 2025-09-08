@@ -21,10 +21,10 @@ public interface LabTechnicianService {
     ResponseStructure<String> deleteLabTechnician(String id);
 
     // ✅ Login method
-    OnBoardResponse login(LabTechnicianLogin loginRequest);
+//    OnBoardResponse login(LabTechnicianLogin loginRequest);
 
     // ✅ Reset Password method
-    ResponseStructure<String> resetPassword(String username, LabTechnicanRestPassword resetRequest);
+//    ResponseStructure<String> resetPassword(String username, LabTechnicanRestPassword resetRequest);
 
 	ResponseStructure<LabTechnicianRequestDTO> getLabTechnicianByClinicAndId(String clinicId, String technicianId);
 

@@ -19,11 +19,11 @@ public interface ReceptionistService {
 
     ResponseStructure<String> deleteReceptionist(String id);
 
-    OnBoardResponse login(String userName, String password);
+//    OnBoardResponse login(String userName, String password);
 
 //  ResponseStructure<String> resetPassword(ReceptionistRestPassword request);
 
-    ResponseStructure<String> resetPassword(String contactNumber, ReceptionistRestPassword request);
+//    ResponseStructure<String> resetPassword(String contactNumber, ReceptionistRestPassword request);
 
     // ✅ Fetch all receptionists by clinicId
     ResponseStructure<List<ReceptionistRequestDTO>> getReceptionistsByClinic(String clinicId);

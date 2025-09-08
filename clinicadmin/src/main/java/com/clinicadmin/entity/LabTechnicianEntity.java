@@ -28,6 +28,7 @@ public class LabTechnicianEntity {
     private String fullName;
     private String gender;
     private String dateOfBirth;
+   
 
     @Indexed(unique = true)
     private String contactNumber;   // This will also be username
@@ -42,11 +43,11 @@ public class LabTechnicianEntity {
     private String emergencyContact;
 
     private BankAccountDetails bankAccountDetails; // 👈 embed bank account
+//
+//    private String userName;  // auto = contactNumber
+//    private String password;  // auto-generated
 
-    private String userName;  // auto = contactNumber
-    private String password;  // auto-generated
-
-    private String role;
+    private String role ="LAB_TECHNICIAN";
 
     // ✅ Permissions as nested object
     

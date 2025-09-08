@@ -26,6 +26,7 @@ import com.clinicadmin.dto.DoctorAvailabilityStatusDTO;
 import com.clinicadmin.dto.DoctorLoginDTO;
 import com.clinicadmin.dto.DoctorSlotDTO;
 import com.clinicadmin.dto.DoctorsDTO;
+import com.clinicadmin.dto.LoginBasedOnRoleDTO;
 import com.clinicadmin.dto.Response;
 import com.clinicadmin.dto.UpdateSlotRequestDTO;
 import com.clinicadmin.service.DoctorNoteService;
@@ -336,6 +337,14 @@ public class DoctorController {
 		@GetMapping("/clinics/getAllDoctorWithRespectiveClinics")
 		public ResponseEntity<Response> getAllDoctorWithRespectiveClinics(){
 			  Response response = doctorService.getAllDoctorsWithRespectiveClinic();
+			    return ResponseEntity.status(response.getStatus()).body(response);
+			
+		}
+		
+// --------------------Login By Using roles-------------------
+		@PostMapping("/loginUsingRoles")
+		public ResponseEntity<Response> loginUsingRoles(@RequestBody LoginBasedOnRoleDTO dto){
+			  Response response = doctorService.loginUsingRoles(dto);
 			    return ResponseEntity.status(response.getStatus()).body(response);
 			
 		}

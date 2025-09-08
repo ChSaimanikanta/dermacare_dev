@@ -13,11 +13,11 @@ public interface LabTechnicianRepository extends MongoRepository<LabTechnicianEn
 	// ✅ Find by contact number (unique, also acts as username)
 	Optional<LabTechnicianEntity> findByContactNumber(String contactNumber);
 
-	// ✅ Find by username (can be contactNumber or separate userName field)
-	Optional<LabTechnicianEntity> findByUserName(String userName);
-
-	// ✅ Login check (username + password)
-	Optional<LabTechnicianEntity> findByUserNameAndPassword(String userName, String password);
+//	// ✅ Find by username (can be contactNumber or separate userName field)
+//	Optional<LabTechnicianEntity> findByUserName(String userName);
+//
+//	// ✅ Login check (username + password)
+//	Optional<LabTechnicianEntity> findByUserNameAndPassword(String userName, String password);
 
 	// ✅ Use @Query to correctly map the field for department
 	@Query("{ 'departmentOrAssignedLab' : ?0 }")
@@ -30,7 +30,7 @@ public interface LabTechnicianRepository extends MongoRepository<LabTechnicianEn
 	boolean existsByContactNumber(String contactNumber);
 
 	// ⚠️ Not recommended in real apps, but useful for random password generation
-	boolean existsByPassword(String password);
+//	boolean existsByPassword(String password);
 
 	Optional<LabTechnicianEntity> findByClinicIdAndId(String clinicId, String technicianId);
 

@@ -20,6 +20,7 @@ public class SecurityStaff {
 	@Id
 	private String securityStaffId;
     private String clinicId;
+    private String role = "SECURITY";
     private String fullName;
 	private String dateOfBirth;
 	private String gender;

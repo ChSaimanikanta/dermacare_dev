@@ -41,20 +41,20 @@ public class LabTechnicianController {
     // -------------------------
     // LOGIN
     // -------------------------
-    @PostMapping("/login")
-    public ResponseEntity<OnBoardResponse> login(@RequestBody LabTechnicianLogin loginRequest) {
-        OnBoardResponse response = service.login(loginRequest);
-        return ResponseEntity.status(response.getHttpStatus()).body(response);
-    }
-
-    @PutMapping("/reset-password/{contactNumber}")
-    public ResponseEntity<ResponseStructure<String>> resetPassword(
-            @PathVariable String contactNumber,
-            @RequestBody LabTechnicanRestPassword request) {
-        
-        ResponseStructure<String> response = service.resetPassword(contactNumber, request);
-        return ResponseEntity.status(response.getHttpStatus()).body(response);
-    }
+//    @PostMapping("/login")
+//    public ResponseEntity<OnBoardResponse> login(@RequestBody LabTechnicianLogin loginRequest) {
+//        OnBoardResponse response = service.login(loginRequest);
+//        return ResponseEntity.status(response.getHttpStatus()).body(response);
+//    }
+//
+//    @PutMapping("/reset-password/{contactNumber}")
+//    public ResponseEntity<ResponseStructure<String>> resetPassword(
+//            @PathVariable String contactNumber,
+//            @RequestBody LabTechnicanRestPassword request) {
+//        
+//        ResponseStructure<String> response = service.resetPassword(contactNumber, request);
+//        return ResponseEntity.status(response.getHttpStatus()).body(response);
+//    }
 
 
 

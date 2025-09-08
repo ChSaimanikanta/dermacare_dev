@@ -1,19 +1,25 @@
 package com.clinicadmin.sevice.impl;
 
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.clinicadmin.dto.ReceptionistRequestDTO;
 import com.clinicadmin.dto.ResponseStructure;
 import com.clinicadmin.dto.SecurityStaffDTO;
+import com.clinicadmin.entity.DoctorLoginCredentials;
 import com.clinicadmin.entity.SecurityStaff;
+import com.clinicadmin.repository.DoctorLoginCredentialsRepository;
 import com.clinicadmin.repository.SecurityStaffRepository;
 import com.clinicadmin.service.SecurityStaffService;
 import com.clinicadmin.utils.IdGenerator;
+import com.clinicadmin.utils.ReceptionistMapper;
 import com.clinicadmin.utils.SecurityStaffMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -21,139 +27,129 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class SecurityStaffServiceImpl implements SecurityStaffService {
-   
+
 	@Autowired
-    private  SecurityStaffRepository repository;
+	private SecurityStaffRepository repository;
 
+	@Autowired
+	private DoctorLoginCredentialsRepository credentialsRepository;
 
-    @Override
-    public ResponseStructure<SecurityStaffDTO> addSecurityStaff(SecurityStaffDTO dto) {
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
-        // Check if contact number already exists
-        List<SecurityStaff> existingContacts = repository.findByContactNumber(dto.getContactNumber());
-        if (!existingContacts.isEmpty()) {
-            return ResponseStructure.buildResponse(
-                    null,
-                    "Contact number already exists",
-                    HttpStatus.CONFLICT,
-                    HttpStatus.CONFLICT.value()
-            );}
-dto.setSecurityStaffId(IdGenerator.generateSecurityStaffId());
-        SecurityStaff staff = SecurityStaffMapper.toEntity(dto);
-        SecurityStaff saved = repository.save(staff);
+	@Override
+	public ResponseStructure<SecurityStaffDTO> addSecurityStaff(SecurityStaffDTO dto) {
 
-        return ResponseStructure.buildResponse(
-                SecurityStaffMapper.toDTO(saved),
-                "Security staff added successfully",
-                HttpStatus.CREATED,
-                HttpStatus.CREATED.value()
-        );
-    }
+		// Check if contact number already exists
+		List<SecurityStaff> existingContacts = repository.findByContactNumber(dto.getContactNumber());
+		if (!existingContacts.isEmpty()) {
+			return ResponseStructure.buildResponse(null, "Contact number already exists", HttpStatus.CONFLICT,
+					HttpStatus.CONFLICT.value());
+		}
+		dto.setSecurityStaffId(IdGenerator.generateSecurityStaffId());
+		SecurityStaff staff = SecurityStaffMapper.toEntity(dto);
 
-    @Override
-    public ResponseStructure<SecurityStaff> updateSecurityStaff(SecurityStaff staff) {
-        Optional<SecurityStaff> existingOpt = repository.findById(staff.getSecurityStaffId());
-        if (existingOpt.isEmpty()) {
-            return ResponseStructure.buildResponse(
-                    null,
-                    "Security staff not found",
-                    HttpStatus.NOT_FOUND,
-                    HttpStatus.NOT_FOUND.value()
-            );
-        }
+		SecurityStaff saved = repository.save(staff);
 
-        List<SecurityStaff> contactOwners = repository.findByContactNumber(staff.getContactNumber());
-        boolean conflict = contactOwners.stream()
-                .anyMatch(s -> !s.getSecurityStaffId().equals(staff.getSecurityStaffId()));
+		String userName = saved.getContactNumber();
+		String rawPassword = generateStructuredPassword();
+		String encodedPassword = passwordEncoder.encode(rawPassword);
 
-        if (conflict) {
-            return ResponseStructure.buildResponse(
-                    null,
-                    "Contact number already exists",
-                    HttpStatus.CONFLICT,
-                    HttpStatus.CONFLICT.value()
-            );
-        }
+		DoctorLoginCredentials credentials = DoctorLoginCredentials.builder().staffId(saved.getSecurityStaffId())
+				.userName(userName).password(encodedPassword).hospitalId(saved.getClinicId()).role(saved.getRole())
+				.build();
+		credentialsRepository.save(credentials);
+		SecurityStaffDTO responseDTO = SecurityStaffMapper.toDTO(saved);
+		responseDTO.setUserName(userName);
+		responseDTO.setPassword(rawPassword); // expose only on create
+		return ResponseStructure.buildResponse(responseDTO, "Security staff added successfully", HttpStatus.CREATED,
+				HttpStatus.CREATED.value());
+	}
 
-        SecurityStaff existing = existingOpt.get();
+	@Override
+	public ResponseStructure<SecurityStaff> updateSecurityStaff(SecurityStaff staff) {
+		Optional<SecurityStaff> existingOpt = repository.findById(staff.getSecurityStaffId());
+		if (existingOpt.isEmpty()) {
+			return ResponseStructure.buildResponse(null, "Security staff not found", HttpStatus.NOT_FOUND,
+					HttpStatus.NOT_FOUND.value());
+		}
 
-        existing.setFullName(staff.getFullName());
-        existing.setDateOfBirth(staff.getDateOfBirth());
-        existing.setGender(staff.getGender());
-        existing.setContactNumber(staff.getContactNumber());
-        existing.setGovermentId(staff.getGovermentId());
-        existing.setDateOfJoining(staff.getDateOfJoining());
-        existing.setDepartment(staff.getDepartment());
-        existing.setAddress(staff.getAddress());
-        existing.setBankAccountDetails(staff.getBankAccountDetails());
-        existing.setPoliceVerification(staff.getPoliceVerification());
-        existing.setMedicalFitnessCertificate(staff.getMedicalFitnessCertificate());
-        existing.setEmailId(staff.getEmailId());
-        existing.setTraningOrGuardLicense(staff.getTraningOrGuardLicense());
-        existing.setPreviousEmployeeHistory(staff.getPreviousEmployeeHistory());
-        existing.setProfilePicture(staff.getProfilePicture());
+		List<SecurityStaff> contactOwners = repository.findByContactNumber(staff.getContactNumber());
+		boolean conflict = contactOwners.stream()
+				.anyMatch(s -> !s.getSecurityStaffId().equals(staff.getSecurityStaffId()));
 
-        SecurityStaff updated = repository.save(existing);
+		if (conflict) {
+			return ResponseStructure.buildResponse(null, "Contact number already exists", HttpStatus.CONFLICT,
+					HttpStatus.CONFLICT.value());
+		}
 
-        return ResponseStructure.buildResponse(
-                updated,
-                "Security staff updated successfully",
-                HttpStatus.OK,
-                HttpStatus.OK.value()
-        );
-    }
+		SecurityStaff existing = existingOpt.get();
 
-    @Override
-    public ResponseStructure<SecurityStaffDTO> getSecurityStaffById(String staffId) {
-        return repository.findById(staffId)
-                .map(staff -> ResponseStructure.buildResponse(
-                        SecurityStaffMapper.toDTO(staff),
-                        "Staff found",
-                        HttpStatus.OK,
-                        HttpStatus.OK.value()
-                ))
-                .orElse(ResponseStructure.buildResponse(
-                        null,
-                        "Staff not found",
-                        HttpStatus.NOT_FOUND,
-                        HttpStatus.NOT_FOUND.value()
-                ));
-    }
+		existing.setFullName(staff.getFullName());
+		existing.setDateOfBirth(staff.getDateOfBirth());
+		existing.setGender(staff.getGender());
+		existing.setContactNumber(staff.getContactNumber());
+		existing.setGovermentId(staff.getGovermentId());
+		existing.setDateOfJoining(staff.getDateOfJoining());
+		existing.setDepartment(staff.getDepartment());
+		existing.setAddress(staff.getAddress());
+		existing.setBankAccountDetails(staff.getBankAccountDetails());
+		existing.setPoliceVerification(staff.getPoliceVerification());
+		existing.setMedicalFitnessCertificate(staff.getMedicalFitnessCertificate());
+		existing.setEmailId(staff.getEmailId());
+		existing.setTraningOrGuardLicense(staff.getTraningOrGuardLicense());
+		existing.setPreviousEmployeeHistory(staff.getPreviousEmployeeHistory());
+		existing.setProfilePicture(staff.getProfilePicture());
 
-    @Override
-    public ResponseStructure<List<SecurityStaffDTO>> getAllByClinicId(String clinicId) {
-        List<SecurityStaff> staffList = repository.findByClinicId(clinicId);
+		SecurityStaff updated = repository.save(existing);
 
-        List<SecurityStaffDTO> dtoList = staffList.stream()
-                .map(SecurityStaffMapper::toDTO)
-                .collect(Collectors.toList());
+		return ResponseStructure.buildResponse(updated, "Security staff updated successfully", HttpStatus.OK,
+				HttpStatus.OK.value());
+	}
 
-        return ResponseStructure.buildResponse(
-                dtoList,
-                dtoList.isEmpty() ? "No staff found for this clinic" : "Staff list fetched",
-                HttpStatus.OK,
-                HttpStatus.OK.value()
-        );
-    }
+	@Override
+	public ResponseStructure<SecurityStaffDTO> getSecurityStaffById(String staffId) {
+		return repository.findById(staffId)
+				.map(staff -> ResponseStructure.buildResponse(SecurityStaffMapper.toDTO(staff), "Staff found",
+						HttpStatus.OK, HttpStatus.OK.value()))
+				.orElse(ResponseStructure.buildResponse(null, "Staff not found", HttpStatus.NOT_FOUND,
+						HttpStatus.NOT_FOUND.value()));
+	}
 
-    @Override
-    public ResponseStructure<String> deleteSecurityStaff(String staffId) {
-        Optional<SecurityStaff> existing = repository.findById(staffId);
-        if (existing.isEmpty()) {
-            return ResponseStructure.buildResponse(
-                    null,
-                    "Staff not found",
-                    HttpStatus.NOT_FOUND,
-                    HttpStatus.NOT_FOUND.value()
-            );
-        }
+	@Override
+	public ResponseStructure<List<SecurityStaffDTO>> getAllByClinicId(String clinicId) {
+		List<SecurityStaff> staffList = repository.findByClinicId(clinicId);
 
-        repository.deleteById(staffId);
-        return ResponseStructure.buildResponse(
-                staffId,
-                "Staff deleted successfully",
-                HttpStatus.OK,
-                HttpStatus.OK.value()
-        );
-    }
+		List<SecurityStaffDTO> dtoList = staffList.stream().map(SecurityStaffMapper::toDTO)
+				.collect(Collectors.toList());
+
+		return ResponseStructure.buildResponse(dtoList,
+				dtoList.isEmpty() ? "No staff found for this clinic" : "Staff list fetched", HttpStatus.OK,
+				HttpStatus.OK.value());
+	}
+
+	@Override
+	public ResponseStructure<String> deleteSecurityStaff(String staffId) {
+		Optional<SecurityStaff> existing = repository.findById(staffId);
+		if (existing.isEmpty()) {
+			return ResponseStructure.buildResponse(null, "Staff not found", HttpStatus.NOT_FOUND,
+					HttpStatus.NOT_FOUND.value());
+		}
+
+		repository.deleteById(staffId);
+		return ResponseStructure.buildResponse(staffId, "Staff deleted successfully", HttpStatus.OK,
+				HttpStatus.OK.value());
+	}
+
+// --------------   Generate password--------------------------
+	private String generateStructuredPassword() {
+		String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%";
+		SecureRandom random = new SecureRandom();
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < 10; i++) {
+			sb.append(chars.charAt(random.nextInt(chars.length())));
+		}
+		return sb.toString();
+	}
+
 }

@@ -11,15 +11,20 @@ import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.clinicadmin.dto.LabTechnicianRequestDTO;
 import com.clinicadmin.dto.OnBoardResponse;
 import com.clinicadmin.dto.ReceptionistRequestDTO;
 import com.clinicadmin.dto.ReceptionistRestPassword;
 import com.clinicadmin.dto.ResponseStructure;
+import com.clinicadmin.entity.DoctorLoginCredentials;
 import com.clinicadmin.entity.ReceptionistEntity;
+import com.clinicadmin.repository.DoctorLoginCredentialsRepository;
 import com.clinicadmin.repository.ReceptionistRepository;
 import com.clinicadmin.service.ReceptionistService;
+import com.clinicadmin.utils.LabTechnicianMapper;
 import com.clinicadmin.utils.ReceptionistMapper;
 
 @Service
@@ -28,6 +33,12 @@ public class ReceptionistServiceImpl implements ReceptionistService {
     @Autowired
     private ReceptionistRepository repository;
 
+	@Autowired
+	private DoctorLoginCredentialsRepository credentialsRepository;
+
+	@Autowired
+	private PasswordEncoder passwordEncoder;
+	
     @Override
     public ResponseStructure<ReceptionistRequestDTO> createReceptionist(ReceptionistRequestDTO dto) {
         if (repository.existsByContactNumber(dto.getContactNumber())) {
@@ -41,14 +52,23 @@ public class ReceptionistServiceImpl implements ReceptionistService {
 
         ReceptionistEntity entity = ReceptionistMapper.toEntity(dto);
         entity.setId(generateReceptionistId());
-        entity.setUserName(dto.getContactNumber());
-        entity.setPassword(generateStructuredPassword());
+       
 
         ReceptionistEntity saved = repository.save(entity);
+        
+        String userName = dto.getContactNumber();
+		String rawPassword = generateStructuredPassword();
+		String encodedPassword = passwordEncoder.encode(rawPassword);
+
+		DoctorLoginCredentials credentials = DoctorLoginCredentials.builder().staffId(saved.getId()).userName(userName)
+				.password(encodedPassword).hospitalId(saved.getClinicId()).role(saved.getRole()).build();
+		credentialsRepository.save(credentials);
+
+	
 
         ReceptionistRequestDTO responseDTO = ReceptionistMapper.toDTO(saved);
-        responseDTO.setUserName(saved.getUserName());
-        responseDTO.setPassword(saved.getPassword()); // expose only on create
+        responseDTO.setUserName(userName);
+		responseDTO.setPassword(rawPassword); // expose only on create
 
         return ResponseStructure.buildResponse(
                 responseDTO,
@@ -171,66 +191,66 @@ public class ReceptionistServiceImpl implements ReceptionistService {
         );
     }
 
-    @Override
-    public OnBoardResponse login(String userName, String password) {
-        Optional<ReceptionistEntity> optional = repository.findByUserName(userName);
+//    @Override
+//    public OnBoardResponse login(String userName, String password) {
+//        Optional<ReceptionistEntity> optional = repository.findByUserName(userName);
+//
+//        if (optional.isEmpty() || !optional.get().getPassword().equals(password)) {
+//            return new OnBoardResponse(
+//                    "Invalid username or password",
+//                    HttpStatus.UNAUTHORIZED,
+//                    HttpStatus.UNAUTHORIZED.value(),
+//                    null,
+//                    null
+//            );
+//        }
+//
+//        ReceptionistEntity user = optional.get();
+//
+//        // ✅ Wrap permissions inside the role
+//        Map<String, Map<String, List<String>>> wrappedPermissions = Map.of(
+//            user.getRole(), user.getPermissions()
+//        );
+//
+//        return new OnBoardResponse(
+//                "Login successful",
+//                HttpStatus.OK,
+//                HttpStatus.OK.value(),
+//                user.getRole(),
+//                wrappedPermissions
+//        );
+//    }
 
-        if (optional.isEmpty() || !optional.get().getPassword().equals(password)) {
-            return new OnBoardResponse(
-                    "Invalid username or password",
-                    HttpStatus.UNAUTHORIZED,
-                    HttpStatus.UNAUTHORIZED.value(),
-                    null,
-                    null
-            );
-        }
 
-        ReceptionistEntity user = optional.get();
-
-        // ✅ Wrap permissions inside the role
-        Map<String, Map<String, List<String>>> wrappedPermissions = Map.of(
-            user.getRole(), user.getPermissions()
-        );
-
-        return new OnBoardResponse(
-                "Login successful",
-                HttpStatus.OK,
-                HttpStatus.OK.value(),
-                user.getRole(),
-                wrappedPermissions
-        );
-    }
-
-
-    @Override
-    public ResponseStructure<String> resetPassword(String contactNumber, ReceptionistRestPassword request) {
-        ReceptionistEntity entity = repository.findByContactNumber(contactNumber)
-                .orElseThrow(() -> new RuntimeException("Receptionist not found with contact number: " + contactNumber));
-
-        ResponseStructure<String> response = new ResponseStructure<>();
-
-        if (!entity.getPassword().equals(request.getCurrentpassword())) {
-            response.setData(null);
-            response.setMessage("Current password is incorrect");
-            response.setHttpStatus(HttpStatus.BAD_REQUEST);
-            return response;
-        }
-
-        if (!request.getNewPassword().equals(request.getConformPassword())) {
-            response.setData(null);
-            response.setMessage("New password and Confirm password do not match");
-            response.setHttpStatus(HttpStatus.BAD_REQUEST);
-            return response;
-        }
-
-        entity.setPassword(request.getNewPassword());
-        repository.save(entity);
-
-        response.setData("Password updated successfully");
-        response.setMessage("Success");
-        response.setHttpStatus(HttpStatus.OK);
-        return response;
-    }
+//    @Override
+//    public ResponseStructure<String> resetPassword(String contactNumber, ReceptionistRestPassword request) {
+//        ReceptionistEntity entity = repository.findByContactNumber(contactNumber)
+//                .orElseThrow(() -> new RuntimeException("Receptionist not found with contact number: " + contactNumber));
+//
+//        ResponseStructure<String> response = new ResponseStructure<>();
+//
+//        if (!entity.getPassword().equals(request.getCurrentpassword())) {
+//            response.setData(null);
+//            response.setMessage("Current password is incorrect");
+//            response.setHttpStatus(HttpStatus.BAD_REQUEST);
+//            return response;
+//        }
+//
+//        if (!request.getNewPassword().equals(request.getConformPassword())) {
+//            response.setData(null);
+//            response.setMessage("New password and Confirm password do not match");
+//            response.setHttpStatus(HttpStatus.BAD_REQUEST);
+//            return response;
+//        }
+//
+//        entity.setPassword(request.getNewPassword());
+//        repository.save(entity);
+//
+//        response.setData("Password updated successfully");
+//        response.setMessage("Success");
+//        response.setHttpStatus(HttpStatus.OK);
+//        return response;
+//    }
 
     // ----------------- Helper methods -------------------
     private String generateReceptionistId() {

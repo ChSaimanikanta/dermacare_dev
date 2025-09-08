@@ -64,8 +64,8 @@ public class LabTechnicianMapper {
         entity.setProfilePicture(encodeIfNotBase64(dto.getProfilePicture()));
 
         entity.setEmailId(dto.getEmailId());
-        entity.setUserName(dto.getUserName());
-        entity.setPassword(dto.getPassword());
+//        entity.setUserName(dto.getUserName());
+//        entity.setPassword(dto.getPassword());
         entity.setRole(dto.getRole());
         entity.setVaccinationStatus(dto.getVaccinationStatus());
         entity.setPreviousEmploymentHistory(dto.getPreviousEmploymentHistory());
@@ -104,8 +104,8 @@ public class LabTechnicianMapper {
         dto.setProfilePicture(safeReturnAsBase64(entity.getProfilePicture()));
 
         dto.setEmailId(entity.getEmailId());
-        dto.setUserName(entity.getUserName());
-        dto.setPassword(entity.getPassword());
+//        dto.setUserName(entity.getUserName());
+//        dto.setPassword(entity.getPassword());
         dto.setRole(entity.getRole());
         dto.setVaccinationStatus(entity.getVaccinationStatus());
         dto.setPreviousEmploymentHistory(entity.getPreviousEmploymentHistory());

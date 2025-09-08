@@ -11,39 +11,60 @@ import com.clinicadmin.dto.DoctorsDTO;
 import com.clinicadmin.dto.LoginBasedOnRoleDTO;
 import com.clinicadmin.dto.Response;
 
-
-
 public interface DoctorService {
-public Response addDoctor(DoctorsDTO dto);
-public Response getAllDoctors();
-public Response getDoctorById(String id);
-public Response upDateDoctorById(String doctorId,DoctorsDTO dto);
-public Response login(DoctorLoginDTO loginDTO);
-public Response changePassword(ChangeDoctorPasswordDTO updateDTO);
-public Response getDoctorsByClinicId(String clinicId);
-public Response saveDoctorSlot(String hospitalId, String doctorId, DoctorSlotDTO dto);
+	public Response addDoctor(DoctorsDTO dto);
+
+	public Response getAllDoctors();
+
+	public Response getDoctorById(String id);
+
+	public Response upDateDoctorById(String doctorId, DoctorsDTO dto);
+
+	public Response login(DoctorLoginDTO loginDTO);
+
+	public Response changePassword(ChangeDoctorPasswordDTO updateDTO);
+
+	public Response getDoctorsByClinicId(String clinicId);
+
+	public Response saveDoctorSlot(String hospitalId, String doctorId, DoctorSlotDTO dto);
+
 //public Response getDoctorSlots(String doctorId);
-public Response availabilityStatus(String doctorId, DoctorAvailabilityStatusDTO status);
-Response deleteDoctorSlot(String doctorId, String date, String slotToDelete);
+	public Response availabilityStatus(String doctorId, DoctorAvailabilityStatusDTO status);
+
+	public Response deleteDoctorSlot(String doctorId, String date, String slotToDelete);
+
 //Response updateDoctorSlot(String doctorId, String date, String oldSlotTime, String newSlotTime);
-Response updateDoctorSlot(String doctorId, String date, String oldSlot, String newSlot);
-public Response deleteDoctorSlotbyDate(String doctorId,String date);
-public Response deleteDoctorById(String doctorId);
-public Response getDoctorsBySubserviceId(String hospitalId, String subServiceId);
-Response getDoctorSlots(String hospitalId, String doctorId);
-Response getDoctorsByClinicIdAndDoctorId(String clinicId, String doctorId);
-public boolean updateSlot(String doctorId, String date,
-		String time);
-Response getHospitalAndDoctorsUsingSubserviceId(String subServiceId);
+	public Response updateDoctorSlot(String doctorId, String date, String oldSlot, String newSlot);
 
-Response getAllDoctorsBySubserviceId(String subServiceId);
-public boolean makingFalseDoctorSlot(String doctorId, String date, String time);
+	public Response deleteDoctorSlotbyDate(String doctorId, String date);
 
-public ResponseEntity<?> notificationToClinic(String hospitalId);
-public Response getRecommendedClinicsAndDoctors();
-Response getBestDoctorBySubService(String subServiceId);
-Response getRecommendedClinicsAndDoctors(List<String> keyPointsFromUser);
-public Response deleteDoctorsByClinic(String hospitalId);
-Response getAllDoctorsWithRespectiveClinic();
-Response loginUsingRoles(LoginBasedOnRoleDTO dto);
+	public Response deleteDoctorById(String doctorId);
+
+	public Response getDoctorsBySubserviceId(String hospitalId, String subServiceId);
+
+	public Response getDoctorSlots(String hospitalId, String doctorId);
+
+	public Response getDoctorsByClinicIdAndDoctorId(String clinicId, String doctorId);
+
+	public boolean updateSlot(String doctorId, String date, String time);
+
+	public Response getHospitalAndDoctorsUsingSubserviceId(String subServiceId);
+
+	public Response getAllDoctorsBySubserviceId(String subServiceId);
+
+	public boolean makingFalseDoctorSlot(String doctorId, String date, String time);
+
+	public ResponseEntity<?> notificationToClinic(String hospitalId);
+
+	public Response getRecommendedClinicsAndDoctors();
+
+	public Response getBestDoctorBySubService(String subServiceId);
+
+	public Response getRecommendedClinicsAndDoctors(List<String> keyPointsFromUser);
+
+	public Response deleteDoctorsByClinic(String hospitalId);
+
+	public Response getAllDoctorsWithRespectiveClinic();
+
+	public Response loginUsingRoles(LoginBasedOnRoleDTO dto);
 }

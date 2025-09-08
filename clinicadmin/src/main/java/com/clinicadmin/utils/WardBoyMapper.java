@@ -65,8 +65,8 @@ public class WardBoyMapper {
         wardBoy.setWorkExprience(dto.getWorkExprience());
         wardBoy.setShiftTimingOrAvailability(dto.getShiftTimingOrAvailability());
         wardBoy.setEmergencyContact(dto.getEmergencyContact());
-        wardBoy.setUsername(dto.getUserName());
-        wardBoy.setPassword(dto.getPassword());
+//        wardBoy.setUsername(dto.getUserName());
+//        wardBoy.setPassword(dto.getPassword());
         
        
 
@@ -100,8 +100,8 @@ public class WardBoyMapper {
         dto.setEmergencyContact(entity.getEmergencyContact());
         dto.setWorkExprience(entity.getWorkExprience());
         dto.setBankAccountDetails(entity.getBankAccountDetails());
-        dto.setUserName(entity.getUsername());
-        dto.setPassword(entity.getPassword());
+//        dto.setUserName(entity.getUsername());
+//        dto.setPassword(entity.getPassword());
 
         // ✅ Return as Base64 so frontend can directly show/download image/pdf
         dto.setMedicalFitnessCertificate(safeReturnAsBase64(entity.getMedicalFitnessCertificate()));

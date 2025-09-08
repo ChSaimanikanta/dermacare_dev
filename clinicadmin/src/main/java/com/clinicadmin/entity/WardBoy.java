@@ -48,13 +48,8 @@ public class WardBoy {
     private String basicHealthFirstAidTrainingCertificate;
     private String previousEmploymentHistory;
     private String policeVerification;
-
-    @Indexed(unique = true)
-    private String username;  
-
-    private String password;
-    
-    private  String role;
+   
+    private  String role = "WARD_BOY";
     
     
     private Map<String, List<String>> permissions;

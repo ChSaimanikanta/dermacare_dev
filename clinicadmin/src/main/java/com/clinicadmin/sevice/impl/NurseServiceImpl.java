@@ -194,7 +194,7 @@ public class NurseServiceImpl implements NurseService {
 				existingNurse.setInsuranceOrESIdetails(dto.getInsuranceOrESIdetails());
 
 			// boolean -> only update if explicitly provided
-			existingNurse.setVaccinationStatus(dto.isVaccinationStatus());
+			existingNurse.setVaccinationStatus(dto.getVaccinationStatus());
 
 			if (dto.getPreviousEmploymentHistory() != null)
 				existingNurse.setPreviousEmploymentHistory(dto.getPreviousEmploymentHistory());
@@ -295,7 +295,7 @@ public class NurseServiceImpl implements NurseService {
 		nurse.setPreviousEmploymentHistory(dto.getPreviousEmploymentHistory());
 		nurse.setExperienceCertificates(Base64CompressionUtil.compressBase64(dto.getExperienceCertificates()));
 		nurse.setProfilePicture(Base64CompressionUtil.compressBase64(dto.getProfilePicture()));
-		nurse.setVaccinationStatus(dto.isVaccinationStatus());
+		nurse.setVaccinationStatus(dto.getVaccinationStatus());
 		nurse.setInsuranceOrESIdetails(dto.getInsuranceOrESIdetails());
 
 		nurse.setAddress(dto.getAddress());
@@ -329,7 +329,7 @@ public class NurseServiceImpl implements NurseService {
 		dto.setMedicalFitnessCertificate(Base64CompressionUtil.decompressBase64(nurse.getMedicalFitnessCertificate()));
 		dto.setEmailId(nurse.getEmailId());
 		dto.setPreviousEmploymentHistory(Base64CompressionUtil.decompressBase64(nurse.getPreviousEmploymentHistory()));
-		dto.setVaccinationStatus(nurse.isVaccinationStatus());
+		dto.setVaccinationStatus(nurse.getVaccinationStatus());
 		dto.setInsuranceOrESIdetails(nurse.getInsuranceOrESIdetails());
 		dto.setExperienceCertificates(Base64CompressionUtil.decompressBase64(nurse.getExperienceCertificates()));
 		dto.setProfilePicture(Base64CompressionUtil.decompressBase64(nurse.getProfilePicture()));

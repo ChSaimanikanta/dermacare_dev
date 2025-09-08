@@ -1198,13 +1198,55 @@ public class DoctorServiceImpl implements DoctorService {
 		DoctorsDTO doctorDTO = DoctorMapper.mapDoctorEntityToDoctorDTO(bestDoctor);
 
 		// Build combined clinic + doctor response
-		ClinicWithDoctorsDTO2 responseDTO = new ClinicWithDoctorsDTO2(selectedClinic.getHospitalId(),
-				selectedClinic.getName(), selectedClinic.getAddress(), selectedClinic.getCity(),
-				selectedClinic.getContactNumber(), selectedClinic.getHospitalOverallRating(),
-				selectedClinic.getOpeningTime(), selectedClinic.getClosingTime(), selectedClinic.getHospitalLogo(),
-				selectedClinic.getEmailAddress(), selectedClinic.getWebsite(), selectedClinic.getLicenseNumber(),
-				selectedClinic.getIssuingAuthority(), selectedClinic.getHospitalDocuments(),
-				selectedClinic.getContractorDocuments(), selectedClinic.isRecommended(), doctorDTO);
+		ClinicWithDoctorsDTO2 responseDTO = ClinicWithDoctorsDTO2.builder()
+		        .hospitalId(selectedClinic.getHospitalId())
+		        .name(selectedClinic.getName())
+		        .address(selectedClinic.getAddress())
+		        .city(selectedClinic.getCity())
+		        .hospitalOverallRating(selectedClinic.getHospitalOverallRating())
+		        .contactNumber(selectedClinic.getContactNumber())
+		        .openingTime(selectedClinic.getOpeningTime())
+		        .closingTime(selectedClinic.getClosingTime())
+		        .hospitalLogo(selectedClinic.getHospitalLogo())
+		        .emailAddress(selectedClinic.getEmailAddress())
+		        .website(selectedClinic.getWebsite())
+		        .licenseNumber(selectedClinic.getLicenseNumber())
+		        .issuingAuthority(selectedClinic.getIssuingAuthority())
+		        .contractorDocuments(selectedClinic.getContractorDocuments())
+		        .hospitalDocuments(selectedClinic.getHospitalDocuments())
+		        .recommended(selectedClinic.isRecommended())
+		        
+		        // Extra fields (map from your entity or set null/empty if not available)
+		        .clinicalEstablishmentCertificate(selectedClinic.getClinicalEstablishmentCertificate())
+		        .businessRegistrationCertificate(selectedClinic.getBusinessRegistrationCertificate())
+		        .clinicType(selectedClinic.getClinicType())
+		        .medicinesSoldOnSite(selectedClinic.getMedicinesSoldOnSite())
+		        .drugLicenseCertificate(selectedClinic.getDrugLicenseCertificate())
+		        .drugLicenseFormType(selectedClinic.getDrugLicenseFormType())
+		        .hasPharmacist(selectedClinic.getHasPharmacist())
+		        .pharmacistCertificate(selectedClinic.getPharmacistCertificate())
+		        .biomedicalWasteManagementAuth(selectedClinic.getBiomedicalWasteManagementAuth())
+		        .tradeLicense(selectedClinic.getTradeLicense())
+		        .fireSafetyCertificate(selectedClinic.getFireSafetyCertificate())
+		        .professionalIndemnityInsurance(selectedClinic.getProfessionalIndemnityInsurance())
+		        .gstRegistrationCertificate(selectedClinic.getGstRegistrationCertificate())
+		        .consultationExpiration(selectedClinic.getConsultationExpiration())
+		        .subscription(selectedClinic.getSubscription())
+		        .others(selectedClinic.getOthers())
+		        .freeFollowUps(selectedClinic.getFreeFollowUps())
+		        .latitude(selectedClinic.getLatitude())
+		        .longitude(selectedClinic.getLongitude())
+		        .nabhScore(selectedClinic.getNabhScore())
+		        .branch(selectedClinic.getBranch())
+		        .walkthrough(selectedClinic.getWalkthrough())
+		        .instagramHandle(selectedClinic.getInstagramHandle())
+		        .twitterHandle(selectedClinic.getTwitterHandle())
+		        .facebookHandle(selectedClinic.getFacebookHandle())
+		        
+		        // Doctors
+		        .doctors(doctorDTO)
+		        .build();
+
 
 		return Response.builder().success(true).status(200).message("Best doctor with clinic retrieved successfully")
 				.data(responseDTO).build();
@@ -1446,34 +1488,45 @@ public class DoctorServiceImpl implements DoctorService {
 	}
 	//------------------------------Universal Login---------------------------------------------------
 	@Override
-	public Response loginUsingRoles(LoginBasedOnRoleDTO dto ) {
-		Response response = new Response();
-		Optional<DoctorLoginCredentials> credentials=  credentialsRepository.findByUserName(dto.getUserName());
-		if(!credentials.isPresent()) {
-			response.setSuccess(false);
-			response.setMessage("Invalid UserName");
-			response.setStatus(409);	
-		}
-		DoctorLoginCredentials cr =credentials.get();
-		if(!passwordEncoder.matches(cr.getPassword(), dto.getPassword())) {
-			response.setSuccess(false);
-			response.setMessage("Invalid password");
-			response.setStatus(409);	
-		}
-		else if(!cr.getRole().equals(dto.getPassword())) {
-			response.setSuccess(false);
-			response.setMessage("Invalid Role");
-			response.setStatus(409);
-		}
-		else {
-			response.setSuccess(true);
-			response.setMessage("Login Successfully");
-			response.setStatus(200);
-			response.setHospitalId(cr.getHospitalId());
-			response.setRole(cr.getRole());
-		}
-		   return response;         
-		    }
+	public Response loginUsingRoles(LoginBasedOnRoleDTO dto) {
+	    Response response = new Response();
+	    Optional<DoctorLoginCredentials> credentials = credentialsRepository.findByUserName(dto.getUserName());
+
+	    if (!credentials.isPresent()) {
+	        response.setSuccess(false);
+	        response.setMessage("Invalid UserName");
+	        response.setStatus(409);
+	        return response;
+	    }
+
+	    DoctorLoginCredentials cr = credentials.get();
+
+	    // Fix: dto.getPassword() should come first
+	    if (!passwordEncoder.matches(dto.getPassword(), cr.getPassword())) {
+	        response.setSuccess(false);
+	        response.setMessage("Invalid password");
+	        response.setStatus(409);
+	        return response;
+	    }
+
+	    // Here you compared role with password by mistake
+	    // Fix: compare role with dto.getRole()
+	    if (!cr.getRole().equals(dto.getRole())) {
+	        response.setSuccess(false);
+	        response.setMessage("Invalid Role");
+	        response.setStatus(409);
+	        return response;
+	    }
+
+	    response.setSuccess(true);
+	    response.setMessage("Login Successfully");
+	    response.setStatus(200);
+	    response.setHospitalId(cr.getHospitalId());
+	    response.setRole(cr.getRole());
+
+	    return response;
+	}
+
 		
 
 

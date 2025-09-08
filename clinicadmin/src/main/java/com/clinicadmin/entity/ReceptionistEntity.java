@@ -38,8 +38,8 @@ public class ReceptionistEntity {
 
     private Address address;   // Mandatory
     private String emergencyContact;
-    private String userName;   // auto = contactNumber
-    private String password;   // auto-generate
+//    private String userName;   // auto = contactNumber
+//    private String password;   // auto-generate
     
     private String role;
 

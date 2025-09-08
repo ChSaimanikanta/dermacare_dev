@@ -66,7 +66,7 @@ public class NurseDTO {
 
 	private String experienceCertificates;
 
-	private boolean vaccinationStatus;
+	private String vaccinationStatus;
     private String profilePicture;
 
 
