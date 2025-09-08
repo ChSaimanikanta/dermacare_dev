@@ -1,5 +1,4 @@
 package com.dermacare.doctorservice.serviceimpl;
-
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Base64;
@@ -55,7 +54,6 @@ public class DoctorSaveDetailsServiceImpl implements DoctorSaveDetailsService {
 
     @Autowired
     private ObjectMapper objectMapper;
-   
 
     @Autowired
     private BookingFeignClient bookingFeignClient;
@@ -63,7 +61,6 @@ public class DoctorSaveDetailsServiceImpl implements DoctorSaveDetailsService {
     @Override
     public Response saveDoctorDetails(DoctorSaveDetailsDTO dto) {
         try {
-            // Step 1: Fetch doctor details from Clinic Admin service
             Response doctorResponse = clinicAdminClient.getDoctorById(dto.getDoctorId()).getBody();
 
             if (doctorResponse == null || !doctorResponse.isSuccess() || doctorResponse.getData() == null) {
@@ -96,11 +93,9 @@ public class DoctorSaveDetailsServiceImpl implements DoctorSaveDetailsService {
             int visitTypeCount = (int) uniqueBookingCount + (isRevisit ? 0 : 1);
             dto.setVisitType(VisitTypeUtil.getVisitTypeFromCount(visitTypeCount));
 
-            // Step 2: Save doctor details
             DoctorSaveDetails entity = convertToEntity(dto);
             DoctorSaveDetails saved = repository.save(entity);
 
-            // Step 3: Update booking status to "In-Progress" via Feign
             BookingResponse bookingUpdate = new BookingResponse();
             bookingUpdate.setBookingId(dto.getBookingId());
             bookingUpdate.setStatus("In-Progress");
@@ -239,7 +234,7 @@ public class DoctorSaveDetailsServiceImpl implements DoctorSaveDetailsService {
                 .prescriptionPdf(dto.getPrescriptionPdf() != null
                 ? dto.getPrescriptionPdf()
                       .stream()
-                      .map(this::decodeIfBase64) // same as attachments
+                      .map(this::decodeIfBase64) 
                       .collect(Collectors.toList())
                 : null
             )
@@ -296,16 +291,18 @@ public class DoctorSaveDetailsServiceImpl implements DoctorSaveDetailsService {
                                                         .dose(med.getDose())
                                                         .duration(med.getDuration())
                                                         .food(med.getFood())
-                                                        .medicineType(med.getMedicineType())
+                                                        .medicineType(med.getMedicineType()) 
                                                         .note(med.getNote())
                                                         .remindWhen(med.getRemindWhen())
                                                         .times(med.getTimes())
+                                                        .others(med.getOthers())
                                                         .build())
                                                 .collect(Collectors.toList())
                                         : null)
                                 .build()
                         : null
                 )
+
                 .visitType(dto.getVisitType())
                 .visitDateTime(dto.getVisitDateTime())
                 .prescriptionPdf(dto.getPrescriptionPdf())
@@ -321,7 +318,7 @@ public class DoctorSaveDetailsServiceImpl implements DoctorSaveDetailsService {
             Base64.getDecoder().decode(base64String);
             return base64String; // It's valid Base64, return as is without converting to text
         } catch (IllegalArgumentException e) {
-            // Not valid Base64, return original
+            // Not valid Base64, return origina
             return base64String;
         }
     }
@@ -416,6 +413,7 @@ public class DoctorSaveDetailsServiceImpl implements DoctorSaveDetailsService {
                                                         .note(med.getNote())
                                                         .remindWhen(med.getRemindWhen())
                                                         .times(med.getTimes())
+                                                        .others(med.getOthers())
                                                         .build())
                                                 .collect(Collectors.toList())
                                         : null)
@@ -429,10 +427,10 @@ public class DoctorSaveDetailsServiceImpl implements DoctorSaveDetailsService {
 
     private String encodeIfNotBase64(String input) {
         if (input == null || input.isBlank()) {
-            return input; // Null or empty, return as-is
+            return input; 
         }
 
-        // Base64 pattern: length multiple of 4, only A-Z a-z 0-9 + /, with optional padding "="
+       
         String base64Pattern = "^[A-Za-z0-9+/]*={0,2}$";
 
         if (input.matches(base64Pattern) && (input.length() % 4 == 0)) {

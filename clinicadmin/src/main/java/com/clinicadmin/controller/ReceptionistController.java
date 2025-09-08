@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.CrossOrigin;
+
+import com.clinicadmin.dto.OnBoardResponse;
 import com.clinicadmin.dto.ReceptionistRequestDTO;
 import com.clinicadmin.dto.ReceptionistRestPassword;
 import com.clinicadmin.dto.ResponseStructure;
@@ -22,7 +24,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/clinic-admin") // Base URL matches the class/entity name
-@CrossOrigin(origins = { "http://localhost:3000", "http://localhost:3001"})
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
 public class ReceptionistController {
 
     @Autowired
@@ -60,12 +62,12 @@ public class ReceptionistController {
     public ResponseStructure<String> deleteReceptionist(@PathVariable String id) {
         return service.deleteReceptionist(id);
     }
-
     @PostMapping("/receptionistLogin")
-    public ResponseEntity<ResponseStructure<String>> login(@RequestBody ReceptionistRequestDTO request) {
-        ResponseStructure<String> response = service.login(request.getUserName(), request.getPassword());
-        return new ResponseEntity<>(response, response.getHttpStatus());
+    public ResponseEntity<OnBoardResponse> login(@RequestBody ReceptionistRequestDTO request) {
+        OnBoardResponse response = service.login(request.getUserName(), request.getPassword());
+        return ResponseEntity.status(response.getHttpStatus()).body(response);
     }
+
 
     @PutMapping("/receptionistReset-password/{contactNumber}")
     public ResponseEntity<ResponseStructure<String>> resetPassword(

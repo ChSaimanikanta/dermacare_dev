@@ -1,5 +1,8 @@
 package com.clinicadmin.dto;
 
+import java.util.List;
+import java.util.Map;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,5 +13,9 @@ import lombok.NoArgsConstructor;
 public class NurseLoginDTO {
 	private String userName;
 	private String password;
+
+	private String role;
+    private Map<String, List<String>> permissions;
+	
 
 }

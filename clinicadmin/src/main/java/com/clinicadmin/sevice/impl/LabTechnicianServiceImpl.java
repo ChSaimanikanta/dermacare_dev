@@ -2,6 +2,7 @@ package com.clinicadmin.sevice.impl;
 
 import java.security.SecureRandom;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 import com.clinicadmin.dto.LabTechnicanRestPassword;
 import com.clinicadmin.dto.LabTechnicianLogin;
 import com.clinicadmin.dto.LabTechnicianRequestDTO;
+import com.clinicadmin.dto.OnBoardResponse;
 import com.clinicadmin.dto.ResponseStructure;
 import com.clinicadmin.entity.LabTechnicianEntity;
 import com.clinicadmin.repository.LabTechnicianRepository;
@@ -44,7 +46,7 @@ public class LabTechnicianServiceImpl implements LabTechnicianService {
 
         LabTechnicianEntity saved = repository.save(entity);
 
-        LabTechnicianRequestDTO responseDTO = LabTechnicianMapper.toResponseDTO(saved);
+        LabTechnicianRequestDTO responseDTO = LabTechnicianMapper.toDTO(saved);
         responseDTO.setUserName(saved.getUserName());
         responseDTO.setPassword(saved.getPassword()); // expose only on create
 
@@ -56,62 +58,71 @@ public class LabTechnicianServiceImpl implements LabTechnicianService {
         );
     }
 
-    // ✅ Login Method
     @Override
-    public ResponseStructure<String> login(LabTechnicianLogin loginRequest) {
-        Optional<LabTechnicianEntity> optional = 
+    public OnBoardResponse login(LabTechnicianLogin loginRequest) {
+        Optional<LabTechnicianEntity> optional =
                 repository.findByUserNameAndPassword(loginRequest.getUserName(), loginRequest.getPassword());
 
         if (optional.isEmpty()) {
-            return ResponseStructure.buildResponse(
-                    null,
+            return new OnBoardResponse(
                     "Invalid username or password",
                     HttpStatus.UNAUTHORIZED,
-                    HttpStatus.UNAUTHORIZED.value()
+                    HttpStatus.UNAUTHORIZED.value(),
+                    null,
+                    null,
+                    null
             );
         }
 
         LabTechnicianEntity user = optional.get();
-        return ResponseStructure.buildResponse(
-                "Login successful. Role: " + user.getRole(),
+
+        Map<String, Map<String, List<String>>> wrappedPermissions = Map.of(
+                user.getRole(), user.getPermissions()
+        );
+
+        return new OnBoardResponse(
                 "Login successful",
                 HttpStatus.OK,
-                HttpStatus.OK.value()
+                HttpStatus.OK.value(),
+                user.getRole(),
+                user.getFullName(),  
+                wrappedPermissions
         );
     }
 
-    
+//✅ Reset Password
     @Override
     public ResponseStructure<String> resetPassword(String contactNumber, LabTechnicanRestPassword request) {
         LabTechnicianEntity entity = repository.findByContactNumber(contactNumber)
                 .orElseThrow(() -> new RuntimeException("User not found with contactNumber: " + contactNumber));
 
-        ResponseStructure<String> response = new ResponseStructure<>();
-
-        // check current password
         if (!entity.getPassword().equals(request.getCurrentpassword())) {
-            response.setData(null);
-            response.setMessage("Current password is incorrect");
-            response.setHttpStatus(HttpStatus.BAD_REQUEST);
-            return response;
+            return ResponseStructure.buildResponse(
+                    null,
+                    "Current password is incorrect",
+                    HttpStatus.BAD_REQUEST,
+                    HttpStatus.BAD_REQUEST.value()
+            );
         }
 
-        // check new & confirm match
         if (!request.getNewPassword().equals(request.getConformPassword())) {
-            response.setData(null);
-            response.setMessage("New password and Confirm password do not match");
-            response.setHttpStatus(HttpStatus.BAD_REQUEST);
-            return response;
+            return ResponseStructure.buildResponse(
+                    null,
+                    "New password and Confirm password do not match",
+                    HttpStatus.BAD_REQUEST,
+                    HttpStatus.BAD_REQUEST.value()
+            );
         }
 
-        // update password
         entity.setPassword(request.getNewPassword());
         repository.save(entity);
 
-        response.setData("Password updated successfully");
-        response.setMessage("Success");
-        response.setHttpStatus(HttpStatus.OK);
-        return response;
+        return ResponseStructure.buildResponse(
+                "Password updated successfully",
+                "Success",
+                HttpStatus.OK,
+                HttpStatus.OK.value()
+        );
     }
 
     // ✅ Get by ID
@@ -126,8 +137,10 @@ public class LabTechnicianServiceImpl implements LabTechnicianService {
                     HttpStatus.NOT_FOUND.value()
             );
         }
+
+        LabTechnicianRequestDTO dto = LabTechnicianMapper.toDTO(optional.get());
         return ResponseStructure.buildResponse(
-                LabTechnicianMapper.toResponseDTO(optional.get()),
+                dto,
                 "Lab Technician retrieved successfully",
                 HttpStatus.OK,
                 HttpStatus.OK.value()
@@ -139,7 +152,7 @@ public class LabTechnicianServiceImpl implements LabTechnicianService {
     public ResponseStructure<List<LabTechnicianRequestDTO>> getAllLabTechnicians() {
         List<LabTechnicianEntity> entities = repository.findAll();
         List<LabTechnicianRequestDTO> dtos = entities.stream()
-                .map(LabTechnicianMapper::toResponseDTO)
+                .map(LabTechnicianMapper::toDTO)
                 .collect(Collectors.toList());
 
         return ResponseStructure.buildResponse(
@@ -150,7 +163,7 @@ public class LabTechnicianServiceImpl implements LabTechnicianService {
         );
     }
 
-    // ✅ Update
+    // ✅  Lab 
     @Override
     public ResponseStructure<LabTechnicianRequestDTO> updateLabTechnician(String id, LabTechnicianRequestDTO dto) {
         Optional<LabTechnicianEntity> optional = repository.findById(id);
@@ -165,7 +178,7 @@ public class LabTechnicianServiceImpl implements LabTechnicianService {
 
         LabTechnicianEntity existing = optional.get();
 
-        // update fields only if provided
+        // update fields if provided
         if (dto.getFullName() != null) existing.setFullName(dto.getFullName());
         if (dto.getGender() != null) existing.setGender(dto.getGender());
         if (dto.getDateOfBirth() != null) existing.setDateOfBirth(dto.getDateOfBirth());
@@ -181,15 +194,18 @@ public class LabTechnicianServiceImpl implements LabTechnicianService {
         if (dto.getEmergencyContact() != null) existing.setEmergencyContact(dto.getEmergencyContact());
         if (dto.getBankAccountDetails() != null) existing.setBankAccountDetails(dto.getBankAccountDetails());
         if (dto.getMedicalFitnessCertificate() != null) existing.setMedicalFitnessCertificate(dto.getMedicalFitnessCertificate());
-        if (dto.getEmailId() != null) existing.setEmailId(dto.getEmailId());
         if (dto.getLabLicenseOrRegistration() != null) existing.setLabLicenseOrRegistration(dto.getLabLicenseOrRegistration());
+        if (dto.getEmailId() != null) existing.setEmailId(dto.getEmailId());
         if (dto.getVaccinationStatus() != null) existing.setVaccinationStatus(dto.getVaccinationStatus());
         if (dto.getPreviousEmploymentHistory() != null) existing.setPreviousEmploymentHistory(dto.getPreviousEmploymentHistory());
+        if (dto.getProfilePicture() != null) existing.setProfilePicture(dto.getProfilePicture());
+        if (dto.getPermissions() != null) existing.setPermissions(dto.getPermissions());
+        if (dto.getRole() != null) existing.setRole(dto.getRole());
 
         LabTechnicianEntity updated = repository.save(existing);
 
         return ResponseStructure.buildResponse(
-                LabTechnicianMapper.toResponseDTO(updated),
+                LabTechnicianMapper.toDTO(updated),
                 "Lab Technician updated successfully",
                 HttpStatus.OK,
                 HttpStatus.OK.value()
@@ -217,22 +233,7 @@ public class LabTechnicianServiceImpl implements LabTechnicianService {
         );
     }
 
-    // ----------------- Helper methods -------------------
-
-    private String generateLabTechId() {
-        return "LAB-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-    }
-
-    private String generateStructuredPassword() {
-        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%";
-        SecureRandom random = new SecureRandom();
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < 10; i++) {
-            sb.append(chars.charAt(random.nextInt(chars.length())));
-        }
-        return sb.toString();
-    }
- // ✅ Get all Lab Technicians by Clinic Id
+    // ✅ Get all Lab Technicians by Clinic Id
     @Override
     public ResponseStructure<List<LabTechnicianRequestDTO>> getLabTechniciansByClinic(String clinicId) {
         List<LabTechnicianEntity> entities = repository.findByClinicId(clinicId);
@@ -264,5 +265,20 @@ public class LabTechnicianServiceImpl implements LabTechnicianService {
                 .message("Lab Technician data fetched successfully")
                 .data(dto)
                 .build();
+    }
+
+    // ----------------- Helper methods -------------------
+    private String generateLabTechId() {
+        return "LAB-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    }
+
+    private String generateStructuredPassword() {
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@#$%";
+        SecureRandom random = new SecureRandom();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 10; i++) {
+            sb.append(chars.charAt(random.nextInt(chars.length())));
+        }
+        return sb.toString();
     }
 }

@@ -16,6 +16,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class Pharmacist {
 	private ObjectId id;
+	private String hospitalId;
 	private String role = "PHARMACIST";
 	private String pharmacistId;
 	private String fullName;
@@ -39,4 +40,6 @@ public class Pharmacist {
 	
 	private String userName;
 	private String password;
+    private String profilePicture;
+
 }

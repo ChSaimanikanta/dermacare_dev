@@ -1,10 +1,11 @@
 package com.AdminService.entity;
 import java.util.List;
+import java.util.Map;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.mapping.FieldType;
-
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -99,9 +100,14 @@ public class Clinic {
     private String walkthrough;
     private int nabhScore;
     private String branch;
+    
+    private List<Branch> branches;
+    private String role;    
+    private Map<String, Map<String, List<String>>> permissions;
+
+
  
-//    private int score;   
-    // Social Media Handles
+
     private String instagramHandle;
     private String twitterHandle;
     private String facebookHandle;

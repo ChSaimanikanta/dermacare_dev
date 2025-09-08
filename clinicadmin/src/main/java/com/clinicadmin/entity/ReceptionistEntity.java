@@ -1,6 +1,9 @@
 package com.clinicadmin.entity;
 
 
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -21,7 +24,7 @@ public class ReceptionistEntity {
     private String id;   // Custom ID like RC_A27873EB
 
     private String clinicId;
-    private String role = "RECEPTIONIST";
+    
 
     private String fullName;
     private String dateOfBirth;  // dd-MM-yyyy
@@ -37,6 +40,13 @@ public class ReceptionistEntity {
     private String emergencyContact;
     private String userName;   // auto = contactNumber
     private String password;   // auto-generate
+    
+    private String role;
+
+    private Map<String, List<String>> permissions;
+
+    private String profilePicture;
+
 
     private BankAccountDetails bankAccountDetails;  // ✅ Mandatory
 

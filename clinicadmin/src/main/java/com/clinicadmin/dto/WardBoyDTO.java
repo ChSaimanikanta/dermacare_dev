@@ -1,6 +1,9 @@
 package com.clinicadmin.dto;
 
 
+import java.util.List;
+import java.util.Map;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
@@ -13,7 +16,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class WardBoyDTO {
 	
-    private String wardBoyId;  
 
     @NotBlank(message = "Full Name is required")
     private String fullName;
@@ -43,6 +45,9 @@ public class WardBoyDTO {
 
     @NotBlank(message = "Department is required")
     private String department;
+    
+    private String profilePicture;
+
 
     @Valid
     private BankAccountDetails bankAccountDetails;
@@ -61,5 +66,11 @@ public class WardBoyDTO {
     private Address address;
     private String emergencyContact;
     
-    private String role;
+    private String userName;
+    private String password;
+    
+     private String role;
+    
+    private Map<String, List<String>> permissions;    
+
 }

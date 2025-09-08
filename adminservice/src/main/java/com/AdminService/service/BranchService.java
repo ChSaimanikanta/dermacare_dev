@@ -12,5 +12,6 @@ public interface BranchService {
 	Response deleteBranch(String branchId);
 	Response getAllBranches();
 	 ResponseEntity<?> getBranchByClinicId(String clinicId);
+	 Response getBranchesByClinicId(String clinicId);
 		
 }

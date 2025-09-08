@@ -1,20 +1,52 @@
 package com.clinicadmin.utils;
-
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import com.clinicadmin.dto.ReceptionistRequestDTO;
 import com.clinicadmin.entity.ReceptionistEntity;
-
 public class ReceptionistMapper {
 
-    // Convert DTO -> Entity (for CREATE)
+    // ----------------- Base64 Helper -----------------
+    public static String encodeIfNotBase64(String input) {
+        if (input == null || input.isBlank()) return input;
+
+        String base64Pattern = "^[A-Za-z0-9+/]*={0,2}$";
+        if (input.matches(base64Pattern) && input.length() % 4 == 0) {
+            try {
+                Base64.getDecoder().decode(input);
+                return input; // already Base64
+            } catch (IllegalArgumentException e) {
+                // not valid, so encode
+            }
+        }
+        return Base64.getEncoder().encodeToString(input.getBytes(StandardCharsets.UTF_8));
+    }
+
+    public static String safeReturnAsBase64(String input) {
+        if (input == null) return null;
+        try {
+            Base64.getDecoder().decode(input);
+            return input;
+        } catch (Exception e) {
+            return Base64.getEncoder().encodeToString(input.getBytes(StandardCharsets.UTF_8));
+        }
+    }
+
+    // ----------------- DTO → Entity -----------------
     public static ReceptionistEntity toEntity(ReceptionistRequestDTO dto) {
         if (dto == null) return null;
 
         ReceptionistEntity entity = new ReceptionistEntity();
-        applyDtoToEntity(dto, entity); // reuse common method
+        applyDtoToEntity(dto, entity);
+
+        // Encode files
+        entity.setGraduationCertificate(encodeIfNotBase64(dto.getGraduationCertificate()));
+        entity.setComputerSkillsProof(encodeIfNotBase64(dto.getComputerSkillsProof()));
+        entity.setProfilePicture(encodeIfNotBase64(dto.getProfilePicture()));
+
         return entity;
     }
 
-    // Convert Entity -> DTO
+    // ----------------- Entity → DTO -----------------
     public static ReceptionistRequestDTO toDTO(ReceptionistEntity entity) {
         if (entity == null) return null;
 
@@ -35,13 +67,19 @@ public class ReceptionistMapper {
         dto.setDepartment(entity.getDepartment());
         dto.setBankAccountDetails(entity.getBankAccountDetails());
         dto.setEmailId(entity.getEmailId());
-        dto.setGraduationCertificate(entity.getGraduationCertificate());
-        dto.setComputerSkillsProof(entity.getComputerSkillsProof());
+        dto.setPermissions(entity.getPermissions());
+        
+
+        // Decode files safely
+        dto.setGraduationCertificate(safeReturnAsBase64(entity.getGraduationCertificate()));
+        dto.setComputerSkillsProof(safeReturnAsBase64(entity.getComputerSkillsProof()));
+        dto.setProfilePicture(safeReturnAsBase64(entity.getProfilePicture()));
         dto.setPreviousEmploymentHistory(entity.getPreviousEmploymentHistory());
+
         return dto;
     }
 
-    // ✅ New: Update only non-null fields from DTO to existing Entity
+    // ----------------- Update Existing Entity -----------------
     public static void updateEntityFromDto(ReceptionistRequestDTO dto, ReceptionistEntity entity) {
         if (dto == null || entity == null) return;
 
@@ -60,12 +98,18 @@ public class ReceptionistMapper {
         if (dto.getDepartment() != null) entity.setDepartment(dto.getDepartment());
         if (dto.getBankAccountDetails() != null) entity.setBankAccountDetails(dto.getBankAccountDetails());
         if (dto.getEmailId() != null) entity.setEmailId(dto.getEmailId());
-        if (dto.getGraduationCertificate() != null) entity.setGraduationCertificate(dto.getGraduationCertificate());
-        if (dto.getComputerSkillsProof() != null) entity.setComputerSkillsProof(dto.getComputerSkillsProof());
-        if (dto.getPreviousEmploymentHistory() != null) entity.setPreviousEmploymentHistory(dto.getPreviousEmploymentHistory());
+
+        // Encode files if provided
+        if (dto.getGraduationCertificate() != null)
+            entity.setGraduationCertificate(encodeIfNotBase64(dto.getGraduationCertificate()));
+        if (dto.getComputerSkillsProof() != null)
+            entity.setComputerSkillsProof(encodeIfNotBase64(dto.getComputerSkillsProof()));
+
+        if (dto.getPreviousEmploymentHistory() != null)
+            entity.setPreviousEmploymentHistory(dto.getPreviousEmploymentHistory());
     }
 
-    // Helper for Create
+    // ----------------- Helper for Create -----------------
     private static void applyDtoToEntity(ReceptionistRequestDTO dto, ReceptionistEntity entity) {
         entity.setId(dto.getId());
         entity.setClinicId(dto.getClinicId());
@@ -83,8 +127,9 @@ public class ReceptionistMapper {
         entity.setDepartment(dto.getDepartment());
         entity.setBankAccountDetails(dto.getBankAccountDetails());
         entity.setEmailId(dto.getEmailId());
-        entity.setGraduationCertificate(dto.getGraduationCertificate());
-        entity.setComputerSkillsProof(dto.getComputerSkillsProof());
+        entity.setGraduationCertificate(encodeIfNotBase64(dto.getGraduationCertificate()));
+        entity.setComputerSkillsProof(encodeIfNotBase64(dto.getComputerSkillsProof()));
         entity.setPreviousEmploymentHistory(dto.getPreviousEmploymentHistory());
+        entity.setPermissions(dto.getPermissions());
     }
 }

@@ -22,7 +22,7 @@ import com.clinicadmin.validations.RequiredChecks;
 
 @RestController
 @RequestMapping("/clinic-admin")
-@CrossOrigin(origins = { "http://localhost:3000", "http://localhost:3001"})
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001" })
 public class PharmacistController {
 
 	@Autowired
@@ -37,9 +37,9 @@ public class PharmacistController {
 	}
 
 	// ------------------- Get All Pharmacists by Department -------------------
-	@GetMapping("getAllPharmacists/{department}")
-	public ResponseEntity<Response> getAllByDepartment(@PathVariable String department) {
-		Response response = pharmacistService.getAllPharmacistsByDepartment(department);
+	@GetMapping("getAllPharmacists/{hospitalId}")
+	public ResponseEntity<Response> getAllByDepartment(@PathVariable String hospitalId) {
+		Response response = pharmacistService.getAllPharmacistsByHospitalId(hospitalId);
 		return ResponseEntity.status(response.getStatus()).body(response);
 	}
 

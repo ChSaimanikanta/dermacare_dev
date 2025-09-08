@@ -95,7 +95,7 @@ public class DoctorServiceImpl implements DoctorService {
         }
 
         
-        Response fallback = new Response(false, null, ex.getMessage(), ex.status(), null, null);
+        Response fallback = new Response(false, null, ex.getMessage(), ex.status(), null, null, null, null, null);
         return ResponseEntity.status(ex.status()).body(fallback);
     }
 }

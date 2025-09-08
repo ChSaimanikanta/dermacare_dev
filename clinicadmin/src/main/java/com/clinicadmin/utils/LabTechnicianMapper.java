@@ -1,5 +1,6 @@
 package com.clinicadmin.utils;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
 import com.clinicadmin.dto.LabTechnicianRequestDTO;
@@ -7,23 +8,47 @@ import com.clinicadmin.entity.LabTechnicianEntity;
 
 public class LabTechnicianMapper {
 
-    // Convert RequestDTO -> Entity (encode files to Base64)
+    // Encode to Base64
+    private static String encodeIfNotBase64(String input) {
+        if (input == null || input.isBlank()) return input;
+
+        String base64Pattern = "^[A-Za-z0-9+/]*={0,2}$";
+        if (input.matches(base64Pattern) && input.length() % 4 == 0) {
+            try {
+                Base64.getDecoder().decode(input);
+                return input; // already Base64
+            } catch (IllegalArgumentException e) {
+                // not valid, so encode
+            }
+        }
+        return Base64.getEncoder().encodeToString(input.getBytes(StandardCharsets.UTF_8));
+    }
+
+    // Ensure Base64 for returning
+    private static String safeReturnAsBase64(String input) {
+        if (input == null) return null;
+        try {
+            Base64.getDecoder().decode(input);
+            return input;
+        } catch (Exception e) {
+            return Base64.getEncoder().encodeToString(input.getBytes(StandardCharsets.UTF_8));
+        }
+    }
+
+    // DTO → Entity
     public static LabTechnicianEntity toEntity(LabTechnicianRequestDTO dto) {
+        if (dto == null) return null;
+
         LabTechnicianEntity entity = new LabTechnicianEntity();
-        entity.setFullName(dto.getFullName());
+
+        entity.setId(dto.getId());
         entity.setClinicId(dto.getClinicId());
+        entity.setFullName(dto.getFullName());
         entity.setGender(dto.getGender());
         entity.setDateOfBirth(dto.getDateOfBirth());
         entity.setContactNumber(dto.getContactNumber());
         entity.setGovernmentId(dto.getGovernmentId());
-
-        // Encode fields if not null
-        if (dto.getQualificationOrCertifications() != null) {
-            entity.setQualificationOrCertifications(
-                Base64.getEncoder().encodeToString(dto.getQualificationOrCertifications().getBytes())
-            );
-        }
-
+        entity.setQualificationOrCertifications(dto.getQualificationOrCertifications());
         entity.setDateOfJoining(dto.getDateOfJoining());
         entity.setDepartmentOrAssignedLab(dto.getDepartmentOrAssignedLab());
         entity.setYearOfExperience(dto.getYearOfExperience());
@@ -33,39 +58,39 @@ public class LabTechnicianMapper {
         entity.setEmergencyContact(dto.getEmergencyContact());
         entity.setBankAccountDetails(dto.getBankAccountDetails());
 
-        if (dto.getMedicalFitnessCertificate() != null) {
-            entity.setMedicalFitnessCertificate(
-                Base64.getEncoder().encodeToString(dto.getMedicalFitnessCertificate().getBytes())
-            );
-        }
+        // Certificates (Base64)
+        entity.setMedicalFitnessCertificate(encodeIfNotBase64(dto.getMedicalFitnessCertificate()));
+        entity.setLabLicenseOrRegistration(encodeIfNotBase64(dto.getLabLicenseOrRegistration()));
+        entity.setProfilePicture(encodeIfNotBase64(dto.getProfilePicture()));
 
         entity.setEmailId(dto.getEmailId());
-        entity.setLabLicenseOrRegistration(dto.getLabLicenseOrRegistration());
+        entity.setUserName(dto.getUserName());
+        entity.setPassword(dto.getPassword());
+        entity.setRole(dto.getRole());
         entity.setVaccinationStatus(dto.getVaccinationStatus());
         entity.setPreviousEmploymentHistory(dto.getPreviousEmploymentHistory());
+
+        // ✅ Permissions
+        entity.setPermissions(dto.getPermissions());
+
         return entity;
     }
 
-    // Convert Entity -> RequestDTO (decode Base64 back to string)
-    public static LabTechnicianRequestDTO toResponseDTO(LabTechnicianEntity entity) {
+    // Entity → DTO
+    public static LabTechnicianRequestDTO toDTO(LabTechnicianEntity entity) {
+        if (entity == null) return null;
+
         LabTechnicianRequestDTO dto = new LabTechnicianRequestDTO();
+
         dto.setId(entity.getId());
+        dto.setClinicId(entity.getClinicId());
         dto.setFullName(entity.getFullName());
         dto.setGender(entity.getGender());
-        dto.setRole(entity.getRole());
         dto.setDateOfBirth(entity.getDateOfBirth());
         dto.setContactNumber(entity.getContactNumber());
         dto.setGovernmentId(entity.getGovernmentId());
-
-        // Decode fields if not null
-        if (entity.getQualificationOrCertifications() != null) {
-            dto.setQualificationOrCertifications(
-                new String(Base64.getDecoder().decode(entity.getQualificationOrCertifications()))
-            );
-        }
-
+        dto.setQualificationOrCertifications(entity.getQualificationOrCertifications());
         dto.setDateOfJoining(entity.getDateOfJoining());
-        dto.setClinicId(entity.getClinicId());
         dto.setDepartmentOrAssignedLab(entity.getDepartmentOrAssignedLab());
         dto.setYearOfExperience(entity.getYearOfExperience());
         dto.setSpecialization(entity.getSpecialization());
@@ -74,22 +99,20 @@ public class LabTechnicianMapper {
         dto.setEmergencyContact(entity.getEmergencyContact());
         dto.setBankAccountDetails(entity.getBankAccountDetails());
 
-        if (entity.getMedicalFitnessCertificate() != null) {
-            dto.setMedicalFitnessCertificate(
-                new String(Base64.getDecoder().decode(entity.getMedicalFitnessCertificate()))
-            );
-        }
+        dto.setMedicalFitnessCertificate(safeReturnAsBase64(entity.getMedicalFitnessCertificate()));
+        dto.setLabLicenseOrRegistration(safeReturnAsBase64(entity.getLabLicenseOrRegistration()));
+        dto.setProfilePicture(safeReturnAsBase64(entity.getProfilePicture()));
 
-        dto.setUserName(entity.getUserName());
         dto.setEmailId(entity.getEmailId());
-        dto.setLabLicenseOrRegistration(entity.getLabLicenseOrRegistration());
+        dto.setUserName(entity.getUserName());
+        dto.setPassword(entity.getPassword());
+        dto.setRole(entity.getRole());
         dto.setVaccinationStatus(entity.getVaccinationStatus());
         dto.setPreviousEmploymentHistory(entity.getPreviousEmploymentHistory());
-        return dto;
-    }
 
-    // ✅ Alias method so service can use LabTechnicianMapper::toDTO
-    public static LabTechnicianRequestDTO toDTO(LabTechnicianEntity entity) {
-        return toResponseDTO(entity);
+        // ✅ Permissions
+        dto.setPermissions(entity.getPermissions());
+
+        return dto;
     }
 }

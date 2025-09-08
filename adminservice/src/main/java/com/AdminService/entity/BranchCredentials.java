@@ -1,5 +1,7 @@
 package com.AdminService.entity;
 
+
+
 import java.util.List;
 import java.util.Map;
 
@@ -9,21 +11,22 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Document(collection = "clinic_credentials")
-public class ClinicCredentials {
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Document(collection = "branchCredentials")
+public class BranchCredentials {
     @Id
-    private String id;  
-    private String hospitalName;
-    private String userName;
-    private String password;
+    private String id;
+
+    private String branchId; 
+    private String userName;  
+    private String password;  
+    private String branchName;
     private String role;
     private Map<String, Map<String, List<String>>> permissions;
 
 
-    
-	}
-    
+}
+

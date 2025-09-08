@@ -1,5 +1,8 @@
 package com.clinicadmin.dto;
 
+import java.util.List;
+import java.util.Map;
+
 import com.clinicadmin.validations.FormatChecks;
 import com.clinicadmin.validations.RequiredChecks;
 
@@ -23,7 +26,7 @@ public class NurseDTO {
 	
 	private String hospitalId;
 	
-	private String role;
+
 
 	@NotBlank(message = "Full name is required", groups = RequiredChecks.class)
 	@Size(min = 3, max = 50, message = "Full name must be between 3 and 50 characters", groups = FormatChecks.class)
@@ -58,9 +61,8 @@ public class NurseDTO {
 	@NotNull(message = "Bank account details are required", groups = RequiredChecks.class)
 	private BankAccountDetails bankAccountDetails;
 
-	@NotBlank(message = "Medical fitness certificate is required", groups = RequiredChecks.class)
 	private String medicalFitnessCertificate;
-
+   @NotBlank(message=" Email Id required",  groups = RequiredChecks.class)
 	private String emailId;
 
 	private String previousEmploymentHistory;
@@ -68,6 +70,8 @@ public class NurseDTO {
 	private String experienceCertificates;
 
 	private boolean vaccinationStatus;
+    private String profilePicture;
+
 
 	private InsuranceOrESIDetails insuranceOrESIdetails;
 	
@@ -80,6 +84,11 @@ public class NurseDTO {
 	
 	private String userName;
 	private String password;
+	private  String role ;
+
+    private Map<String, List<String>> permissions;
+
+
 	
     public void trimNurseFields() {
         if (nurseId != null) nurseId = nurseId.trim();

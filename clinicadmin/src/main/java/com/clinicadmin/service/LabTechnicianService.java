@@ -1,11 +1,12 @@
 package com.clinicadmin.service;
 
-import com.clinicadmin.dto.LabTechnicianRequestDTO;
-import com.clinicadmin.dto.LabTechnicianLogin;
-import com.clinicadmin.dto.LabTechnicanRestPassword;
-import com.clinicadmin.dto.ResponseStructure;
-
 import java.util.List;
+
+import com.clinicadmin.dto.LabTechnicanRestPassword;
+import com.clinicadmin.dto.LabTechnicianLogin;
+import com.clinicadmin.dto.LabTechnicianRequestDTO;
+import com.clinicadmin.dto.OnBoardResponse;
+import com.clinicadmin.dto.ResponseStructure;
 
 public interface LabTechnicianService {
 
@@ -20,7 +21,7 @@ public interface LabTechnicianService {
     ResponseStructure<String> deleteLabTechnician(String id);
 
     // ✅ Login method
-    ResponseStructure<String> login(LabTechnicianLogin loginRequest);
+    OnBoardResponse login(LabTechnicianLogin loginRequest);
 
     // ✅ Reset Password method
     ResponseStructure<String> resetPassword(String username, LabTechnicanRestPassword resetRequest);
@@ -28,5 +29,6 @@ public interface LabTechnicianService {
 	ResponseStructure<LabTechnicianRequestDTO> getLabTechnicianByClinicAndId(String clinicId, String technicianId);
 
 	ResponseStructure<List<LabTechnicianRequestDTO>> getLabTechniciansByClinic(String clinicId);
+	
 
 }

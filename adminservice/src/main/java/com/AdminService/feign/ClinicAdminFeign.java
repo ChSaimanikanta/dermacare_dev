@@ -49,7 +49,7 @@ public interface ClinicAdminFeign {
 	///FALLBACK METHODS
 	
 	default ResponseEntity<?> clinicAdminServiceFallBack(Exception e){		 
-		return ResponseEntity.status(503).body(new Response(false,null,"CLINIC ADMIN SERVICE NOT AVAILABLE",503,null,null));
+		return ResponseEntity.status(503).body(new Response(false,null,"CLINIC ADMIN SERVICE NOT AVAILABLE",503,null,null, null, null, null));
 		
 	
 	}

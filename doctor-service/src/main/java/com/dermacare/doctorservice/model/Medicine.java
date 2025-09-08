@@ -3,6 +3,7 @@ package com.dermacare.doctorservice.model;
 import java.util.List;
 import java.util.UUID;
 
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,7 +18,8 @@ public class Medicine {
     private String duration;
     private String note;
     private String food;
-    private MedicineType medicineType;
+    private String medicineType;
     private String remindWhen;
+    private String others;
     private List<String> times;
 }

@@ -33,7 +33,7 @@ public class SecurityStaffController {
     public ResponseEntity<ResponseStructure<SecurityStaffDTO>> addSecurityStaff(@RequestBody SecurityStaffDTO dto) {
         ResponseStructure<SecurityStaffDTO> response = service.addSecurityStaff(dto);
         return new ResponseEntity<>(response, response.getHttpStatus());
-    }
+ }
 
     @PutMapping("/updateSecurityStaffById/{staffId}")
     public ResponseEntity<ResponseStructure<SecurityStaff>> updateSecurityStaff(
@@ -52,17 +52,16 @@ public class SecurityStaffController {
     public ResponseEntity<ResponseStructure<SecurityStaffDTO>> getSecurityStaffById(@PathVariable String staffId) {
         ResponseStructure<SecurityStaffDTO> response = service.getSecurityStaffById(staffId);
         return new ResponseEntity<>(response, response.getHttpStatus());
-    }
+}
 
       @GetMapping("/getAllSecurityStaffByClinicId/{clinicId}")
     public ResponseEntity<ResponseStructure<List<SecurityStaffDTO>>> getAllByClinicId(@PathVariable String clinicId) {
         ResponseStructure<List<SecurityStaffDTO>> response = service.getAllByClinicId(clinicId);
-        return new ResponseEntity<>(response, response.getHttpStatus());
-    }
+        return new ResponseEntity<>(response, response.getHttpStatus());}
 
     @DeleteMapping("deleteSecurityStaffById/{staffId}")
     public ResponseEntity<ResponseStructure<String>> deleteSecurityStaff(@PathVariable String staffId) {
         ResponseStructure<String> response = service.deleteSecurityStaff(staffId);
         return new ResponseEntity<>(response, response.getHttpStatus());
-    }
+}
 }

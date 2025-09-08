@@ -1,6 +1,9 @@
 package com.clinicadmin.dto;
 
 
+import java.util.List;
+import java.util.Map;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -19,7 +22,6 @@ public class ReceptionistRequestDTO {
     @NotBlank(message = "Clinic ID is mandatory")
     private String clinicId;
 
-    private String role = "RECEPTIONIST";
 
     @NotBlank(message = "Full name is required")
     private String fullName;
@@ -30,6 +32,7 @@ public class ReceptionistRequestDTO {
     @NotBlank(message = "Contact number is required")
     @Pattern(regexp = "^[0-9]{10}$", message = "Contact number must be 10 digits")
     private String contactNumber;
+
 
     @NotBlank(message = "Qualification is mandatory")
     private String qualification;
@@ -48,9 +51,17 @@ public class ReceptionistRequestDTO {
 
     @NotBlank(message = "Emergency contact is required")
     private String emergencyContact;
+    private String profilePicture;
+
 
     private String userName;   // auto = contactNumber
     private String password;   // auto-generate
+    
+
+    private String role;
+    
+    private Map<String, List<String>> permissions;
+
 
     @NotNull(message = "Bank Account Details are mandatory")
     private BankAccountDetails bankAccountDetails;

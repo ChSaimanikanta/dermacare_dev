@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.clinicadmin.dto.BookingResponse;
+import com.clinicadmin.dto.BookingResponseDTO;
 import com.clinicadmin.dto.ReportsDTO;
 import com.clinicadmin.dto.ReportsDtoList;
 import com.clinicadmin.dto.Response;
@@ -20,7 +21,6 @@ import com.clinicadmin.entity.ReportsList;
 import com.clinicadmin.feignclient.BookingFeign;
 import com.clinicadmin.repository.ReportsRepository;
 import com.clinicadmin.service.ReportsService;
-import com.clinicadmin.utils.ExtractFeignMessage;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -52,8 +52,8 @@ public class ReportsServiceImpl implements ReportsService {
 						.reportDate(d.getReportDate()).reportStatus(d.getReportStatus()).reportType(d.getReportType())
 						.customerMobileNumber(d.getCustomerMobileNumber()).reportFile(list).build();
 				reports.add(report);}
-				ResponseEntity<ResponseStructure<BookingResponse>> r = bookingFeign.getBookedService(bkngId);
-				BookingResponse res = r.getBody().getData();
+				ResponseEntity<ResponseStructure<BookingResponseDTO>> r = bookingFeign.getBookedService(bkngId);
+				BookingResponseDTO res = r.getBody().getData();
 				if(res!=null) {			
 					res.setReports(dto);
 					bookingFeign.updateAppointment(res);}

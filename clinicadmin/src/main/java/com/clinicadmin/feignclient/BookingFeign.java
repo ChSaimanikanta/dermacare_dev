@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.clinicadmin.dto.BookingResponse;
+import com.clinicadmin.dto.BookingResponseDTO;
 import com.clinicadmin.dto.Response;
 import com.clinicadmin.dto.ResponseStructure;
 
@@ -15,10 +16,14 @@ import com.clinicadmin.dto.ResponseStructure;
 public interface BookingFeign {
 
 	@GetMapping("/api/v1/getBookedServiceById/{id}")
-	public ResponseEntity<ResponseStructure<BookingResponse>> getBookedService(@PathVariable String id);
+	public ResponseEntity<ResponseStructure<BookingResponseDTO>> getBookedService(@PathVariable String id);
+	
+	
+	@GetMapping("/api/v1/getAppointmentByPatientId/{patientId}")
+	public ResponseEntity<?> getAppointmentByPatientId(@PathVariable String patientId);
 	
 	@PutMapping("/api/v1/updateAppointment")
-	public ResponseEntity<?> updateAppointment(@RequestBody BookingResponse bookingResponse );
+	public ResponseEntity<?> updateAppointment(@RequestBody BookingResponseDTO res );
 	
 	//---------------------------to get patientdetails by bookingId,pateintId,mobileNumber---------------------------
 	@GetMapping("/api/v1/getPatientDetailsForConsetForm/{bookingId}/{patientId}/{mobileNumber}")

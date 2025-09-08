@@ -9,6 +9,9 @@ import lombok.NoArgsConstructor;
 @Data
 public class PharmacistDTO {
 	private String id;
+	
+	private String hospitalId;
+
 	private String role = "PHARMACIST";
 	private String pharmacistId;
 	private String fullName;
@@ -29,6 +32,8 @@ public class PharmacistDTO {
 	private String previousEmploymentHistory;
 	private String experienceCertificates;
 	private String emergencyContactNumber;
+    private String profilePicture;
+
 	
 	private String userName;
 	private String password;

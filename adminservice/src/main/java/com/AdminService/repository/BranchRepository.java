@@ -18,4 +18,6 @@ public interface BranchRepository extends MongoRepository<Branch, String>
 	Optional<Branch> findByBranchId(String branchId);
 
 	void deleteByBranchId(String branchId);
+
+	Branch findFirstByClinicId(String userName);
 }

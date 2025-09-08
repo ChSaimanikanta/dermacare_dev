@@ -126,13 +126,15 @@ public class WardBoyServiceImpl implements WardBoyService {
 
         if (dto.getEmailId() != null) existing.setEmailId(dto.getEmailId());
         if (dto.getPreviousEmploymentHistory() != null) existing.setPreviousEmploymentHistory(dto.getPreviousEmploymentHistory());
-        if (dto.getRole() != null) existing.setRole(dto.getRole());
+        
+        
+        if (dto.getBasicHealthFirstAidTrainingCertificate() != null) 
+            existing.setBasicHealthFirstAidTrainingCertificate(WardBoyMapper.toEntity(dto).getBasicHealthFirstAidTrainingCertificate());
 
-      
         
-        
-        
-        
+        if (dto.getBasicHealthFirstAidTrainingCertificate() != null) 
+            existing.setProfilePicture(WardBoyMapper.toEntity(dto).getProfilePicture());
+
         
         existing.setUsername(existing.getUsername());
         existing.setPassword(existing.getPassword());

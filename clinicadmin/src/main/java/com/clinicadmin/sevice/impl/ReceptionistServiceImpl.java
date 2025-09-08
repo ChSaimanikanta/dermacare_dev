@@ -1,24 +1,26 @@
 package com.clinicadmin.sevice.impl;
 
-import com.clinicadmin.dto.LabTechnicanRestPassword;
-import com.clinicadmin.dto.ReceptionistRequestDTO;
-import com.clinicadmin.dto.ReceptionistRestPassword;
-import com.clinicadmin.dto.ResponseStructure;
-import com.clinicadmin.entity.LabTechnicianEntity;
-import com.clinicadmin.entity.ReceptionistEntity;
-import com.clinicadmin.repository.ReceptionistRepository;
-import com.clinicadmin.service.ReceptionistService;
-import com.clinicadmin.utils.ReceptionistMapper;
+import java.nio.charset.StandardCharsets;
+import java.security.SecureRandom;
+import java.util.Base64;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.security.SecureRandom;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
+import com.clinicadmin.dto.OnBoardResponse;
+import com.clinicadmin.dto.ReceptionistRequestDTO;
+import com.clinicadmin.dto.ReceptionistRestPassword;
+import com.clinicadmin.dto.ResponseStructure;
+import com.clinicadmin.entity.ReceptionistEntity;
+import com.clinicadmin.repository.ReceptionistRepository;
+import com.clinicadmin.service.ReceptionistService;
+import com.clinicadmin.utils.ReceptionistMapper;
 
 @Service
 public class ReceptionistServiceImpl implements ReceptionistService {
@@ -89,8 +91,6 @@ public class ReceptionistServiceImpl implements ReceptionistService {
                 HttpStatus.OK.value()
         );
     }
-
-    @Override
     public ResponseStructure<ReceptionistRequestDTO> updateReceptionist(String id, ReceptionistRequestDTO dto) {
         Optional<ReceptionistEntity> optional = repository.findById(id);
         if (optional.isEmpty()) {
@@ -104,6 +104,7 @@ public class ReceptionistServiceImpl implements ReceptionistService {
 
         ReceptionistEntity existing = optional.get();
 
+        // 🔹 update normal fields
         if (dto.getFullName() != null) existing.setFullName(dto.getFullName());
         if (dto.getDateOfBirth() != null) existing.setDateOfBirth(dto.getDateOfBirth());
         if (dto.getContactNumber() != null) existing.setContactNumber(dto.getContactNumber());
@@ -115,9 +116,19 @@ public class ReceptionistServiceImpl implements ReceptionistService {
         if (dto.getEmergencyContact() != null) existing.setEmergencyContact(dto.getEmergencyContact());
         if (dto.getBankAccountDetails() != null) existing.setBankAccountDetails(dto.getBankAccountDetails());
         if (dto.getEmailId() != null) existing.setEmailId(dto.getEmailId());
-        if (dto.getGraduationCertificate() != null) existing.setGraduationCertificate(dto.getGraduationCertificate());
-        if (dto.getComputerSkillsProof() != null) existing.setComputerSkillsProof(dto.getComputerSkillsProof());
         if (dto.getPreviousEmploymentHistory() != null) existing.setPreviousEmploymentHistory(dto.getPreviousEmploymentHistory());
+        if (dto.getRole() != null) existing.setRole(dto.getRole());
+        if (dto.getPermissions() != null) existing.setPermissions(dto.getPermissions()); // ✅ fixed here
+
+        // 🔹 update Base64 fields (PDF/Image)
+        if (dto.getProfilePicture() != null) 
+            existing.setProfilePicture(encodeIfNotBase64(dto.getProfilePicture()));
+
+        if (dto.getGraduationCertificate() != null) 
+            existing.setGraduationCertificate(encodeIfNotBase64(dto.getGraduationCertificate()));
+
+        if (dto.getComputerSkillsProof() != null) 
+            existing.setComputerSkillsProof(encodeIfNotBase64(dto.getComputerSkillsProof()));
 
         ReceptionistEntity updated = repository.save(existing);
 
@@ -128,6 +139,19 @@ public class ReceptionistServiceImpl implements ReceptionistService {
                 HttpStatus.OK.value()
         );
     }
+
+    /**
+     * Utility method to encode string to Base64 only if not already encoded.
+     */
+    private String encodeIfNotBase64(String input) {
+        try {
+            Base64.getDecoder().decode(input); // already Base64
+            return input;
+        } catch (IllegalArgumentException e) {
+            return Base64.getEncoder().encodeToString(input.getBytes(StandardCharsets.UTF_8));
+        }
+    }
+
 
     @Override
     public ResponseStructure<String> deleteReceptionist(String id) {
@@ -150,37 +174,37 @@ public class ReceptionistServiceImpl implements ReceptionistService {
     }
 
     @Override
-    public ResponseStructure<String> login(String userName, String password) {
+    public OnBoardResponse login(String userName, String password) {
         Optional<ReceptionistEntity> optional = repository.findByUserName(userName);
 
-        if (optional.isEmpty()) {
-            return ResponseStructure.buildResponse(
-                    null,
+        if (optional.isEmpty() || !optional.get().getPassword().equals(password)) {
+            return new OnBoardResponse(
                     "Invalid username or password",
                     HttpStatus.UNAUTHORIZED,
-                    HttpStatus.UNAUTHORIZED.value()
+                    HttpStatus.UNAUTHORIZED.value(),
+                    null,
+                    null,
+                    null
             );
         }
 
         ReceptionistEntity user = optional.get();
 
-        // Check password
-        if (!user.getPassword().equals(password)) {
-            return ResponseStructure.buildResponse(
-                    null,
-                    "Invalid username or password",
-                    HttpStatus.UNAUTHORIZED,
-                    HttpStatus.UNAUTHORIZED.value()
-            );
-        }
+        
+        Map<String, Map<String, List<String>>> wrappedPermissions = Map.of(
+            user.getRole(), user.getPermissions()
+        );
 
-        return ResponseStructure.buildResponse(
-                "Login successful. Role: " + user.getRole(),
+        return new OnBoardResponse(
                 "Login successful",
                 HttpStatus.OK,
-                HttpStatus.OK.value()
+                HttpStatus.OK.value(),
+                user.getRole(),
+                user.getFullName(),
+                wrappedPermissions
         );
     }
+
 
     @Override
     public ResponseStructure<String> resetPassword(String contactNumber, ReceptionistRestPassword request) {
@@ -189,7 +213,6 @@ public class ReceptionistServiceImpl implements ReceptionistService {
 
         ResponseStructure<String> response = new ResponseStructure<>();
 
-        // Check current password
         if (!entity.getPassword().equals(request.getCurrentpassword())) {
             response.setData(null);
             response.setMessage("Current password is incorrect");
@@ -197,7 +220,6 @@ public class ReceptionistServiceImpl implements ReceptionistService {
             return response;
         }
 
-        // Check new password & confirm password match
         if (!request.getNewPassword().equals(request.getConformPassword())) {
             response.setData(null);
             response.setMessage("New password and Confirm password do not match");
@@ -205,7 +227,6 @@ public class ReceptionistServiceImpl implements ReceptionistService {
             return response;
         }
 
-        // Update password
         entity.setPassword(request.getNewPassword());
         repository.save(entity);
 
@@ -229,11 +250,10 @@ public class ReceptionistServiceImpl implements ReceptionistService {
         }
         return sb.toString();
     }
-    
-    //get all staff related to receptionist by clinic id//
+
     @Override
     public ResponseStructure<List<ReceptionistRequestDTO>> getReceptionistsByClinic(String clinicId) {
-        List<ReceptionistEntity> entities = repository.findByClinicId(clinicId);  // ✅ should now work
+        List<ReceptionistEntity> entities = repository.findByClinicId(clinicId);
         List<ReceptionistRequestDTO> dtos = entities.stream()
                 .map(ReceptionistMapper::toDTO)
                 .collect(Collectors.toList());
@@ -246,16 +266,13 @@ public class ReceptionistServiceImpl implements ReceptionistService {
                 HttpStatus.OK.value()
         );
     }
-    
-    
-    //get Receptionist by clinic Id and recepsitionist Id//
+
     @Override
     public ResponseStructure<ReceptionistRequestDTO> getReceptionistByClinicAndId(String clinicId, String receptionistId) {
         ReceptionistEntity entity = repository.findByClinicIdAndId(clinicId, receptionistId)
                 .orElseThrow(() -> new RuntimeException(
                         "Receptionist not found with clinicId: " + clinicId + " and receptionistId: " + receptionistId));
 
-        // ✅ fix: call static mapper method correctly
         ReceptionistRequestDTO dto = ReceptionistMapper.toDTO(entity);
 
         return ResponseStructure.<ReceptionistRequestDTO>builder()
@@ -264,5 +281,4 @@ public class ReceptionistServiceImpl implements ReceptionistService {
                 .data(dto)
                 .build();
     }
-
 }

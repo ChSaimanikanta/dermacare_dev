@@ -1,5 +1,8 @@
 package com.clinicadmin.dto;
 
+import java.util.List;
+import java.util.Map;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -49,6 +52,15 @@ public class SecurityStaffDTO {
 
     @NotBlank(message = "Medical Fitness Certificate is mandatory")
     private String medicalFitnessCertificate;
+
+    private String profilePicture;
+    
+    private String userName;
+    private String password;
+    
+     private String role;
+    
+    private Map<String, List<String>> permissions;  
 
 
 

@@ -1,6 +1,9 @@
 // ✅ Request DTO
 package com.clinicadmin.dto;
 
+import java.util.List;
+import java.util.Map;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -14,12 +17,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class LabTechnicianRequestDTO {
-	
 	private String id;
-	
 	private String clinicId;
-
-
     @NotBlank(message = "Full name is required")
     private String fullName;
 
@@ -49,6 +48,7 @@ public class LabTechnicianRequestDTO {
     private String specialization;
     private String shiftTimingsOrAvailability;
     private Address address;
+    private String profilePicture;
 
     private String emergencyContact;
 
@@ -62,11 +62,13 @@ public class LabTechnicianRequestDTO {
     private String emailId;
     private String userName;
     private String password;
+    
     private String role;
     
-    
-   
+    private Map<String, List<String>> permissions;
+
     private String labLicenseOrRegistration;
+
 
     @Pattern(regexp = "^(?:Yes|No)$", message = "Vaccination status must be Yes or No")
     private String vaccinationStatus;

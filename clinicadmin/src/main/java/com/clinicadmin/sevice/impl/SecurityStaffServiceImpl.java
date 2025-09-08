@@ -1,5 +1,6 @@
 package com.clinicadmin.sevice.impl;
-
+import java.security.SecureRandom;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -21,10 +22,17 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class SecurityStaffServiceImpl implements SecurityStaffService {
-   
-	@Autowired
-    private  SecurityStaffRepository repository;
 
+    @Autowired
+    private SecurityStaffRepository repository;
+
+    private static final SecureRandom random = new SecureRandom();
+
+    private String generateUniquePassword() {
+        byte[] randomBytes = new byte[8]; // 8 bytes ≈ 12 chars
+        random.nextBytes(randomBytes);
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
+    }
 
     @Override
     public ResponseStructure<SecurityStaffDTO> addSecurityStaff(SecurityStaffDTO dto) {
@@ -37,9 +45,20 @@ public class SecurityStaffServiceImpl implements SecurityStaffService {
                     "Contact number already exists",
                     HttpStatus.CONFLICT,
                     HttpStatus.CONFLICT.value()
-            );}
-dto.setSecurityStaffId(IdGenerator.generateSecurityStaffId());
+            );
+        }
+
+        // Generate ID
+        dto.setSecurityStaffId(IdGenerator.generateSecurityStaffId());
+
+        // Convert DTO → Entity
         SecurityStaff staff = SecurityStaffMapper.toEntity(dto);
+
+        // ⚡ Business rules
+        staff.setUserName(dto.getContactNumber());       // mobile as username
+        staff.setPassword(generateUniquePassword());     // random unique password
+        staff.setRole("SECURITY");                       // default role
+
         SecurityStaff saved = repository.save(staff);
 
         return ResponseStructure.buildResponse(
@@ -62,6 +81,7 @@ dto.setSecurityStaffId(IdGenerator.generateSecurityStaffId());
             );
         }
 
+        // Check contact number uniqueness
         List<SecurityStaff> contactOwners = repository.findByContactNumber(staff.getContactNumber());
         boolean conflict = contactOwners.stream()
                 .anyMatch(s -> !s.getSecurityStaffId().equals(staff.getSecurityStaffId()));
@@ -77,6 +97,7 @@ dto.setSecurityStaffId(IdGenerator.generateSecurityStaffId());
 
         SecurityStaff existing = existingOpt.get();
 
+        // Update allowed fields
         existing.setFullName(staff.getFullName());
         existing.setDateOfBirth(staff.getDateOfBirth());
         existing.setGender(staff.getGender());
@@ -91,6 +112,11 @@ dto.setSecurityStaffId(IdGenerator.generateSecurityStaffId());
         existing.setEmailId(staff.getEmailId());
         existing.setTraningOrGuardLicense(staff.getTraningOrGuardLicense());
         existing.setPreviousEmployeeHistory(staff.getPreviousEmployeeHistory());
+        existing.setProfilePicture(staff.getProfilePicture());
+
+        // ⚡ Do NOT overwrite username/password/role unless required
+        // If you want username to follow updated contactNumber:
+        existing.setUserName(staff.getContactNumber());
 
         SecurityStaff updated = repository.save(existing);
 

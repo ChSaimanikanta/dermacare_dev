@@ -1,9 +1,9 @@
 package com.AdminService.dto;
 
 import java.util.List;
+import java.util.Map;
 
 import com.AdminService.entity.Branch;
-import com.AdminService.entity.QuetionsAndAnswerForAddClinic;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Min;
@@ -111,8 +111,11 @@ public class ClinicDTO {
 	@NotBlank(message = "Walkthrough URL is required")
 	@Pattern(regexp = "^(http|https)://.*$", message = "Walkthrough must be a valid URL")
 	private String walkthrough;
+    private List<Branch> branches;
 
-	// Social Media
+ // ClinicCredentials.java
+    private String role;  
+    private Map<String, Map<String, List<String>>> permissions;
 	private String instagramHandle;
 	private String twitterHandle;
 	private String facebookHandle;

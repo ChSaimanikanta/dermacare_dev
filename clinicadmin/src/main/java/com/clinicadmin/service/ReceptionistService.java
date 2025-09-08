@@ -1,5 +1,6 @@
 package com.clinicadmin.service;
 
+import com.clinicadmin.dto.OnBoardResponse;
 import com.clinicadmin.dto.ReceptionistRequestDTO;
 import com.clinicadmin.dto.ReceptionistRestPassword;
 import com.clinicadmin.dto.ResponseStructure;
@@ -18,7 +19,7 @@ public interface ReceptionistService {
 
     ResponseStructure<String> deleteReceptionist(String id);
 
-    ResponseStructure<String> login(String userName, String password);
+    OnBoardResponse login(String userName, String password);
 
 //  ResponseStructure<String> resetPassword(ReceptionistRestPassword request);
 

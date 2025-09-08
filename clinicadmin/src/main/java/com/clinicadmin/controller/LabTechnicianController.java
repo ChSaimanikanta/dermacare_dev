@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import com.clinicadmin.dto.LabTechnicanRestPassword;
 import com.clinicadmin.dto.LabTechnicianLogin;
 import com.clinicadmin.dto.LabTechnicianRequestDTO;
+import com.clinicadmin.dto.OnBoardResponse;
 import com.clinicadmin.dto.ResponseStructure;
 import com.clinicadmin.service.LabTechnicianService;
 
@@ -41,10 +42,11 @@ public class LabTechnicianController {
     // LOGIN
     // -------------------------
     @PostMapping("/login")
-    public ResponseEntity<ResponseStructure<String>> login(@RequestBody LabTechnicianLogin loginRequest) {
-        ResponseStructure<String> response = service.login(loginRequest);
+    public ResponseEntity<OnBoardResponse> login(@RequestBody LabTechnicianLogin loginRequest) {
+        OnBoardResponse response = service.login(loginRequest);
         return ResponseEntity.status(response.getHttpStatus()).body(response);
     }
+
     @PutMapping("/reset-password/{contactNumber}")
     public ResponseEntity<ResponseStructure<String>> resetPassword(
             @PathVariable String contactNumber,

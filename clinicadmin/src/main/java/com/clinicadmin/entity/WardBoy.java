@@ -1,5 +1,8 @@
 package com.clinicadmin.entity;
 
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -32,6 +35,9 @@ public class WardBoy {
     private Address address;
     private String emergencyContact;
     
+    private String profilePicture;
+
+    
     private String governmentId;
     private String dateOfJoining;
     private String department;
@@ -48,5 +54,9 @@ public class WardBoy {
 
     private String password;
     
-    private  String role = "WARD_BOY";
+    private  String role;
+    
+    
+    private Map<String, List<String>> permissions;
+
 }

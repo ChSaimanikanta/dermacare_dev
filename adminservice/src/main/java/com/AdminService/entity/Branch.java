@@ -1,9 +1,13 @@
 package com.AdminService.entity;
 
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -27,6 +31,12 @@ public class Branch {
 	private String latitude;
 	private String longitude;
 	private String virtualClinicTour;
+
+	private String role;            
+	private Map<String, Map<String, List<String>>> permissions;
+
+
+
 }
 
 

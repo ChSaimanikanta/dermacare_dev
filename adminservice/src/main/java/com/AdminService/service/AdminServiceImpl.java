@@ -32,6 +32,8 @@ import com.AdminService.dto.SubServicesDto;
 import com.AdminService.dto.SubServicesInfoDto;
 import com.AdminService.dto.UpdateClinicCredentials;
 import com.AdminService.entity.Admin;
+import com.AdminService.entity.Branch;
+import com.AdminService.entity.BranchCredentials;
 import com.AdminService.entity.Clinic;
 import com.AdminService.entity.ClinicCredentials;
 import com.AdminService.feign.BookingFeign;
@@ -39,9 +41,12 @@ import com.AdminService.feign.ClinicAdminFeign;
 import com.AdminService.feign.CssFeign;
 import com.AdminService.feign.CustomerFeign;
 import com.AdminService.repository.AdminRepository;
+import com.AdminService.repository.BranchCredentialsRepository;
+import com.AdminService.repository.BranchRepository;
 import com.AdminService.repository.ClinicCredentialsRepository;
 import com.AdminService.repository.ClinicRep;
 import com.AdminService.util.ExtractFeignMessage;
+import com.AdminService.util.PermissionsUtil;
 import com.AdminService.util.Response;
 import com.AdminService.util.ResponseStructure;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -75,6 +80,13 @@ public class AdminServiceImpl implements AdminService {
 	@Autowired
 
 	private BookingFeign bookingFeign;
+	
+	@Autowired
+	private BranchRepository branchRepository;
+	
+	@Autowired
+	
+	private BranchCredentialsRepository branchCredentialsRepository;
 	
 	
 //	@Autowired
@@ -193,400 +205,217 @@ public class AdminServiceImpl implements AdminService {
 	    return response;
 	}
 
-	
-
-	//CLINIC MANAGEMENT
-
-			
-
-	// Create Clinic
 
 	@Override
-
-	
-
 	public Response createClinic(ClinicDTO clinic) {
 
 	    Response response = new Response();
 
 	    try {
-
-	        // Check if contact number already exists
-
 	        Clinic existingClinic = clinicRep.findByContactNumber(clinic.getContactNumber());
 
 	        if (existingClinic != null) {
-
 	            response.setMessage("ContactNumber already exists");
-
 	            response.setSuccess(false);
-
-	            response.setStatus(409); 
-	            
-	            
-
+	            response.setStatus(409);
 	            return response;
-
 	        }
+
 	        Clinic savedClinic = new Clinic();
-	        //List<Branch> branch=new List<Branch>();
 
 	        savedClinic.setName(clinic.getName());
-	    
 	        savedClinic.setHospitalId(generateHospitalId()); // Generate new hospitalId
-
 	        savedClinic.setAddress(clinic.getAddress());
-
 	        savedClinic.setCity(clinic.getCity());
-
 	        savedClinic.setContactNumber(clinic.getContactNumber());
-
 	        savedClinic.setOpeningTime(clinic.getOpeningTime());
-
 	        savedClinic.setClosingTime(clinic.getClosingTime());
-
 	        savedClinic.setEmailAddress(clinic.getEmailAddress());
-
 	        savedClinic.setWebsite(clinic.getWebsite());
-
 	        savedClinic.setLicenseNumber(clinic.getLicenseNumber());
-
 	        savedClinic.setIssuingAuthority(clinic.getIssuingAuthority());
-
 	        savedClinic.setRecommended(clinic.isRecommended());
-
 	        savedClinic.setClinicType(clinic.getClinicType());
-
-	        savedClinic.setHospitalOverallRating(0.0); // default rating on creation
-
+	        savedClinic.setHospitalOverallRating(0.0); 
 	        savedClinic.setSubscription(clinic.getSubscription());
-	        
 	        savedClinic.setFreeFollowUps(clinic.getFreeFollowUps());
-	        
 	        savedClinic.setLatitude(clinic.getLatitude());
 	        savedClinic.setLongitude(clinic.getLongitude());
 	        savedClinic.setWalkthrough(clinic.getWalkthrough());
 	        savedClinic.setNabhScore(clinic.getNabhScore());
 	        savedClinic.setBranch(clinic.getBranch());
-	       
-	        
+	        savedClinic.setRole("admin");
+	        savedClinic.setPermissions(PermissionsUtil.getAdminPermissions());
 
-	        // Decode hospitalLogo
-
+	        // 🔹 Handle documents safely
 	        try {
-
 	            if (clinic.getHospitalLogo() != null && !clinic.getHospitalLogo().isEmpty()) {
-
 	                savedClinic.setHospitalLogo(Base64.getDecoder().decode(clinic.getHospitalLogo()));
-
 	            }
-
 	        } catch (Exception e) {
-
 	            throw new IllegalArgumentException("Invalid Base64 in hospitalLogo");
-
 	        }
 
-
-
-	        // Hospital Documents (single file assumed in List<String>)
-
 	        try {
-
-	            
-
-	        	// If hospitalDocuments is String
-
-	        	if (clinic.getHospitalDocuments() != null && !clinic.getHospitalDocuments().isEmpty()) {
-
-	        	    savedClinic.setHospitalDocuments(Base64.getDecoder().decode(clinic.getHospitalDocuments()));
-
-	        	}
-
-
-
-	        } catch (Exception e) {
-
-	            throw new IllegalArgumentException("Invalid Base64 in hospitalDocuments");
-
-	        }
-
-
-
-	        // Contractor Documents (single file assumed in List<String>)
-
-	        try {
-
-	            if (clinic.getContractorDocuments() != null && !clinic.getContractorDocuments().isEmpty()) {
-
-	                savedClinic.setContractorDocuments(Base64.getDecoder().decode(clinic.getContractorDocuments()));
-
+	            if (clinic.getHospitalDocuments() != null && !clinic.getHospitalDocuments().isEmpty()) {
+	                savedClinic.setHospitalDocuments(Base64.getDecoder().decode(clinic.getHospitalDocuments()));
 	            }
-
 	        } catch (Exception e) {
-
-	            throw new IllegalArgumentException("Invalid Base64 in contractorDocuments");
-
+	            throw new IllegalArgumentException("Invalid Base64 in hospitalDocuments");
 	        }
 
-
-
-	        // Pharmacist Info
+	        try {
+	            if (clinic.getContractorDocuments() != null && !clinic.getContractorDocuments().isEmpty()) {
+	                savedClinic.setContractorDocuments(Base64.getDecoder().decode(clinic.getContractorDocuments()));
+	            }
+	        } catch (Exception e) {
+	            throw new IllegalArgumentException("Invalid Base64 in contractorDocuments");
+	        }
 
 	        savedClinic.setHasPharmacist(clinic.getHasPharmacist());
-
 	        if ("Yes".equalsIgnoreCase(clinic.getHasPharmacist())) {
-
 	            if (clinic.getPharmacistCertificate() != null && !clinic.getPharmacistCertificate().isEmpty()) {
-
 	                try {
-
 	                    savedClinic.setPharmacistCertificate(Base64.getDecoder().decode(clinic.getPharmacistCertificate()));
-
 	                } catch (Exception e) {
-
 	                    throw new IllegalArgumentException("Invalid Base64 in pharmacistCertificate");
-
 	                }
-
 	            } else {
-
 	                throw new IllegalArgumentException("Pharmacist Certificate is required when hasPharmacist is Yes");
-
 	            }
-
 	        } else {
-
 	            savedClinic.setPharmacistCertificate(null);
-
 	        }
-	        // Medicines Handling
 
 	        savedClinic.setMedicinesSoldOnSite(clinic.getMedicinesSoldOnSite());
-
 	        if ("Yes".equalsIgnoreCase(clinic.getMedicinesSoldOnSite())) {
-
 	            if (clinic.getDrugLicenseCertificate() != null && !clinic.getDrugLicenseCertificate().isEmpty()) {
-
 	                try {
-
 	                    savedClinic.setDrugLicenseCertificate(Base64.getDecoder().decode(clinic.getDrugLicenseCertificate()));
-
 	                } catch (Exception e) {
-
 	                    throw new IllegalArgumentException("Invalid Base64 in drugLicenseCertificate");
-
 	                }
-
 	            } else {
-
 	                throw new IllegalArgumentException("Drug License Certificate is required when medicinesSoldOnSite is Yes");
-
 	            }
-
-
 
 	            if (clinic.getDrugLicenseFormType() != null && !clinic.getDrugLicenseFormType().isEmpty()) {
-
 	                try {
-
 	                    savedClinic.setDrugLicenseFormType(Base64.getDecoder().decode(clinic.getDrugLicenseFormType()));
-
 	                } catch (Exception e) {
-
 	                    throw new IllegalArgumentException("Invalid Base64 in drugLicenseFormType");
-
 	                }
-
 	            } else {
-
 	                throw new IllegalArgumentException("Drug License Form Type is required when medicinesSoldOnSite is Yes");
-
 	            }
-
 	        } else {
-
 	            savedClinic.setDrugLicenseCertificate(null);
-
 	            savedClinic.setDrugLicenseFormType(null);
-
 	        }
-	        
- // Consultation Expiration (required)
 
+	        // 🔹 Consultation expiration required
 	        if (clinic.getConsultationExpiration() == null || clinic.getConsultationExpiration().isBlank()) {
-
 	            throw new IllegalArgumentException("Consultation expiration is required");
-
 	        }
-
 	        savedClinic.setConsultationExpiration(clinic.getConsultationExpiration());
 
-
-
-	        // Other Licenses and certificates (optional)
-
+	        // 🔹 Certificates & Others
 	        try {
-
 	            if (clinic.getClinicalEstablishmentCertificate() != null && !clinic.getClinicalEstablishmentCertificate().isEmpty())
-
 	                savedClinic.setClinicalEstablishmentCertificate(Base64.getDecoder().decode(clinic.getClinicalEstablishmentCertificate()));
 
-
-
 	            if (clinic.getBusinessRegistrationCertificate() != null && !clinic.getBusinessRegistrationCertificate().isEmpty())
-
 	                savedClinic.setBusinessRegistrationCertificate(Base64.getDecoder().decode(clinic.getBusinessRegistrationCertificate()));
 
-
-
 	            if (clinic.getBiomedicalWasteManagementAuth() != null && !clinic.getBiomedicalWasteManagementAuth().isEmpty())
-
 	                savedClinic.setBiomedicalWasteManagementAuth(Base64.getDecoder().decode(clinic.getBiomedicalWasteManagementAuth()));
 
-
-
 	            if (clinic.getTradeLicense() != null && !clinic.getTradeLicense().isEmpty())
-
 	                savedClinic.setTradeLicense(Base64.getDecoder().decode(clinic.getTradeLicense()));
 
-
-
 	            if (clinic.getFireSafetyCertificate() != null && !clinic.getFireSafetyCertificate().isEmpty())
-
 	                savedClinic.setFireSafetyCertificate(Base64.getDecoder().decode(clinic.getFireSafetyCertificate()));
 
-
-
 	            if (clinic.getProfessionalIndemnityInsurance() != null && !clinic.getProfessionalIndemnityInsurance().isEmpty())
-
 	                savedClinic.setProfessionalIndemnityInsurance(Base64.getDecoder().decode(clinic.getProfessionalIndemnityInsurance()));
 
-
-
 	            if (clinic.getGstRegistrationCertificate() != null && !clinic.getGstRegistrationCertificate().isEmpty())
-
 	                savedClinic.setGstRegistrationCertificate(Base64.getDecoder().decode(clinic.getGstRegistrationCertificate()));
 
-
-
-	            // Others - multiple documents
-
 	            if (clinic.getOthers() != null && !clinic.getOthers().isEmpty()) {
-
 	                List<byte[]> othersList = new ArrayList<>();
-
 	                for (String base64File : clinic.getOthers()) {
-
 	                    othersList.add(Base64.getDecoder().decode(base64File));
-
 	                }
-
 	                savedClinic.setOthers(othersList);
-
 	            }
-
 	        } catch (Exception e) {
-
 	            throw new IllegalArgumentException("Invalid Base64 in one of the document fields: " + e.getMessage());
-
 	        }
-	        // Social Media Handles
 
+	        // 🔹 Social Media
 	        savedClinic.setInstagramHandle(clinic.getInstagramHandle());
-
 	        savedClinic.setTwitterHandle(clinic.getTwitterHandle());
-
 	        savedClinic.setFacebookHandle(clinic.getFacebookHandle());
-	        
-//	        if (clinic.getOnboardingQA() != null && !clinic.getOnboardingQA().isEmpty()) {
-//	            List<QuestionAnswerDTO> qaListDTO = clinic.getOnboardingQA(); // It's already a list
 
-//	            // Convert DTO list to entity list, ignoring null questions
-//	            List<QuestionAnswer> clinicQAList = qaListDTO.stream()
-//	                .filter(dto -> dto != null && dto.getQuestion() != null && !dto.getQuestion().isBlank())
-//	                .map(dto -> new QuestionAnswer(dto.getQuestion(), dto.isAnswer()))
-//	                .collect(Collectors.toList());
-//
-//	            // Set onboarding QA for clinic
-//	            QuetionsAndAnswerForAddClinic clinicQA = new QuetionsAndAnswerForAddClinic();
-//	            clinicQA.setQuestionsAndAnswers(clinicQAList);
-//	            savedClinic.setOnboardingQA(clinicQA);
-//
-//	            // Calculate score: count of true answers (rounded just in case)
-//	            int totalQuestions = clinicQAList.size();
-//	            double answeredCount = clinicQAList.stream().filter(QuestionAnswer::isAnswer).count();
-//	            int roundedScore = (int) Math.round(answeredCount / 2.0);
-//	            savedClinic.setScore(roundedScore);
-//	            
-//
-//	            savedClinic.setScore(roundedScore);
-//	            savedClinic.setQuestionCount(totalQuestions); 
-//
-//	        }
-
-
-	        // Save clinic entity
-
+	        // 🔹 Save clinic
 	        Clinic saved = clinicRep.save(savedClinic);
 
-
-
 	        if (saved != null) {
-
-	            // Generate clinic credentials and save
-
+	            // Generate clinic credentials
 	            ClinicCredentials credentials = new ClinicCredentials();
-
 	            credentials.setUserName(saved.getHospitalId());
-
 	            credentials.setPassword(generatePassword(9));
-
 	            credentials.setHospitalName(saved.getName());
-
 	            clinicCredentialsRepository.save(credentials);
 
+	            // 🔹 Auto-create default branch
+	            Branch branch = new Branch();
+	            branch.setClinicId(saved.getHospitalId());  // e.g., H_1
+	            branch.setBranchId(saved.getHospitalId() + "-B_1"); // e.g., H_1-B_1
+	            branch.setBranchName(saved.getName() + " Main Branch");
+	            branch.setAddress(saved.getAddress());
+	            branch.setCity(saved.getCity());
+	            branch.setContactNumber(saved.getContactNumber());
+	            branch.setEmail(saved.getEmailAddress());
+	            branch.setLatitude(String.valueOf(saved.getLatitude()));
+	            branch.setLongitude(String.valueOf(saved.getLongitude()));
+	            branch.setVirtualClinicTour(saved.getWalkthrough());
+	            branch.setRole(saved.getRole());
+	            branch.setPermissions(saved.getPermissions());
+	            branch.setVirtualClinicTour(saved.getWalkthrough());
+	            branch.setRole("ADMIN");
+	            branch.setPermissions(PermissionsUtil.getAdminPermissions());
 
+	            Branch savedBranch = branchRepository.save(branch);
+	            
 
-	            // Prepare response data
+	            // attach to clinic
+	            saved.setBranches(List.of(savedBranch));
+	            clinicRep.save(saved);
 
+	            // 🔹 Only save branchId (skip branch credentials)
 	            Map<String, Object> data = new HashMap<>();
-
 	            data.put("clinicUsername", credentials.getUserName());
-
 	            data.put("clinicTemporaryPassword", credentials.getPassword());
-
-
+	            data.put("branchId", savedBranch.getBranchId()); // ✅ Only return branchId, no passwords
 
 	            response.setData(data);
-
-	            response.setMessage("Clinic created successfully");
-
+	            response.setMessage("Clinic and default branch created successfully");
 	            response.setSuccess(true);
-
 	            response.setStatus(200);
-
 	            return response;
-
 	        }
 
-
-
 	    } catch (Exception e) {
-
 	        response.setMessage("Error occurred while creating the clinic: " + e.getMessage());
-
 	        response.setSuccess(false);
-
 	        response.setStatus(500);
-
 	    }
 
-	    
-
 	    return response;
-
 	}
+
 
 	@Override
 	public Response getClinicById(String clinicId) {
@@ -635,6 +464,8 @@ public class AdminServiceImpl implements AdminService {
 	            clnc.setWalkthrough(clinic.getWalkthrough());
 	            clnc.setNabhScore(clinic.getNabhScore());
 	            clnc.setBranch(clinic.getBranch());
+	            clnc.setRole(clinic.getRole());
+	            clnc.setPermissions(clinic.getPermissions());
  	           
 	            // Hospital Logo
 
@@ -877,10 +708,9 @@ public class AdminServiceImpl implements AdminService {
 	                clnc.setWalkthrough(clinic.getWalkthrough());
 	                clnc.setNabhScore(clinic.getNabhScore());
 	                clnc.setBranch(clinic.getBranch());
-	                
-	                // Hospital Logo
-
-	                clnc.setHospitalLogo(
+	                clnc.setRole(clinic.getRole());
+	                clnc.setPermissions(clinic.getPermissions());
+                    clnc.setHospitalLogo(
 
 	                    clinic.getHospitalLogo() != null
 
@@ -1833,108 +1663,117 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-
     public Response login(ClinicCredentialsDTO credentials) {
+        Response response = new Response();
 
-    	Response response = new Response();
+        try {
+            String userName = credentials.getUserName();
+            String password = credentials.getPassword();
 
-    	try {
+            if (userName == null || userName.isBlank()) {
+                response.setSuccess(false);
+                response.setMessage("Username is required");
+                response.setStatus(400);
+                return response;
+            }
 
-    	String userName = credentials.getUserName();
+            if (password == null || password.isBlank()) {
+                response.setSuccess(false);
+                response.setMessage("Password is required");
+                response.setStatus(400);
+                return response;
+            }
 
-    	String password = credentials.getPassword();
+            // 1) Check clinic credentials
+            ClinicCredentials clinicCredentials =
+                    clinicCredentialsRepository.findByUserNameAndPassword(userName, password);
 
-    	ClinicCredentials existUserName = clinicCredentialsRepository.findByUserName(userName);
+            if (clinicCredentials != null) {
+                Clinic clinicEntity = clinicRep.findByHospitalId(clinicCredentials.getUserName());
 
-    	if(userName == null || userName.isBlank()) {
+                // Default branch for this clinic
+                Branch defaultBranch = branchRepository.findFirstByClinicId(clinicCredentials.getUserName());
+                String clinicDefaultBranchId = defaultBranch != null ? defaultBranch.getBranchId() : null;
 
-    		response.setSuccess(false);
+                response.setSuccess(true);
+                response.setMessage("Clinic login successful");
+                response.setStatus(200);
+                response.setHospitalName(
+                        clinicEntity != null ? clinicEntity.getName() : clinicCredentials.getHospitalName());
+                response.setHospitalId(clinicCredentials.getUserName());
+                response.setBranchId(clinicDefaultBranchId);
 
-    		response.setMessage("Username is Required");
+            
+                String role = (clinicEntity != null && clinicEntity.getRole() != null)
+                        ? clinicEntity.getRole()
+                        : "admin";
+                response.setRole(role);
 
-    		response.setStatus(400);	
+                
+                Map<String, Map<String, List<String>>> permissions =
+                        (clinicEntity != null && clinicEntity.getPermissions() != null)
+                                ? clinicEntity.getPermissions()              // already role → modules → actions
+                                : PermissionsUtil.getAdminPermissions();     // default admin
+                response.setPermissions(permissions);
 
-    		return response;
+                return response; // 🔴 missing in your code
+            }
 
-    		}
+            // 2) Check branch credentials
+            BranchCredentials branchCredentials =
+                    branchCredentialsRepository.findByUserNameAndPassword(userName, password);
 
-    		if(existUserName == null) {
+            if (branchCredentials != null) {
+                String branchId = branchCredentials.getBranchId(); // e.g., H_1-B_2
+                String clinicId = branchId.contains("-B_") ? branchId.split("-B_")[0] : branchId;
 
-    			response.setSuccess(false);
+                Optional<Branch> branchEntityOpt = branchRepository.findByBranchId(branchId);
+                Branch branchEntity = branchEntityOpt.orElse(null);
 
-        		response.setMessage("Incorrect UserName");
+                response.setSuccess(true);
+                response.setMessage("Branch login successful");
+                response.setStatus(200);
+                response.setHospitalName(branchCredentials.getBranchName());
+                response.setHospitalId(clinicId);
+                response.setBranchId(branchId);
+      
+                if (branchEntity != null) {
+                    response.setRole(branchEntity.getRole());
+                    response.setPermissions(branchEntity.getPermissions());
+                } else {
+                    response.setRole("admin"); 
+                    response.setPermissions(PermissionsUtil.getAdminPermissions());
+                }
 
-        		response.setStatus(401);	
+                // ✅ Role
+                String role = (branchEntity != null && branchEntity.getRole() != null)
+                        ? branchEntity.getRole()
+                        : "admin";
+                response.setRole(role);
 
-        		return response;
+                // ✅ Permissions
+                Map<String, Map<String, List<String>>> permissions =
+                        (branchEntity != null && branchEntity.getPermissions() != null)
+                                ? branchEntity.getPermissions()
+                                : PermissionsUtil.getAdminPermissions();
+                response.setPermissions(permissions);
 
-        		}
+                return response;
+            }
 
-    	if(password == null || password.isBlank()) {
+            // 3) Neither matched
+            response.setSuccess(false);
+            response.setMessage("Invalid username or password");
+            response.setStatus(401);
+            return response;
 
-    		response.setSuccess(false);
-
-    		response.setMessage("Password is Required");
-
-    		response.setStatus(400);	
-
-    		return response;
-
-    		}
-
-    ClinicCredentials clinicCredentials =  clinicCredentialsRepository.
-
-    	findByUserNameAndPassword(userName, password);
-
-    	if(clinicCredentials != null) {
-
-    		response.setSuccess(true);
-
-    		response.setMessage("Login Successful");
-
-    		response.setStatus(200);
-
-    		response.setHospitalName(clinicCredentials.getHospitalName());
-
-    		response.setHospitalId(clinicCredentials.getUserName());
-
-    		return response;
-
-    		}
-
-    	else {
-
-    		response.setSuccess(false);
-
-    		response.setMessage("Incorrect Password");
-
-    		response.setStatus(401);	//unauthorized
-
-    		return response;
-
-    	}}
-
-    	catch(Exception e){
-
-    		response.setSuccess(false);
-
-    		response.setMessage(e.getMessage());
-
-    		response.setStatus(500);
-
-    		return response;
-
-    	}
-
+        } catch (Exception e) {
+            response.setSuccess(false);
+            response.setMessage("Error during login: " + e.getMessage());
+            response.setStatus(500);
+            return response;
+        }
     }
-
-
-
-	
-
-   // Category Management
-
-    
 
     @Override
 

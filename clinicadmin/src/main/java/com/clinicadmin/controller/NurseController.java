@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.clinicadmin.dto.NurseDTO;
 import com.clinicadmin.dto.NurseLoginDTO;
+import com.clinicadmin.dto.OnBoardResponse;
 import com.clinicadmin.dto.ResetNurseLoginPasswordDTO;
 import com.clinicadmin.dto.Response;
 import com.clinicadmin.service.NurseService;
@@ -22,7 +23,7 @@ import com.clinicadmin.validations.RequiredChecks;
 
 @RestController
 @RequestMapping("/clinic-admin")
-@CrossOrigin(origins = { "http://localhost:3000", "http://localhost:3001"})
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
 public class NurseController {
 
 	@Autowired
@@ -68,16 +69,15 @@ public class NurseController {
 	// ---------------------------------
 	// NurseLogin-------------------------------------------------------
 	// ---------------------------------------------------------------------------------------------------
-
 	@PostMapping("/nurseLogin")
-	public ResponseEntity<Response> nurseLogin(@RequestBody NurseLoginDTO dto) {
-		Response response = nurseService.nurseLogin(dto);
-		return ResponseEntity.status(response.getStatus()).body(response);
+	public ResponseEntity<OnBoardResponse> nurseLogin(@RequestBody NurseLoginDTO dto) {
+	    OnBoardResponse response = nurseService.nurseLogin(dto);
+	    return ResponseEntity.status(response.getStatusCode()).body(response);
 	}
+
 	@PostMapping("/resetNurseLogin")
 	public ResponseEntity<Response> resetNurseLogin(@RequestBody ResetNurseLoginPasswordDTO dto) {
 		Response response = nurseService.resetLoginPassword(dto);
 		return ResponseEntity.status(response.getStatus()).body(response);
 	}
-
 }

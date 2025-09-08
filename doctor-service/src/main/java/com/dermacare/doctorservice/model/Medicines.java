@@ -18,9 +18,10 @@ public class Medicines {
     private String dose;
     private String duration;
     private String food;
-    private MedicineType medicineType;
+    private String medicineType;
     private String note;
     private String remindWhen;
+    private String others;
    
     private List<String> times;
 }
