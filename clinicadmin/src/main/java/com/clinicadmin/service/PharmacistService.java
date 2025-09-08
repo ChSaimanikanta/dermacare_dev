@@ -10,7 +10,7 @@ public interface PharmacistService {
     Response getPharmacistById(String pharmacistId);
     Response updatePharmacist(String pharmacistId, PharmacistDTO dto);
     Response deletePharmacist(String pharmacistId);
-    Response pharmacistLogin(PharmacistLoginDTO loginDTO);
-    Response resetLoginPassword(ResetPharmacistLoginPasswordDTO dto);
+//    Response pharmacistLogin(PharmacistLoginDTO loginDTO);
+//    Response resetLoginPassword(ResetPharmacistLoginPasswordDTO dto);
 	Response getAllPharmacistsByHospitalId(String hospitalId);
 }

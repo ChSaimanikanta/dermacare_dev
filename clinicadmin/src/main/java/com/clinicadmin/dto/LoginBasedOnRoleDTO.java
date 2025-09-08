@@ -4,11 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class NurseLoginDTO {
+@Data
+public class LoginBasedOnRoleDTO {
 	private String userName;
 	private String password;
+	private String role; // Doctor, PHARMACIST, NURSE, DOCTOR
 
 }

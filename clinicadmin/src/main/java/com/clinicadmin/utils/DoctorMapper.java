@@ -77,6 +77,7 @@ public class DoctorMapper {
 		}
 
 		dto.setDoctorId(doctor.getDoctorId());
+		dto.setRole(doctor.getRole());
 		dto.setHospitalId(doctor.getHospitalId());
 
 		// 🔹 Null checks before decompress

@@ -58,6 +58,7 @@ public class LabTechnicianServiceImpl implements LabTechnicianService {
         );
     }
 
+    // ✅ Login Method
     @Override
     public OnBoardResponse login(LabTechnicianLogin loginRequest) {
         Optional<LabTechnicianEntity> optional =
@@ -69,15 +70,15 @@ public class LabTechnicianServiceImpl implements LabTechnicianService {
                     HttpStatus.UNAUTHORIZED,
                     HttpStatus.UNAUTHORIZED.value(),
                     null,
-                    null,
                     null
             );
         }
 
         LabTechnicianEntity user = optional.get();
 
+        // ✅ Wrap permissions inside the role
         Map<String, Map<String, List<String>>> wrappedPermissions = Map.of(
-                user.getRole(), user.getPermissions()
+            user.getRole(), user.getPermissions()
         );
 
         return new OnBoardResponse(
@@ -85,7 +86,6 @@ public class LabTechnicianServiceImpl implements LabTechnicianService {
                 HttpStatus.OK,
                 HttpStatus.OK.value(),
                 user.getRole(),
-                user.getFullName(),  
                 wrappedPermissions
         );
     }
@@ -163,7 +163,7 @@ public class LabTechnicianServiceImpl implements LabTechnicianService {
         );
     }
 
-    // ✅  Lab 
+    // ✅ Update
     @Override
     public ResponseStructure<LabTechnicianRequestDTO> updateLabTechnician(String id, LabTechnicianRequestDTO dto) {
         Optional<LabTechnicianEntity> optional = repository.findById(id);
@@ -199,8 +199,6 @@ public class LabTechnicianServiceImpl implements LabTechnicianService {
         if (dto.getVaccinationStatus() != null) existing.setVaccinationStatus(dto.getVaccinationStatus());
         if (dto.getPreviousEmploymentHistory() != null) existing.setPreviousEmploymentHistory(dto.getPreviousEmploymentHistory());
         if (dto.getProfilePicture() != null) existing.setProfilePicture(dto.getProfilePicture());
-        if (dto.getPermissions() != null) existing.setPermissions(dto.getPermissions());
-        if (dto.getRole() != null) existing.setRole(dto.getRole());
 
         LabTechnicianEntity updated = repository.save(existing);
 

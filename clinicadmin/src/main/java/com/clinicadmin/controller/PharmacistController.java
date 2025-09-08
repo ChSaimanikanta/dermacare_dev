@@ -22,7 +22,7 @@ import com.clinicadmin.validations.RequiredChecks;
 
 @RestController
 @RequestMapping("/clinic-admin")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001" })
+@CrossOrigin(origins = { "http://localhost:3000", "http://localhost:3001" })
 public class PharmacistController {
 
 	@Autowired
@@ -37,21 +37,21 @@ public class PharmacistController {
 	}
 
 	// ------------------- Get All Pharmacists by Department -------------------
-	@GetMapping("getAllPharmacists/{hospitalId}")
+	@GetMapping("/getAllPharmacists/{hospitalId}")
 	public ResponseEntity<Response> getAllByDepartment(@PathVariable String hospitalId) {
 		Response response = pharmacistService.getAllPharmacistsByHospitalId(hospitalId);
 		return ResponseEntity.status(response.getStatus()).body(response);
 	}
 
 	// ------------------- Get Single Pharmacist -------------------
-	@GetMapping("getPharmacist/{pharmacistId}")
+	@GetMapping("/getPharmacist/{pharmacistId}")
 	public ResponseEntity<Response> getPharmacist(@PathVariable String pharmacistId) {
 		Response response = pharmacistService.getPharmacistById(pharmacistId);
 		return ResponseEntity.status(response.getStatus()).body(response);
 	}
 
 	// ------------------- Update Pharmacist -------------------
-	@PutMapping("updatePharmacist/{pharmacistId}")
+	@PutMapping("/updatePharmacist/{pharmacistId}")
 	public ResponseEntity<Response> updatePharmacist(@PathVariable String pharmacistId,
 			@RequestBody PharmacistDTO dto) {
 		Response response = pharmacistService.updatePharmacist(pharmacistId, dto);
@@ -59,7 +59,7 @@ public class PharmacistController {
 	}
 
 	// ------------------- Delete Pharmacist -------------------
-	@DeleteMapping("deletePharmacist/{pharmacistId}")
+	@DeleteMapping("/deletePharmacist/{pharmacistId}")
 	public ResponseEntity<Response> deletePharmacist(@PathVariable String pharmacistId) {
 		Response response = pharmacistService.deletePharmacist(pharmacistId);
 		return ResponseEntity.status(response.getStatus()).body(response);
@@ -70,15 +70,15 @@ public class PharmacistController {
 	// ------------------------------------------------
 	// ---------------------------------------------------------------------------------------------------
 
-	@PostMapping("/pharmacistLogin")
-	public ResponseEntity<Response> pharmacistLogin(@RequestBody PharmacistLoginDTO dto) {
-		Response response = pharmacistService.pharmacistLogin(dto);
-		return ResponseEntity.status(response.getStatus()).body(response);
-	}
-
-	@PostMapping("/resetPharmacistLogin")
-	public ResponseEntity<Response> resetPharmacistLogin(@RequestBody ResetPharmacistLoginPasswordDTO dto) {
-		Response response = pharmacistService.resetLoginPassword(dto);
-		return ResponseEntity.status(response.getStatus()).body(response);
-	}
+//	@PostMapping("/pharmacistLogin")
+//	public ResponseEntity<Response> pharmacistLogin(@RequestBody PharmacistLoginDTO dto) {
+//		Response response = pharmacistService.pharmacistLogin(dto);
+//		return ResponseEntity.status(response.getStatus()).body(response);
+//	}
+//
+//	@PostMapping("/resetPharmacistLogin")
+//	public ResponseEntity<Response> resetPharmacistLogin(@RequestBody ResetPharmacistLoginPasswordDTO dto) {
+//		Response response = pharmacistService.resetLoginPassword(dto);
+//		return ResponseEntity.status(response.getStatus()).body(response);
+//	}
 }

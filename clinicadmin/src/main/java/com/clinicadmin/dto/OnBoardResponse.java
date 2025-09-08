@@ -18,8 +18,6 @@ public class OnBoardResponse {
     private HttpStatus httpStatus;
     private int statusCode;
     private String role;
-    private String fullName;
-    
     
     private Map<String, Map<String, List<String>>> permissions;
 }

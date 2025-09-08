@@ -25,13 +25,14 @@ public class SecurityStaffMapper {
         return Base64.getEncoder().encodeToString(input.getBytes(StandardCharsets.UTF_8));
     }
 
-    // Always return safe Base64 for frontend
+    // Always return safe Base64 for frontend (for <img> or <embed>)
     private static String safeReturnAsBase64(String input) {
         if (input == null) return null;
         try {
             Base64.getDecoder().decode(input); // valid Base64
             return input; // already Base64
         } catch (Exception e) {
+            // encode if not Base64
             return Base64.getEncoder().encodeToString(input.getBytes(StandardCharsets.UTF_8));
         }
     }
@@ -53,9 +54,8 @@ public class SecurityStaffMapper {
         staff.setDepartment(dto.getDepartment());
         staff.setAddress(dto.getAddress());
         staff.setBankAccountDetails(dto.getBankAccountDetails());
-        staff.setPermissions(dto.getPermissions());
 
-        // Encode certificates/images
+        // Encode certificates
         staff.setPoliceVerification(encodeIfNotBase64(dto.getPoliceVerification()));
         staff.setMedicalFitnessCertificate(encodeIfNotBase64(dto.getMedicalFitnessCertificate()));
         staff.setProfilePicture(encodeIfNotBase64(dto.getProfilePicture()));
@@ -64,16 +64,15 @@ public class SecurityStaffMapper {
         staff.setTraningOrGuardLicense(dto.getTraningOrGuardLicense());
         staff.setPreviousEmployeeHistory(dto.getPreviousEmployeeHistory());
 
-        // ⚡ IMPORTANT:
-        // Do NOT set username/password here, they will be generated in ServiceImpl
         return staff;
     }
 
-    // Entity → DTO (return Base64 for frontend rendering)
+    // Entity → DTO (return Base64 so frontend can render/download)
     public static SecurityStaffDTO toDTO(SecurityStaff staff) {
         if (staff == null) return null;
 
         SecurityStaffDTO dto = new SecurityStaffDTO();
+
         dto.setSecurityStaffId(staff.getSecurityStaffId());
         dto.setClinicId(staff.getClinicId());
         dto.setFullName(staff.getFullName());
@@ -85,7 +84,6 @@ public class SecurityStaffMapper {
         dto.setDepartment(staff.getDepartment());
         dto.setAddress(staff.getAddress());
         dto.setBankAccountDetails(staff.getBankAccountDetails());
-        dto.setPermissions(staff.getPermissions());
 
         dto.setPoliceVerification(safeReturnAsBase64(staff.getPoliceVerification()));
         dto.setMedicalFitnessCertificate(safeReturnAsBase64(staff.getMedicalFitnessCertificate()));
@@ -94,11 +92,6 @@ public class SecurityStaffMapper {
         dto.setEmailId(staff.getEmailId());
         dto.setTraningOrGuardLicense(staff.getTraningOrGuardLicense());
         dto.setPreviousEmployeeHistory(staff.getPreviousEmployeeHistory());
-
-        // Include these in DTO for login/admin use
-        dto.setUserName(staff.getUserName());
-        dto.setRole(staff.getRole());
-        dto.setPassword(staff.getPassword()); // word back to frontend
 
         return dto;
     }

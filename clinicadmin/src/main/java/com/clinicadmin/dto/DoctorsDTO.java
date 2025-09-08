@@ -24,6 +24,8 @@ public class DoctorsDTO {
 
 	private String doctorId;
 
+	private String role = "DOCTOR";
+
 	private String deviceId;
 
 	@NotBlank(message = "DoctorEmail is required", groups = RequiredChecks.class)

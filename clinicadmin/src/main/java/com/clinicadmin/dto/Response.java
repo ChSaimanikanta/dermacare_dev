@@ -19,4 +19,5 @@ public class Response {
 	private int status;
 	private String hospitalName;
 	private String hospitalId;
+	private String role;
 }

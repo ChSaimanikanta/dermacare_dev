@@ -1,8 +1,5 @@
 package com.clinicadmin.entity;
 
-import java.util.List;
-import java.util.Map;
-
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -22,8 +19,7 @@ public class Nurse {
 	private ObjectId id;
 	private String nurseId;
 	private String hospitalId;
-	
-	
+	private final String role = "NURSE";
 	private String fullName;
 	private String gender;
 	private String qualifications;
@@ -47,13 +43,5 @@ public class Nurse {
 	private String shiftTimingOrAvailability;
 	private Address address;
     private String profilePicture;
-	
-
-	private String userName;
-	private String password;
-	private  String role ;
-
-    private Map<String, List<String>> permissions;
-
 
 }

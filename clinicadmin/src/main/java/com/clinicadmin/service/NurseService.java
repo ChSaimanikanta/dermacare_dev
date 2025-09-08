@@ -1,9 +1,6 @@
 package com.clinicadmin.service;
 
 import com.clinicadmin.dto.NurseDTO;
-import com.clinicadmin.dto.NurseLoginDTO;
-import com.clinicadmin.dto.OnBoardResponse;
-import com.clinicadmin.dto.ResetNurseLoginPasswordDTO;
 import com.clinicadmin.dto.Response;
 
 public interface NurseService {
@@ -18,8 +15,8 @@ public interface NurseService {
 
     public Response deleteNurse(String hospitalId, String nurseId);
 
-	public OnBoardResponse nurseLogin(NurseLoginDTO loginDTO);
-
-	Response resetLoginPassword(ResetNurseLoginPasswordDTO dto);
+//	public Response nurseLogin(NurseLoginDTO loginDTO);
+//
+//	Response resetLoginPassword(ResetNurseLoginPasswordDTO dto);
 
 }

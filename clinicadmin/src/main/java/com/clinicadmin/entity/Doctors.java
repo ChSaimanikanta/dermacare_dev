@@ -25,6 +25,7 @@ public class Doctors {
 	@JsonSerialize(using = ObjectIdSerializer.class)
 	private ObjectId id;
 	private String doctorId;
+	 private String role = "DOCTOR"; 
 	private String deviceId;
 	private String hospitalId;
 	private String doctorEmail;

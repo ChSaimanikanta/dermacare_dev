@@ -16,6 +16,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class WardBoyDTO {
 	
+    private String wardBoyId;  
 
     @NotBlank(message = "Full Name is required")
     private String fullName;
@@ -69,8 +70,7 @@ public class WardBoyDTO {
     private String userName;
     private String password;
     
-     private String role;
+    private String role;
     
-    private Map<String, List<String>> permissions;    
 
 }

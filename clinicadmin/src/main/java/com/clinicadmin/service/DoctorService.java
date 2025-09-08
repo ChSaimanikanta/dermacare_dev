@@ -8,6 +8,7 @@ import com.clinicadmin.dto.DoctorAvailabilityStatusDTO;
 import com.clinicadmin.dto.DoctorLoginDTO;
 import com.clinicadmin.dto.DoctorSlotDTO;
 import com.clinicadmin.dto.DoctorsDTO;
+import com.clinicadmin.dto.LoginBasedOnRoleDTO;
 import com.clinicadmin.dto.Response;
 
 
@@ -44,4 +45,5 @@ Response getBestDoctorBySubService(String subServiceId);
 Response getRecommendedClinicsAndDoctors(List<String> keyPointsFromUser);
 public Response deleteDoctorsByClinic(String hospitalId);
 Response getAllDoctorsWithRespectiveClinic();
+Response loginUsingRoles(LoginBasedOnRoleDTO dto);
 }

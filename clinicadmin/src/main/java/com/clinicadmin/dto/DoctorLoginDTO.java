@@ -9,14 +9,14 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DoctorLoginDTO {
-	private String username;
+	private String userName;
 	private String password;
 	private String deviceId;
-	private String doctorId;
+	private String staffId;
 	private String hospitalId;
 
 	public void setDoctorMobileNumber(String doctorMobileNumber) {
-		this.username = username != null ? username.trim() : null;
+		this.userName = userName != null ? userName.trim() : null;
 	}
 
 	public void setPassword(String password) {
@@ -28,8 +28,8 @@ public class DoctorLoginDTO {
 		this.deviceId = deviceId != null ? deviceId.trim() : null;
 	}
 
-	public void setDoctorId(String doctorId) {
-		this.doctorId = doctorId != null ? doctorId.trim() : null;
+	public void setStaffId(String staffId) {
+		this.staffId = staffId != null ? staffId.trim() : null;
 	}
 
 	public void setHospitalId(String hospitalId) {

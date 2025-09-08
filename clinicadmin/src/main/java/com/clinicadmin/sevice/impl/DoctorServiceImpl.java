@@ -4,7 +4,6 @@ import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -32,6 +31,7 @@ import com.clinicadmin.dto.DoctorServicesDTO;
 import com.clinicadmin.dto.DoctorSlotDTO;
 import com.clinicadmin.dto.DoctorSubServiceDTO;
 import com.clinicadmin.dto.DoctorsDTO;
+import com.clinicadmin.dto.LoginBasedOnRoleDTO;
 import com.clinicadmin.dto.ResBody;
 import com.clinicadmin.dto.Response;
 import com.clinicadmin.entity.ConsultationType;
@@ -144,8 +144,11 @@ public class DoctorServiceImpl implements DoctorService {
 				String encodedPassword = passwordEncoder.encode(rawPassword);
 
 				DoctorLoginCredentials credentials = DoctorLoginCredentials.builder()
-						.doctorId(savedDoctor.getDoctorId()).username(username).password(encodedPassword)
-						.hospitalId(savedDoctor.getHospitalId()).build();
+						.staffId(savedDoctor.getDoctorId())
+						.userName(username).password(rawPassword)
+						.hospitalId(savedDoctor.getHospitalId())
+						.role(savedDoctor.getRole())
+						.build();
 
 				credentialsRepository.save(credentials);
 
@@ -405,7 +408,7 @@ public class DoctorServiceImpl implements DoctorService {
 
 				doctorsRepository.deleteById(optionalDoctor.get().getId());
 
-				Optional<DoctorLoginCredentials> optionalCredentials = credentialsRepository.findByDoctorId(doctorId);
+				Optional<DoctorLoginCredentials> optionalCredentials = credentialsRepository.findByStaffId(doctorId);
 				optionalCredentials.ifPresent(credentialsRepository::delete);
 
 				response.setSuccess(true);
@@ -434,7 +437,7 @@ public class DoctorServiceImpl implements DoctorService {
 				for (Doctors doctor : doctors) {
 					// Delete login credentials first
 					Optional<DoctorLoginCredentials> optionalCredentials = credentialsRepository
-							.findByDoctorId(doctor.getDoctorId());
+							.findByStaffId(doctor.getDoctorId());
 					optionalCredentials.ifPresent(credentialsRepository::delete);
 
 					// Then delete the doctor record
@@ -465,14 +468,14 @@ public class DoctorServiceImpl implements DoctorService {
 		Response responseDTO = new Response();
 
 		Optional<DoctorLoginCredentials> credentialsOptional = credentialsRepository
-				.findByUsername(loginDTO.getUsername());
+				.findByUserName(loginDTO.getUserName());
 
 		if (credentialsOptional.isPresent()) {
 			DoctorLoginCredentials credentials = credentialsOptional.get();
 			boolean matches = passwordEncoder.matches(loginDTO.getPassword(), credentials.getPassword());
 
-			if (matches) {
-				Optional<Doctors> doctors = doctorsRepository.findByDoctorId(credentials.getDoctorId());
+			if (credentials.getPassword().equals(credentials.getPassword())) {
+				Optional<Doctors> doctors = doctorsRepository.findByDoctorId(credentials.getStaffId());
 				if (doctors.isPresent()) {
 					Doctors doctor = doctors.get();
 					doctor.setDeviceId(loginDTO.getDeviceId());
@@ -481,10 +484,10 @@ public class DoctorServiceImpl implements DoctorService {
 				}
 
 				DoctorLoginDTO dto = new DoctorLoginDTO();
-				dto.setUsername(credentials.getUsername());
+				dto.setUserName(credentials.getUserName());
 				dto.setPassword(credentials.getPassword());
 				dto.setDeviceId(loginDTO.getDeviceId());
-				dto.setDoctorId(credentials.getDoctorId());
+				dto.setStaffId(credentials.getStaffId());
 				dto.setHospitalId(credentials.getHospitalId());
 
 				responseDTO.setData(dto);
@@ -527,7 +530,7 @@ public class DoctorServiceImpl implements DoctorService {
 		}
 
 		Optional<DoctorLoginCredentials> optionalCredentials = credentialsRepository
-				.findByUsername(updateDTO.getUserName());
+				.findByUserName(updateDTO.getUserName());
 
 		if (optionalCredentials.isPresent()) {
 			DoctorLoginCredentials credentials = optionalCredentials.get();
@@ -1441,5 +1444,37 @@ public class DoctorServiceImpl implements DoctorService {
 
 		return response;
 	}
+	//------------------------------Universal Login---------------------------------------------------
+	@Override
+	public Response loginUsingRoles(LoginBasedOnRoleDTO dto ) {
+		Response response = new Response();
+		Optional<DoctorLoginCredentials> credentials=  credentialsRepository.findByUserName(dto.getUserName());
+		if(!credentials.isPresent()) {
+			response.setSuccess(false);
+			response.setMessage("Invalid UserName");
+			response.setStatus(409);	
+		}
+		DoctorLoginCredentials cr =credentials.get();
+		if(!passwordEncoder.matches(cr.getPassword(), dto.getPassword())) {
+			response.setSuccess(false);
+			response.setMessage("Invalid password");
+			response.setStatus(409);	
+		}
+		else if(!cr.getRole().equals(dto.getPassword())) {
+			response.setSuccess(false);
+			response.setMessage("Invalid Role");
+			response.setStatus(409);
+		}
+		else {
+			response.setSuccess(true);
+			response.setMessage("Login Successfully");
+			response.setStatus(200);
+			response.setHospitalId(cr.getHospitalId());
+			response.setRole(cr.getRole());
+		}
+		   return response;         
+		    }
+		
+
 
 }

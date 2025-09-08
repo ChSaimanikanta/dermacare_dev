@@ -92,5 +92,14 @@ public class ClinicAdminServiceImpl implements ClinicAdminService {
         }
 
 
+ 
+   
+
+ 
+        
+        
+        
+    
+
 
 }

@@ -26,8 +26,6 @@ public class Pharmacist {
 	private String contactNumber;
 	private String governmentId;
 	private String pharmacyLicense;
-	private String dPharmaOrBPharmaCertificate;
-	private String statePharmacyCouncilRegistration;
 	private String dateOfJoining;
 	private String department;
 	private BankAccountDetails bankAccountDetails;
@@ -35,11 +33,12 @@ public class Pharmacist {
 	// Optional Fields
 	private String emailID;
 	private String previousEmploymentHistory;
-	private String experienceCertificates;
 	private String emergencyContactNumber;
 	
-	private String userName;
-	private String password;
-    private String profilePicture;
+	private String profilePicture;
+	private String statePharmacyCouncilRegistration;
+	private String dPharmaOrBPharmaCertificate;
+	private String experienceCertificates;
+
 
 }

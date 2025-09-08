@@ -117,8 +117,6 @@ public class ReceptionistServiceImpl implements ReceptionistService {
         if (dto.getBankAccountDetails() != null) existing.setBankAccountDetails(dto.getBankAccountDetails());
         if (dto.getEmailId() != null) existing.setEmailId(dto.getEmailId());
         if (dto.getPreviousEmploymentHistory() != null) existing.setPreviousEmploymentHistory(dto.getPreviousEmploymentHistory());
-        if (dto.getRole() != null) existing.setRole(dto.getRole());
-        if (dto.getPermissions() != null) existing.setPermissions(dto.getPermissions()); // ✅ fixed here
 
         // 🔹 update Base64 fields (PDF/Image)
         if (dto.getProfilePicture() != null) 
@@ -183,14 +181,13 @@ public class ReceptionistServiceImpl implements ReceptionistService {
                     HttpStatus.UNAUTHORIZED,
                     HttpStatus.UNAUTHORIZED.value(),
                     null,
-                    null,
                     null
             );
         }
 
         ReceptionistEntity user = optional.get();
 
-        
+        // ✅ Wrap permissions inside the role
         Map<String, Map<String, List<String>>> wrappedPermissions = Map.of(
             user.getRole(), user.getPermissions()
         );
@@ -200,7 +197,6 @@ public class ReceptionistServiceImpl implements ReceptionistService {
                 HttpStatus.OK,
                 HttpStatus.OK.value(),
                 user.getRole(),
-                user.getFullName(),
                 wrappedPermissions
         );
     }
