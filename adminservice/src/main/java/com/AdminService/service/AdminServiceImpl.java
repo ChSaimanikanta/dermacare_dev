@@ -466,7 +466,7 @@ public class AdminServiceImpl implements AdminService {
 	            clnc.setBranch(clinic.getBranch());
 	            clnc.setRole(clinic.getRole());
 	            clnc.setPermissions(clinic.getPermissions());
- 	           
+ 	            clnc.setBranches(clinic.getBranches());
 	            // Hospital Logo
 
 	            clnc.setHospitalLogo(
@@ -710,6 +710,7 @@ public class AdminServiceImpl implements AdminService {
 	                clnc.setBranch(clinic.getBranch());
 	                clnc.setRole(clinic.getRole());
 	                clnc.setPermissions(clinic.getPermissions());
+					clnc.setBranches(clinic.getBranches());
                     clnc.setHospitalLogo(
 
 	                    clinic.getHospitalLogo() != null
@@ -1197,6 +1198,7 @@ public class AdminServiceImpl implements AdminService {
 	            if (clinic.getWalkthrough() != null) savedClinic.setWalkthrough(clinic.getWalkthrough());
 	            savedClinic.setNabhScore(clinic.getNabhScore());
 	            savedClinic.setBranch(clinic.getBranch());
+				savedClinic.setBranches(clinic.getBranches());
 	         
 
 
