@@ -21,15 +21,14 @@ import com.clinicadmin.repository.NurseRepository;
 import com.clinicadmin.service.NurseService;
 import com.clinicadmin.utils.Base64CompressionUtil;
 
-
 @Service
 public class NurseServiceImpl implements NurseService {
 	@Autowired
 	NurseRepository nurseRepository;
-	
+
 	@Autowired
 	DoctorLoginCredentialsRepository credentialsRepository;
-	
+
 	@Autowired
 	PasswordEncoder passwordEncoder;
 
@@ -50,22 +49,18 @@ public class NurseServiceImpl implements NurseService {
 		String userName = dto.getNurseContactNumber();
 		String rawPassword = generateStructuredPassword();
 		String encodedPassword = passwordEncoder.encode(rawPassword);
-		
+
 		Nurse savedNurse = nurseRepository.save(nurse);
-		
-		DoctorLoginCredentials credentials = DoctorLoginCredentials.builder()
-				.staffId(savedNurse.getNurseId())
-				.userName(userName)
-				.password(encodedPassword)
-				.hospitalId(savedNurse.getHospitalId())
-				.role(savedNurse.getRole())
-				.build();
+
+		DoctorLoginCredentials credentials = DoctorLoginCredentials.builder().staffId(savedNurse.getNurseId())
+				.username(userName).password(encodedPassword).hospitalId(savedNurse.getHospitalId())
+				.role(savedNurse.getRole()).build();
 		credentialsRepository.save(credentials);
-		
+
 		NurseDTO savedNurseDTO = mapNurseEntityToNurseDTO(savedNurse);
 		savedNurseDTO.setUserName(userName);
 		savedNurseDTO.setPassword(rawPassword);
-		
+
 		response.setSuccess(true);
 		response.setData(savedNurseDTO);
 		response.setMessage("Nurse added successfully ");
@@ -169,6 +164,8 @@ public class NurseServiceImpl implements NurseService {
 
 		return nurseRepository.findByHospitalIdAndNurseId(hospitalId, nurseId).map(existingNurse -> {
 			// update fields from DTO only if not null
+			if (dto.getRole() != null)
+				existingNurse.setRole(dto.getRole());
 			if (dto.getFullName() != null)
 				existingNurse.setFullName(dto.getFullName());
 
@@ -213,39 +210,40 @@ public class NurseServiceImpl implements NurseService {
 				existingNurse.setQualifications(dto.getQualifications());
 			if (dto.getShiftTimingOrAvailability() != null)
 				existingNurse.setShiftTimingOrAvailability(dto.getShiftTimingOrAvailability());
-		    // ⚡ Profile Picture (Base64 encode/decode)
-	        if (dto.getProfilePicture() != null && !dto.getProfilePicture().isBlank()) {
-	            // Ensure string is valid Base64
-	            try {
-	                byte[] decodedBytes = Base64.getDecoder().decode(dto.getProfilePicture());
-	                String encodedString = Base64.getEncoder().encodeToString(decodedBytes);
-	                existingNurse.setProfilePicture(encodedString); // store as Base64
-	            } catch (IllegalArgumentException e) {
-	                response.setSuccess(false);
-	                response.setData(null);
-	                response.setMessage("Invalid Base64 format for profile picture");
-	                response.setStatus(HttpStatus.BAD_REQUEST.value());
-	                return response;
-	            }
-	        }
+			// ⚡ Profile Picture (Base64 encode/decode)
+			if (dto.getProfilePicture() != null && !dto.getProfilePicture().isBlank()) {
+				// Ensure string is valid Base64
+				try {
+					byte[] decodedBytes = Base64.getDecoder().decode(dto.getProfilePicture());
+					String encodedString = Base64.getEncoder().encodeToString(decodedBytes);
+					existingNurse.setProfilePicture(encodedString); // store as Base64
+				} catch (IllegalArgumentException e) {
+					response.setSuccess(false);
+					response.setData(null);
+					response.setMessage("Invalid Base64 format for profile picture");
+					response.setStatus(HttpStatus.BAD_REQUEST.value());
+					return response;
+				}
+			}
+			if (dto.getPermissions() != null)
+				existingNurse.setPermissions(dto.getPermissions());
+			
+			Nurse updated = nurseRepository.save(existingNurse);
+			NurseDTO updatedDTO = mapNurseEntityToNurseDTO(updated);
 
-	        Nurse updated = nurseRepository.save(existingNurse);
-	        NurseDTO updatedDTO = mapNurseEntityToNurseDTO(updated);
-
-	        response.setSuccess(true);
-	        response.setData(updatedDTO);
-	        response.setMessage("Nurse updated successfully");
-	        response.setStatus(HttpStatus.OK.value());
-	        return response;
-	    }).orElseGet(() -> {
-	        response.setSuccess(false);
-	        response.setData(null);
-	        response.setMessage("Nurse not found for update");
-	        response.setStatus(HttpStatus.NOT_FOUND.value());
-	        return response;
-	    });
+			response.setSuccess(true);
+			response.setData(updatedDTO);
+			response.setMessage("Nurse updated successfully");
+			response.setStatus(HttpStatus.OK.value());
+			return response;
+		}).orElseGet(() -> {
+			response.setSuccess(false);
+			response.setData(null);
+			response.setMessage("Nurse not found for update");
+			response.setStatus(HttpStatus.NOT_FOUND.value());
+			return response;
+		});
 	}
-	
 
 	@Override
 	public Response deleteNurse(String hospitalId, String nurseId) {
@@ -279,6 +277,7 @@ public class NurseServiceImpl implements NurseService {
 		Nurse nurse = new Nurse();
 //		nurse.setNurseId(dto.getNurseId());
 		nurse.setHospitalId(dto.getHospitalId());
+		nurse.setRole(dto.getRole());
 		nurse.setFullName(dto.getFullName());
 		nurse.setDateOfBirth(dto.getDateOfBirth());
 		nurse.setNurseContactNumber(dto.getNurseContactNumber());
@@ -304,6 +303,7 @@ public class NurseServiceImpl implements NurseService {
 		nurse.setShiftTimingOrAvailability(dto.getShiftTimingOrAvailability());
 		nurse.setYearsOfExperience(dto.getYearsOfExperience());
 		nurse.setEmergencyContactNumber(dto.getEmergencyContactNumber());
+		nurse.setPermissions(dto.getPermissions());
 
 		return nurse;
 	}
@@ -335,12 +335,13 @@ public class NurseServiceImpl implements NurseService {
 		dto.setProfilePicture(Base64CompressionUtil.decompressBase64(nurse.getProfilePicture()));
 
 		dto.setAddress(nurse.getAddress());
-		
+
 		dto.setGender(nurse.getGender());
 		dto.setQualifications(nurse.getQualifications());
 		dto.setShiftTimingOrAvailability(nurse.getShiftTimingOrAvailability());
 		dto.setEmergencyContactNumber(nurse.getEmergencyContactNumber());
 		dto.setYearsOfExperience(nurse.getYearsOfExperience());
+		dto.setPermissions(nurse.getPermissions());
 
 		return dto;
 	}

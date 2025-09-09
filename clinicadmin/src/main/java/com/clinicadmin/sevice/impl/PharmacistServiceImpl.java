@@ -60,7 +60,7 @@ public class PharmacistServiceImpl implements PharmacistService {
 		Pharmacist saved = pharmacistRepository.save(pharmacist);
 
 		DoctorLoginCredentials credentials = DoctorLoginCredentials.builder().staffId(saved.getPharmacistId())
-				.userName(userName).password(encodedPassword).hospitalId(saved.getHospitalId()).role(saved.getRole())
+				.username(userName).password(encodedPassword).hospitalId(saved.getHospitalId()).role(saved.getRole())
 				.build();
 		credentialsRepository.save(credentials);
 

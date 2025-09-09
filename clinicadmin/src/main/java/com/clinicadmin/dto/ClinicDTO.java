@@ -1,14 +1,8 @@
 package com.clinicadmin.dto;
 
 import java.util.List;
-
+import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -22,12 +16,12 @@ public class ClinicDTO {
 	private String hospitalId;
 
 	private String name;
-
 	private String address;
 
 	private String city;
 
 	private double hospitalOverallRating;
+
 	private String contactNumber;
 
 	private String openingTime;
@@ -73,22 +67,26 @@ public class ClinicDTO {
 	private String professionalIndemnityInsurance; // Insurance
 	private String gstRegistrationCertificate;
 	private String consultationExpiration;
+
 	private String subscription;
 
 	// Allow multiple documents for 'others'
 
 	private List<String> others;
 
-	private int freeFollowUps;
+	private int freeFollowUps = 0;
 	private double latitude;
 	private double longitude;
 	private int nabhScore;
 	private String branch;
-	private String walkthrough;
 
-	// Social Media
+	private String walkthrough;
+	private List<Branch> branches;
+
+	// ClinicCredentials.java
+	private String role;
+	private Map<String, Map<String, List<String>>> permissions;
 	private String instagramHandle;
 	private String twitterHandle;
 	private String facebookHandle;
-
 }

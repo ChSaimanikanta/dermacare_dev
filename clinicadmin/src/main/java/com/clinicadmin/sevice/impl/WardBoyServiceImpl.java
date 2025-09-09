@@ -62,7 +62,7 @@ public class WardBoyServiceImpl implements WardBoyService {
 		String encodedPassword = passwordEncoder.encode(rawPassword);
 
 		DoctorLoginCredentials credentials = DoctorLoginCredentials.builder().staffId(saved.getWardBoyId())
-				.userName(userName).password(encodedPassword).hospitalId(saved.getClinicId()).role(saved.getRole())
+				.username(userName).password(encodedPassword).hospitalId(saved.getClinicId()).role(saved.getRole())
 				.build();
 		credentialsRepository.save(credentials);
 

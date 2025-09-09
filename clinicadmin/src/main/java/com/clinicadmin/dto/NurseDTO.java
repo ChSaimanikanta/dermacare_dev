@@ -1,5 +1,8 @@
 package com.clinicadmin.dto;
 
+import java.util.List;
+import java.util.Map;
+
 import com.clinicadmin.validations.FormatChecks;
 import com.clinicadmin.validations.RequiredChecks;
 
@@ -18,11 +21,11 @@ import lombok.NoArgsConstructor;
 public class NurseDTO {
 
 	private String id;
-	
+
 	private String nurseId;
-	
+
 	private String hospitalId;
-	
+
 	private String role;
 
 	@NotBlank(message = "Full name is required", groups = RequiredChecks.class)
@@ -59,7 +62,7 @@ public class NurseDTO {
 	private BankAccountDetails bankAccountDetails;
 
 	private String medicalFitnessCertificate;
-   @NotBlank(message=" Email Id required",  groups = RequiredChecks.class)
+	@NotBlank(message = " Email Id required", groups = RequiredChecks.class)
 	private String emailId;
 
 	private String previousEmploymentHistory;
@@ -67,36 +70,51 @@ public class NurseDTO {
 	private String experienceCertificates;
 
 	private String vaccinationStatus;
-    private String profilePicture;
-
+	private String profilePicture;
 
 	private InsuranceOrESIDetails insuranceOrESIdetails;
-	
+
 	private String gender;
 	private String qualifications;
 	private String shiftTimingOrAvailability;
 	private Address address;
 	private String yearsOfExperience;
 	private String emergencyContactNumber;
-	
+	private Map<String, Map<String, List<String>>> permissions;
+
 	private String userName;
 	private String password;
-	
-    public void trimNurseFields() {
-        if (nurseId != null) nurseId = nurseId.trim();
-        if (role != null) role = role.trim();
-        if (fullName != null) fullName = fullName.trim();
-        if (dateOfBirth != null) dateOfBirth = dateOfBirth.trim();
-        if (nurseContactNumber != null) nurseContactNumber = nurseContactNumber.trim();
-        if (governmentId != null) governmentId = governmentId.trim();
-        if (nursingLicense != null) nursingLicense = nursingLicense.trim();
-        if (nursingDegreeOrDiplomaCertificate != null) nursingDegreeOrDiplomaCertificate = nursingDegreeOrDiplomaCertificate.trim();
-        if (nursingCouncilRegistration != null) nursingCouncilRegistration = nursingCouncilRegistration.trim();
-        if (dateOfJoining != null) dateOfJoining = dateOfJoining.trim();
-        if (department != null) department = department.trim();
-        if (medicalFitnessCertificate != null) medicalFitnessCertificate = medicalFitnessCertificate.trim();
-        if (emailId != null) emailId = emailId.trim();
-        if (previousEmploymentHistory != null) previousEmploymentHistory = previousEmploymentHistory.trim();
-        if (experienceCertificates != null) experienceCertificates = experienceCertificates.trim();
-    }
+
+	public void trimNurseFields() {
+		if (nurseId != null)
+			nurseId = nurseId.trim();
+		if (role != null)
+			role = role.trim();
+		if (fullName != null)
+			fullName = fullName.trim();
+		if (dateOfBirth != null)
+			dateOfBirth = dateOfBirth.trim();
+		if (nurseContactNumber != null)
+			nurseContactNumber = nurseContactNumber.trim();
+		if (governmentId != null)
+			governmentId = governmentId.trim();
+		if (nursingLicense != null)
+			nursingLicense = nursingLicense.trim();
+		if (nursingDegreeOrDiplomaCertificate != null)
+			nursingDegreeOrDiplomaCertificate = nursingDegreeOrDiplomaCertificate.trim();
+		if (nursingCouncilRegistration != null)
+			nursingCouncilRegistration = nursingCouncilRegistration.trim();
+		if (dateOfJoining != null)
+			dateOfJoining = dateOfJoining.trim();
+		if (department != null)
+			department = department.trim();
+		if (medicalFitnessCertificate != null)
+			medicalFitnessCertificate = medicalFitnessCertificate.trim();
+		if (emailId != null)
+			emailId = emailId.trim();
+		if (previousEmploymentHistory != null)
+			previousEmploymentHistory = previousEmploymentHistory.trim();
+		if (experienceCertificates != null)
+			experienceCertificates = experienceCertificates.trim();
+	}
 }

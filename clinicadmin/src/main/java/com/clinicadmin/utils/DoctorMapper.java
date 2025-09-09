@@ -25,6 +25,7 @@ public class DoctorMapper {
 
 		doctor.setDoctorId(dto.getDoctorId());
 		doctor.setHospitalId(dto.getHospitalId());
+		doctor.setRole(dto.getRole());
 		doctor.setDoctorAverageRating(dto.getDoctorAverageRating());
 		doctor.setDoctorEmail(dto.getDoctorEmail());
 		doctor.setDoctorLicence(dto.getDoctorLicence());
@@ -54,6 +55,7 @@ public class DoctorMapper {
 		doctor.setAssociatedWithIADVC(dto.isAssociatedWithIADVC());
 		doctor.setAssociationsOrMemberships(dto.getAssociationsOrMemberships());
 		doctor.setBranches(dto.getBranches());
+		doctor.setPermissions(dto.getPermissions());
 
 		if (dto.getDoctorFees() != null) {
 			doctor.setDoctorFees(mapDoctorFeeDTOtoEntity(dto.getDoctorFees()));

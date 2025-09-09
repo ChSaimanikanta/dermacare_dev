@@ -18,57 +18,52 @@ import com.AdminService.util.Response;
 
 @RestController
 @RequestMapping("/admin")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
+@CrossOrigin(origins = { "http://localhost:3000", "http://localhost:3001" })
 public class BranchController {
 
-    @Autowired
-    private BranchServiceImpl serviceImpl;
+	@Autowired
+	private BranchServiceImpl serviceImpl;
 
-   
-    @GetMapping("/getBranchById/{branchId}")
-    public ResponseEntity<?> getBranchById(@PathVariable String branchId) {
-        return serviceImpl.getBranchById(branchId);
-       }
+	@GetMapping("/getBranchById/{branchId}")
+	public ResponseEntity<?> getBranchById(@PathVariable String branchId) {
+		return serviceImpl.getBranchById(branchId);
+	}
 
-    @GetMapping("/getAllBranches")
-    public ResponseEntity<?> getAllBranches() {
-        Response response = serviceImpl.getAllBranches();  
-        if (response != null && response.getStatus() != 0) {
-            return ResponseEntity.status(response.getStatus()).body(response);
-        } else {
-            return null;
-        }
-    }
+	@GetMapping("/getAllBranches")
+	public ResponseEntity<?> getAllBranches() {
+		Response response = serviceImpl.getAllBranches();
+		if (response != null && response.getStatus() != 0) {
+			return ResponseEntity.status(response.getStatus()).body(response);
+		} else {
+			return null;
+		}
+	}
 
- 
-    @PostMapping("/createBranch")
-    public Response createBranch(@RequestBody BranchDTO branchDto) {
-        Response response = serviceImpl.createBranch(branchDto);
-        return response;
-    }
+	@PostMapping("/createBranch")
+	public Response createBranch(@RequestBody BranchDTO branchDto) {
+		Response response = serviceImpl.createBranch(branchDto);
+		return response;
+	}
 
- 
-    @PutMapping("/updateBranch/{branchId}")
-    public Response updateBranch(@PathVariable String branchId, @RequestBody BranchDTO branchDto) {
-        Response response = serviceImpl.updateBranch(branchId, branchDto);
-        return response;
-    }
+	@PutMapping("/updateBranch/{branchId}")
+	public Response updateBranch(@PathVariable String branchId, @RequestBody BranchDTO branchDto) {
+		Response response = serviceImpl.updateBranch(branchId, branchDto);
+		return response;
+	}
 
+	@DeleteMapping("/deleteBranch/{branchId}")
+	public ResponseEntity<?> deleteBranch(@PathVariable String branchId) {
+		Response response = serviceImpl.deleteBranch(branchId);
+		if (response != null && response.getStatus() != 0) {
+			return ResponseEntity.status(response.getStatus()).body(response);
+		} else {
+			return null;
+		}
+	}
 
-    @DeleteMapping("/deleteBranch/{branchId}")
-    public ResponseEntity<?> deleteBranch(@PathVariable String branchId) {
-        Response response = serviceImpl.deleteBranch(branchId);
-        if (response != null && response.getStatus() != 0) {
-            return ResponseEntity.status(response.getStatus()).body(response);
-        } else {
-            return null;
-        }
-    }
-    
-    @GetMapping("/getBranchByClinicId/{clinicId}")
-    public  ResponseEntity<?> getBranchByClinicId(@PathVariable String clinicId) {
-     return serviceImpl.getBranchByClinicId(clinicId);
-       
-    }
+	@GetMapping("/getBranchByClinicId/{clinicId}")
+	public ResponseEntity<?> getBranchByClinicId(@PathVariable String clinicId) {
+		return serviceImpl.getBranchByClinicId(clinicId);
+
+	}
 }
-

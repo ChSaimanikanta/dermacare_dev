@@ -57,7 +57,7 @@ public class LabTechnicianServiceImpl implements LabTechnicianService {
 		String rawPassword = generateStructuredPassword();
 		String encodedPassword = passwordEncoder.encode(rawPassword);
 
-		DoctorLoginCredentials credentials = DoctorLoginCredentials.builder().staffId(saved.getId()).userName(userName)
+		DoctorLoginCredentials credentials = DoctorLoginCredentials.builder().staffId(saved.getId()).username(userName)
 				.password(encodedPassword).hospitalId(saved.getClinicId()).role(saved.getRole()).build();
 		credentialsRepository.save(credentials);
 

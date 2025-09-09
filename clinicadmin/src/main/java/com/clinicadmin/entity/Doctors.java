@@ -1,6 +1,7 @@
 package com.clinicadmin.entity;
 
 import java.util.List;
+import java.util.Map;
 
 import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
@@ -25,7 +26,7 @@ public class Doctors {
 	@JsonSerialize(using = ObjectIdSerializer.class)
 	private ObjectId id;
 	private String doctorId;
-	 private String role = "DOCTOR"; 
+	private String role;
 	private String deviceId;
 	private String hospitalId;
 	private String doctorEmail;
@@ -55,5 +56,6 @@ public class Doctors {
 	private String associationsOrMemberships;
 	private List<String> branches;
 	private ConsultationType Consultation;
+	private Map<String, List<String>> permissions;
 
 }

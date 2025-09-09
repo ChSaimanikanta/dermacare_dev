@@ -1,6 +1,7 @@
 package com.clinicadmin.dto;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.clinicadmin.validations.FormatChecks;
@@ -24,7 +25,7 @@ public class DoctorsDTO {
 
 	private String doctorId;
 
-	private String role = "DOCTOR";
+	private String role;
 
 	private String deviceId;
 
@@ -117,6 +118,7 @@ public class DoctorsDTO {
 	private List<String> branches;
 
 	private ConsultationTypeDTO Consultation;
+	private Map<String, List<String>> permissions;
 
 	public void trimAllDoctorFields() {
 		id = trim(id);

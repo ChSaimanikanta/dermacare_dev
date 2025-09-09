@@ -56,7 +56,7 @@ public class SecurityStaffServiceImpl implements SecurityStaffService {
 		String encodedPassword = passwordEncoder.encode(rawPassword);
 
 		DoctorLoginCredentials credentials = DoctorLoginCredentials.builder().staffId(saved.getSecurityStaffId())
-				.userName(userName).password(encodedPassword).hospitalId(saved.getClinicId()).role(saved.getRole())
+				.username(userName).password(encodedPassword).hospitalId(saved.getClinicId()).role(saved.getRole())
 				.build();
 		credentialsRepository.save(credentials);
 		SecurityStaffDTO responseDTO = SecurityStaffMapper.toDTO(saved);
