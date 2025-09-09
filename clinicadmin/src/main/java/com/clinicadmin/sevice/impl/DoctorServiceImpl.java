@@ -465,7 +465,7 @@ public class DoctorServiceImpl implements DoctorService {
 		Response responseDTO = new Response();
 		System.out.println(loginDTO);
 		Optional<DoctorLoginCredentials> credentialsOptional = credentialsRepository
-				.findByUsername(loginDTO.getUserName());
+				.findByUsername(loginDTO.getUsername());
 
 		if (credentialsOptional.isPresent()) {
 			DoctorLoginCredentials credentials = credentialsOptional.get();
@@ -482,7 +482,7 @@ public class DoctorServiceImpl implements DoctorService {
 				}
 
 				DoctorLoginDTO dto = new DoctorLoginDTO();
-				dto.setUserName(credentials.getUsername());
+				dto.setUsername(credentials.getUsername());
 				dto.setDeviceId(loginDTO.getDeviceId());
 				dto.setStaffId(credentials.getStaffId());
 				dto.setHospitalId(credentials.getHospitalId());
