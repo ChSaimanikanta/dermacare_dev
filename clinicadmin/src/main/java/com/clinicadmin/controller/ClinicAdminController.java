@@ -75,5 +75,10 @@ public class ClinicAdminController {
 //		Response response = clinicAdminService.deleteClinic(hospitalId);
 //		return ResponseEntity.status(response.getStatus()).body(response);
 //	}
+	
+	@GetMapping("/getBranchesByClinicId/{clinicId}")
+    public ResponseEntity<?> getBranchesByClinicId(@PathVariable String clinicId) {
+        return clinicAdminService.getBranchesByClinicId(clinicId);
+    }
 
 }

@@ -13,6 +13,7 @@ import com.clinicadmin.feignclient.AdminServiceClient;
 import com.clinicadmin.service.ClinicAdminService;
 import com.clinicadmin.utils.ExtractFeignMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import feign.FeignException;
 
 @Service
@@ -35,7 +36,8 @@ public class ClinicAdminServiceImpl implements ClinicAdminService {
     	res.setStatus(e.status());
     	res.setMessage(ExtractFeignMessage.clearMessage(e));
     	res.setSuccess(false);
-       return res;}
+       return res;
+       }
     }
 
     @Override
@@ -92,14 +94,28 @@ public class ClinicAdminServiceImpl implements ClinicAdminService {
         }
 
 
- 
-   
+    @Override
+    public ResponseEntity<?> getBranchesByClinicId(String clinicId) {
+        try {
+          
+            return adminServiceClient.getBranchByClinicId(clinicId);
 
- 
-        
-        
-        
-    
+        } catch (FeignException e) {
+            try {
+           
+                String errorJson = e.contentUTF8();
+                Response response = objectMapper.readValue(errorJson, Response.class);
 
+  
+                return ResponseEntity.status(e.status()).body(response);
 
+            } catch (Exception ex) {
+                Response fallback = new Response();
+                fallback.setSuccess(false);
+                fallback.setMessage("Error parsing AdminService response");
+                fallback.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(fallback);
+            }
+        }
+    }
 }

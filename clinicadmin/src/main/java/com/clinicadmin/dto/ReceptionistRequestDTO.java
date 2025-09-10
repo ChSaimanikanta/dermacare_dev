@@ -65,6 +65,10 @@ public class ReceptionistRequestDTO {
 
     @NotNull(message = "Bank Account Details are mandatory")
     private BankAccountDetails bankAccountDetails;
+    private String gender;
+    private String yearOfExperience;
+    private String vaccinationStatus;
+    
 
     // ---------- Optional ----------
     @Email(message = "Invalid email format")

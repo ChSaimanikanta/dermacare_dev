@@ -68,6 +68,9 @@ public class ReceptionistMapper {
         dto.setBankAccountDetails(entity.getBankAccountDetails());
         dto.setEmailId(entity.getEmailId());
         dto.setPermissions(entity.getPermissions());
+        dto.setGender(entity.getGender());
+        dto.setYearOfExperience(entity.getYearOfExperience());
+        dto.setVaccinationStatus(entity.getVaccinationStatus());
         
 
         // Decode files safely
@@ -98,6 +101,9 @@ public class ReceptionistMapper {
         if (dto.getDepartment() != null) entity.setDepartment(dto.getDepartment());
         if (dto.getBankAccountDetails() != null) entity.setBankAccountDetails(dto.getBankAccountDetails());
         if (dto.getEmailId() != null) entity.setEmailId(dto.getEmailId());
+        if (dto.getGender() != null) entity.setGender(dto.getGender());
+        if (dto.getYearOfExperience() != null) entity.setYearOfExperience(dto.getYearOfExperience());
+        if (dto.getVaccinationStatus() != null) entity.setVaccinationStatus(dto.getVaccinationStatus());
 
         // Encode files if provided
         if (dto.getGraduationCertificate() != null)
@@ -131,5 +137,8 @@ public class ReceptionistMapper {
         entity.setComputerSkillsProof(encodeIfNotBase64(dto.getComputerSkillsProof()));
         entity.setPreviousEmploymentHistory(dto.getPreviousEmploymentHistory());
         entity.setPermissions(dto.getPermissions());
+        entity.setGender(dto.getGender());
+        entity.setYearOfExperience(dto.getYearOfExperience());
+        entity.setVaccinationStatus(dto.getVaccinationStatus());
     }
 }

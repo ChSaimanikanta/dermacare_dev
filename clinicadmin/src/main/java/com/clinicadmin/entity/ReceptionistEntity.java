@@ -49,6 +49,12 @@ public class ReceptionistEntity {
 
 
     private BankAccountDetails bankAccountDetails;  // ✅ Mandatory
+    
+    private String gender;
+    private String yearOfExperience;
+    private String vaccinationStatus;
+    
+
 
     // ---------- Optional Fields ----------
     private String emailId;
