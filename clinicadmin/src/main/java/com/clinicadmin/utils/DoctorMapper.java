@@ -109,6 +109,7 @@ public class DoctorMapper {
 		dto.setDoctorAvailabilityStatus(doctor.isDoctorAvailabilityStatus());
 		dto.setRecommendation(doctor.isRecommendation());
 
+
 		if (doctor.getDoctorSignature() != null && !doctor.getDoctorSignature().isBlank()) {
 			dto.setDoctorSignature(Base64CompressionUtil.decompressBase64(doctor.getDoctorSignature()));
 		}

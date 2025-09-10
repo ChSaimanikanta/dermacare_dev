@@ -115,7 +115,7 @@ public class ClinicDTO {
 
  // ClinicCredentials.java
     private String role;  
-    private Map<String, Map<String, List<String>>> permissions;
+    private Map<String, List<String>> permissions;
 	private String instagramHandle;
 	private String twitterHandle;
 	private String facebookHandle;

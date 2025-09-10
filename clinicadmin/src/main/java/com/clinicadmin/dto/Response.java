@@ -24,6 +24,6 @@ public class Response {
 	private String hospitalId;
 	private String branchId;
 	private String role;
-	private Map<String, Map<String, List<String>>> permissions;
+	private Map<String, List<String>> permissions;
 
 }
