@@ -24,7 +24,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/clinic-admin") // Base URL matches the class/entity name
-@CrossOrigin(origins = { "http://localhost:3000", "http://localhost:3001"})
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
 public class ReceptionistController {
 
     @Autowired
