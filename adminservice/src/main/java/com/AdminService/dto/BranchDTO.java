@@ -27,7 +27,7 @@ public class BranchDTO {
 	private String longitude;
 	private String virtualClinicTour;
 	private String role;      
-	private Map<String, Map<String, List<String>>> permissions;
+	private Map<String, List<String>> permissions;
   
 
 }

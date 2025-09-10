@@ -9,8 +9,7 @@ public final class PermissionsUtil {
     private PermissionsUtil() {}
 
     // Default admin role permissions
-    public static Map<String, Map<String, List<String>>> getAdminPermissions() {
-        Map<String, Map<String, List<String>>> rolePermissions = new LinkedHashMap<>();
+    public static Map<String, List<String>> getAdminPermissions() {
         Map<String, List<String>> adminPermissions = new LinkedHashMap<>();
 
         adminPermissions.put("Dashboard", List.of("create", "read", "update", "delete"));
@@ -41,11 +40,7 @@ public final class PermissionsUtil {
         adminPermissions.put("Analytics", List.of("create", "read", "update", "delete"));
         adminPermissions.put("Tax reports", List.of("create", "read", "update", "delete"));
         adminPermissions.put("Reffer Doctor", List.of("create", "read", "update", "delete"));
-        
 
-       
-        rolePermissions.put("admin", adminPermissions);
-
-        return rolePermissions;
+        return adminPermissions;
     }
 }

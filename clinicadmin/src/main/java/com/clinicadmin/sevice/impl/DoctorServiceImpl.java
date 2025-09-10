@@ -171,7 +171,7 @@ public class DoctorServiceImpl implements DoctorService {
 				response.setData(null);
 				response.setMessage("Doctor data is invalid or could not be saved");
 				response.setStatus(HttpStatus.BAD_REQUEST.value());
-			}
+}
 
 		} catch (Exception e) {
 			response.setSuccess(false);

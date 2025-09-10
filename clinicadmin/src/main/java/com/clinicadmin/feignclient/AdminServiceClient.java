@@ -43,5 +43,8 @@ public interface AdminServiceClient {
 //	sorted recommended clincs first;
 	@GetMapping("/admin/clinics/firstRecommendedTureClincs")
 	public ResponseEntity<Response>firstRecommendedTureClincs();
+	
+	@GetMapping("/admin/getBranchByClinicId/{clinicId}")
+	public  ResponseEntity<?> getBranchByClinicId(@PathVariable String clinicId);
 
 }

@@ -1720,7 +1720,7 @@ public class AdminServiceImpl implements AdminService {
                 response.setRole(role);
 
                 
-                Map<String, Map<String, List<String>>> permissions =
+                Map<String, List<String>>permissions =
                         (clinicEntity != null && clinicEntity.getPermissions() != null)
                                 ? clinicEntity.getPermissions()              // already role → modules → actions
                                 : PermissionsUtil.getAdminPermissions();     // default admin
@@ -1762,7 +1762,7 @@ public class AdminServiceImpl implements AdminService {
                 response.setRole(role);
 
                 // ✅ Permissions
-                Map<String, Map<String, List<String>>> permissions =
+                Map<String, List<String>> permissions =
                         (branchEntity != null && branchEntity.getPermissions() != null)
                                 ? branchEntity.getPermissions()
                                 : PermissionsUtil.getAdminPermissions();

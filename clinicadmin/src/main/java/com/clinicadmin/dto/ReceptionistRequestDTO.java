@@ -64,10 +64,17 @@ public class ReceptionistRequestDTO {
 	private BankAccountDetails bankAccountDetails;
 
 	// ---------- Optional ----------
+
+	private String gender;
+	private String yearOfExperience;
+	private String vaccinationStatus;
+
+	// ---------- Optional ----------
 	@Email(message = "Invalid email format")
 	private String emailId;
 
 	private String graduationCertificate;
 	private String computerSkillsProof;
 	private String previousEmploymentHistory;
+
 }

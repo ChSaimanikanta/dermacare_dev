@@ -103,7 +103,8 @@ public class Clinic {
     
     private List<Branch> branches;
     private String role;    
-    private Map<String, Map<String, List<String>>> permissions;
+    private Map<String, List<String>> permissions;
+
 
 
  
