@@ -20,38 +20,38 @@ import lombok.NoArgsConstructor;
 @Document(collection = "Wardboy")
 public class WardBoy {
 
-    @Id
-    private String wardBoyId;  
-   private String clinicId;
-    private String fullName;
-    private String dateOfBirth;
+	@Id
+	private String wardBoyId;
+	private String clinicId;
+	private String hospitalName;
+	private String branchId;
+	private String fullName;
+	private String dateOfBirth;
 
-    @Indexed(unique = true)
-    private String contactNumber;
-    
-    private String gender;
-    private String workExprience;
-    private String shiftTimingOrAvailability;
-    private Address address;
-    private String emergencyContact;
-    
-    private String profilePicture;
+	@Indexed(unique = true)
+	private String contactNumber;
 
-    
-    private String governmentId;
-    private String dateOfJoining;
-    private String department;
-    private BankAccountDetails bankAccountDetails;
-    private String medicalFitnessCertificate;
+	private String gender;
+	private String workExprience;
+	private String shiftTimingOrAvailability;
+	private Address address;
+	private String emergencyContact;
 
-    private String emailId;
-    private String basicHealthFirstAidTrainingCertificate;
-    private String previousEmploymentHistory;
-    private String policeVerification;
-   
-    private  String role = "WARD_BOY";
-    
-    
-    private Map<String, List<String>> permissions;
+	private String profilePicture;
+
+	private String governmentId;
+	private String dateOfJoining;
+	private String department;
+	private BankAccountDetails bankAccountDetails;
+	private String medicalFitnessCertificate;
+
+	private String emailId;
+	private String basicHealthFirstAidTrainingCertificate;
+	private String previousEmploymentHistory;
+	private String policeVerification;
+
+	private String role;
+
+	private Map<String, List<String>> permissions;
 
 }

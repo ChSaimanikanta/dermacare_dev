@@ -1,6 +1,5 @@
 package com.clinicadmin.entity;
 
-
 import java.util.List;
 import java.util.Map;
 
@@ -20,39 +19,39 @@ import lombok.NoArgsConstructor;
 @Document(collection = "receptionists")
 public class ReceptionistEntity {
 
-    @Id
-    private String id;   // Custom ID like RC_A27873EB
+	@Id
+	private String id; // Custom ID like RC_A27873EB
 
-    private String clinicId;
-    
+	private String clinicId;
+	private String hospitalName;
+	private String branchId;
 
-    private String fullName;
-    private String dateOfBirth;  // dd-MM-yyyy
-    private String contactNumber;
+	private String fullName;
+	private String dateOfBirth; // dd-MM-yyyy
+	private String contactNumber;
 
-    private String qualification;  // ✅ Mandatory (moved here)
+	private String qualification; // ✅ Mandatory (moved here)
 
-    private String governmentId;
-    private String dateOfJoining;  // dd-MM-yyyy
-    private String department;
+	private String governmentId;
+	private String dateOfJoining; // dd-MM-yyyy
+	private String department;
 
-    private Address address;   // Mandatory
-    private String emergencyContact;
+	private Address address; // Mandatory
+	private String emergencyContact;
 //    private String userName;   // auto = contactNumber
 //    private String password;   // auto-generate
-    
-    private String role;
 
-    private Map<String, List<String>> permissions;
+	private String role;
 
-    private String profilePicture;
+	private Map<String, List<String>> permissions;
 
+	private String profilePicture;
 
-    private BankAccountDetails bankAccountDetails;  // ✅ Mandatory
+	private BankAccountDetails bankAccountDetails; // ✅ Mandatory
 
-    // ---------- Optional Fields ----------
-    private String emailId;
-    private String graduationCertificate;
-    private String computerSkillsProof;
-    private String previousEmploymentHistory;
+	// ---------- Optional Fields ----------
+	private String emailId;
+	private String graduationCertificate;
+	private String computerSkillsProof;
+	private String previousEmploymentHistory;
 }

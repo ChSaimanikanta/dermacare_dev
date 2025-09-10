@@ -1,5 +1,8 @@
 package com.clinicadmin.dto;
 
+import java.util.List;
+import java.util.Map;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -16,8 +19,9 @@ public class SecurityStaffDTO {
 	private String securityStaffId;
 
 	private String clinicId;
-
-	private String role = "SECURITY";
+	private String hospitalName;
+	private String branchId;
+	private String role;
 
 	@NotBlank(message = "Full Name is mandatory")
 	private String fullName;
@@ -60,6 +64,7 @@ public class SecurityStaffDTO {
 	private String traningOrGuardLicense;
 
 	private String previousEmployeeHistory;
+	private Map<String, List<String>> permissions;
 
 	private String userName;
 	private String password;

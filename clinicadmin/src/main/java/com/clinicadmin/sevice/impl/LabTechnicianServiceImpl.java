@@ -53,16 +53,24 @@ public class LabTechnicianServiceImpl implements LabTechnicianService {
 
 		LabTechnicianEntity saved = repository.save(entity);
 
-		String userName = dto.getContactNumber();
+		String username = dto.getContactNumber();
 		String rawPassword = generateStructuredPassword();
 		String encodedPassword = passwordEncoder.encode(rawPassword);
-
-		DoctorLoginCredentials credentials = DoctorLoginCredentials.builder().staffId(saved.getId()).username(userName)
-				.password(encodedPassword).hospitalId(saved.getClinicId()).role(saved.getRole()).build();
+		DoctorLoginCredentials credentials = DoctorLoginCredentials.builder()
+				.staffId(saved.getId())
+				.staffName(saved.getFullName())
+				.hospitalId(saved.getClinicId())
+				.hospitalName(saved.getHospitalName())
+				.branchId(saved.getBranchId())
+				.username(username)
+				.password(encodedPassword)
+				.role(dto.getRole())
+				.permissions(saved.getPermissions())
+				.build();
 		credentialsRepository.save(credentials);
 
 		LabTechnicianRequestDTO responseDTO = LabTechnicianMapper.toDTO(saved);
-		responseDTO.setUserName(userName);
+		responseDTO.setUserName(username);
 		responseDTO.setPassword(rawPassword); // expose only on create
 
 		return ResponseStructure.buildResponse(responseDTO, "Lab Technician created successfully", HttpStatus.CREATED,
@@ -150,6 +158,12 @@ public class LabTechnicianServiceImpl implements LabTechnicianService {
 		LabTechnicianEntity existing = optional.get();
 
 		// update fields if provided
+		if (dto.getHospitalName() != null)
+			existing.setHospitalName(dto.getHospitalName());
+		if (dto.getBranchId() != null)
+			existing.setBranchId(dto.getBranchId());
+		if (dto.getRole() != null)
+			existing.setRole(dto.getRole());
 		if (dto.getFullName() != null)
 			existing.setFullName(dto.getFullName());
 		if (dto.getGender() != null)

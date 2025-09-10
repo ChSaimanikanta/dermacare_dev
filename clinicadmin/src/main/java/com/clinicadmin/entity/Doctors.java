@@ -29,6 +29,8 @@ public class Doctors {
 	private String role;
 	private String deviceId;
 	private String hospitalId;
+	private String hospitalName;
+	private String branchId;
 	private String doctorEmail;
 	private String doctorPicture;
 	private String doctorLicence;

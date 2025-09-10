@@ -11,14 +11,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.clinicadmin.dto.ResponseStructure;
-import com.clinicadmin.dto.SecurityStaffDTO;
 import com.clinicadmin.dto.WardBoyDTO;
 import com.clinicadmin.entity.DoctorLoginCredentials;
 import com.clinicadmin.entity.WardBoy;
 import com.clinicadmin.repository.DoctorLoginCredentialsRepository;
 import com.clinicadmin.repository.WardBoyRepository;
 import com.clinicadmin.service.WardBoyService;
-import com.clinicadmin.utils.SecurityStaffMapper;
 import com.clinicadmin.utils.WardBoyMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -57,17 +55,25 @@ public class WardBoyServiceImpl implements WardBoyService {
 
 		WardBoy saved = wardBoyRepository.save(wardBoy);
 
-		String userName = dto.getContactNumber();
+		String username = dto.getContactNumber();
 		String rawPassword = generateStructuredPassword();
 		String encodedPassword = passwordEncoder.encode(rawPassword);
 
-		DoctorLoginCredentials credentials = DoctorLoginCredentials.builder().staffId(saved.getWardBoyId())
-				.username(userName).password(encodedPassword).hospitalId(saved.getClinicId()).role(saved.getRole())
+		DoctorLoginCredentials credentials = DoctorLoginCredentials.builder()
+				.staffId(saved.getWardBoyId())
+				.staffName(saved.getFullName())
+				.hospitalId(saved.getClinicId())
+				.hospitalName(saved.getHospitalName())
+				.branchId(saved.getBranchId())
+				.username(username)
+				.password(encodedPassword)
+				.role(dto.getRole())
+				.permissions(saved.getPermissions())
 				.build();
 		credentialsRepository.save(credentials);
 
 		WardBoyDTO responseDto = WardBoyMapper.toDTO(saved);
-		responseDto.setUserName(userName);
+		responseDto.setUserName(username);
 		responseDto.setPassword(rawPassword);
 
 		return ResponseStructure.buildResponse(responseDto, "WardBoy added successfully", HttpStatus.CREATED,
@@ -103,7 +109,16 @@ public class WardBoyServiceImpl implements WardBoyService {
 			}
 			existing.setContactNumber(dto.getContactNumber());
 		}
-
+		if (dto.getBranchId() != null)
+			existing.setBranchId(dto.getBranchId());
+		if (dto.getRole() != null)
+			existing.setRole(dto.getRole());
+		if (dto.getClinicId() != null)
+			existing.setClinicId(dto.getClinicId());
+		if (dto.getHospitalName() != null)
+			existing.setHospitalName(dto.getHospitalName());
+		if (dto.getPermissions() != null)
+			existing.setPermissions(dto.getPermissions());
 		if (dto.getFullName() != null)
 			existing.setFullName(dto.getFullName());
 		if (dto.getClinicId() != null)

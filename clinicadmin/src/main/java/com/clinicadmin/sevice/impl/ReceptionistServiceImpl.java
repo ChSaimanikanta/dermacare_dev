@@ -4,7 +4,6 @@ import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -14,17 +13,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.clinicadmin.dto.LabTechnicianRequestDTO;
-import com.clinicadmin.dto.OnBoardResponse;
 import com.clinicadmin.dto.ReceptionistRequestDTO;
-import com.clinicadmin.dto.ReceptionistRestPassword;
 import com.clinicadmin.dto.ResponseStructure;
 import com.clinicadmin.entity.DoctorLoginCredentials;
 import com.clinicadmin.entity.ReceptionistEntity;
 import com.clinicadmin.repository.DoctorLoginCredentialsRepository;
 import com.clinicadmin.repository.ReceptionistRepository;
 import com.clinicadmin.service.ReceptionistService;
-import com.clinicadmin.utils.LabTechnicianMapper;
 import com.clinicadmin.utils.ReceptionistMapper;
 
 @Service
@@ -56,18 +51,26 @@ public class ReceptionistServiceImpl implements ReceptionistService {
 
         ReceptionistEntity saved = repository.save(entity);
         
-        String userName = dto.getContactNumber();
+        String username = dto.getContactNumber();
 		String rawPassword = generateStructuredPassword();
 		String encodedPassword = passwordEncoder.encode(rawPassword);
 
-		DoctorLoginCredentials credentials = DoctorLoginCredentials.builder().staffId(saved.getId()).username(userName)
-				.password(encodedPassword).hospitalId(saved.getClinicId()).role(saved.getRole()).build();
+		DoctorLoginCredentials credentials = DoctorLoginCredentials.builder()
+				.staffId(saved.getId())
+				.staffName(saved.getFullName())
+				.hospitalId(saved.getClinicId())
+				.hospitalName(saved.getHospitalName())
+				.branchId(saved.getBranchId())
+				.username(username)
+				.password(encodedPassword)
+				.role(dto.getRole())
+				.permissions(saved.getPermissions())
+				.build();
 		credentialsRepository.save(credentials);
-
 	
 
         ReceptionistRequestDTO responseDTO = ReceptionistMapper.toDTO(saved);
-        responseDTO.setUserName(userName);
+        responseDTO.setUserName(username);
 		responseDTO.setPassword(rawPassword); // expose only on create
 
         return ResponseStructure.buildResponse(
@@ -126,6 +129,9 @@ public class ReceptionistServiceImpl implements ReceptionistService {
 
         // 🔹 update normal fields
         if (dto.getFullName() != null) existing.setFullName(dto.getFullName());
+        if (dto.getHospitalName() != null) existing.setHospitalName(dto.getHospitalName());
+        if (dto.getRole() != null) existing.setRole(dto.getRole());
+        if (dto.getBranchId() != null) existing.setBranchId(dto.getBranchId());
         if (dto.getDateOfBirth() != null) existing.setDateOfBirth(dto.getDateOfBirth());
         if (dto.getContactNumber() != null) existing.setContactNumber(dto.getContactNumber());
         if (dto.getQualification() != null) existing.setQualification(dto.getQualification());

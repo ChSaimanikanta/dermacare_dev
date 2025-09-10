@@ -45,6 +45,10 @@ public class SecurityStaffMapper {
 
         staff.setSecurityStaffId(dto.getSecurityStaffId());
         staff.setClinicId(dto.getClinicId());
+        staff.setHospitalName(dto.getHospitalName());
+        staff.setBranchId(dto.getBranchId());
+        staff.setRole(dto.getRole());
+        staff.setPermissions(dto.getPermissions());
         staff.setFullName(dto.getFullName());
         staff.setDateOfBirth(dto.getDateOfBirth());
         staff.setGender(dto.getGender());
@@ -75,6 +79,9 @@ public class SecurityStaffMapper {
 
         dto.setSecurityStaffId(staff.getSecurityStaffId());
         dto.setClinicId(staff.getClinicId());
+        dto.setHospitalName(staff.getHospitalName());
+        dto.setBranchId(staff.getBranchId());
+        dto.setRole(staff.getRole());
         dto.setFullName(staff.getFullName());
         dto.setDateOfBirth(staff.getDateOfBirth());
         dto.setGender(staff.getGender());
@@ -92,6 +99,7 @@ public class SecurityStaffMapper {
         dto.setEmailId(staff.getEmailId());
         dto.setTraningOrGuardLicense(staff.getTraningOrGuardLicense());
         dto.setPreviousEmployeeHistory(staff.getPreviousEmployeeHistory());
+        dto.setPermissions(staff.getPermissions());
 
         return dto;
     }

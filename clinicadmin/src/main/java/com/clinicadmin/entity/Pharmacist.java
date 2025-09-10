@@ -1,5 +1,8 @@
 package com.clinicadmin.entity;
 
+import java.util.List;
+import java.util.Map;
+
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -17,7 +20,9 @@ import lombok.NoArgsConstructor;
 public class Pharmacist {
 	private ObjectId id;
 	private String hospitalId;
-	private String role = "PHARMACIST";
+	private String hospitalName;
+	private String branchId;
+	private String role;
 	private String pharmacistId;
 	private String fullName;
 	private String gender;
@@ -39,6 +44,7 @@ public class Pharmacist {
 	private String statePharmacyCouncilRegistration;
 	private String dPharmaOrBPharmaCertificate;
 	private String experienceCertificates;
+	private Map<String, List<String>> permissions;
 
 
 }

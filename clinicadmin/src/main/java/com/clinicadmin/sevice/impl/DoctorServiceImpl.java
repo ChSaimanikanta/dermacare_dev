@@ -143,9 +143,17 @@ public class DoctorServiceImpl implements DoctorService {
 				String rawPassword = generateStructuredPassword();
 				String encodedPassword = passwordEncoder.encode(rawPassword);
 
-				DoctorLoginCredentials credentials = DoctorLoginCredentials.builder().staffId(savedDoctor.getDoctorId())
-						.username(username).password(encodedPassword).hospitalId(savedDoctor.getHospitalId())
-						.role(dto.getRole()).build();
+				DoctorLoginCredentials credentials = DoctorLoginCredentials.builder()
+						.staffId(savedDoctor.getDoctorId())
+						.staffName(savedDoctor.getDoctorName())
+						.hospitalId(savedDoctor.getHospitalId())
+						.hospitalName(savedDoctor.getHospitalName())
+						.branchId(savedDoctor.getBranchId())
+						.username(username)
+						.password(encodedPassword)
+						.role(dto.getRole())
+						.permissions(savedDoctor.getPermissions())
+						.build();
 
 				credentialsRepository.save(credentials);
 
@@ -465,7 +473,7 @@ public class DoctorServiceImpl implements DoctorService {
 		Response responseDTO = new Response();
 		System.out.println(loginDTO);
 		Optional<DoctorLoginCredentials> credentialsOptional = credentialsRepository
-				.findByUsername(loginDTO.getUsername());
+				.findByUsername(loginDTO.getUserName());
 
 		if (credentialsOptional.isPresent()) {
 			DoctorLoginCredentials credentials = credentialsOptional.get();
@@ -482,10 +490,11 @@ public class DoctorServiceImpl implements DoctorService {
 				}
 
 				DoctorLoginDTO dto = new DoctorLoginDTO();
-				dto.setUsername(credentials.getUsername());
+				dto.setUserName(credentials.getUsername());
 				dto.setDeviceId(loginDTO.getDeviceId());
 				dto.setStaffId(credentials.getStaffId());
 				dto.setHospitalId(credentials.getHospitalId());
+			
 
 				responseDTO.setData(dto);
 				responseDTO.setStatus(HttpStatus.OK.value());
@@ -1466,7 +1475,7 @@ public class DoctorServiceImpl implements DoctorService {
 	// ------------------------------Universal
 	// Login---------------------------------------------------
 	@Override
-	public Response loginUsingRoles(LoginBasedOnRoleDTO dto) {
+	public Response loginUsingRoles(DoctorLoginDTO dto) {
 		Response response = new Response();
 		Optional<DoctorLoginCredentials> credentials = credentialsRepository.findByUsername(dto.getUserName());
 
@@ -1478,6 +1487,7 @@ public class DoctorServiceImpl implements DoctorService {
 		}
 
 		DoctorLoginCredentials cr = credentials.get();
+		
 
 		// Fix: dto.getPassword() should come first
 		if (!passwordEncoder.matches(dto.getPassword(), cr.getPassword())) {
@@ -1495,12 +1505,22 @@ public class DoctorServiceImpl implements DoctorService {
 			response.setStatus(409);
 			return response;
 		}
-
+		DoctorLoginDTO resDto = new DoctorLoginDTO();
+		resDto.setUserName(cr.getUsername());
+		resDto.setRole(cr.getRole());
+		resDto.setDeviceId(dto.getDeviceId());
+		resDto.setStaffId(cr.getStaffId());
+		resDto.setStaffName(cr.getStaffName());
+		resDto.setHospitalId(cr.getHospitalId());
+		resDto.setHospitalId(cr.getHospitalId());
+		resDto.setBranchId(cr.getBranchId());
+		resDto.setPermissions(cr.getPermissions());
+		
 		response.setSuccess(true);
 		response.setMessage("Login Successfully");
+		response.setData(resDto);
 		response.setStatus(200);
-		response.setHospitalId(cr.getHospitalId());
-		response.setRole(cr.getRole());
+		
 
 		return response;
 	}

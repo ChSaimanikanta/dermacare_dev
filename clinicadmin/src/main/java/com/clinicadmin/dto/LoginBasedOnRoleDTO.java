@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class LoginBasedOnRoleDTO {
-	private String userName;
+	private String username;
 	private String password;
 	private String role; // Doctor, PHARMACIST, NURSE, DOCTOR
 

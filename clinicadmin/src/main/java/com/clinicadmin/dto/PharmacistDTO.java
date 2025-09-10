@@ -1,5 +1,8 @@
 package com.clinicadmin.dto;
 
+import java.util.List;
+import java.util.Map;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -11,8 +14,9 @@ public class PharmacistDTO {
 	private String id;
 	
 	private String hospitalId;
-
-	private String role = "PHARMACIST";
+	private String hospitalName;
+	private String branchId;
+	private String role ;
 	private String pharmacistId;
 	private String fullName;
 	private String gender;
@@ -33,7 +37,7 @@ public class PharmacistDTO {
     private String statePharmacyCouncilRegistration;
     private String dPharmaOrBPharmaCertificate;
     private String experienceCertificates;
-
+    private Map<String, List<String>> permissions;
 	
 	private String userName;
 	private String password;

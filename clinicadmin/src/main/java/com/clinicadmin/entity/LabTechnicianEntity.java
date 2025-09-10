@@ -25,6 +25,8 @@ public class LabTechnicianEntity {
     private String id;   // Custom ID like LT_A27873EB
     
     private String clinicId;
+    private String branchId;
+    private String hospitalName;
     private String fullName;
     private String gender;
     private String dateOfBirth;
@@ -47,7 +49,7 @@ public class LabTechnicianEntity {
 //    private String userName;  // auto = contactNumber
 //    private String password;  // auto-generated
 
-    private String role ="LAB_TECHNICIAN";
+    private String role;
 
     // ✅ Permissions as nested object
     

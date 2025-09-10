@@ -24,6 +24,8 @@ public class WardBoyDTO {
     @NotBlank(message = "Clinic_ID is required")
 
     private String clinicId;
+	private String hospitalName;
+	private String branchId;
 
 
     @NotBlank(message = "Date of Birth is required")
@@ -70,7 +72,9 @@ public class WardBoyDTO {
     private String userName;
     private String password;
     
-    private  String role = "WARD_BOY";
+    private  String role;
+	private Map<String, List<String>> permissions;
+
     
 
 }

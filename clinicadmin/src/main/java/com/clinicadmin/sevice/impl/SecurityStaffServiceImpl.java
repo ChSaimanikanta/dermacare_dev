@@ -10,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.clinicadmin.dto.ReceptionistRequestDTO;
 import com.clinicadmin.dto.ResponseStructure;
 import com.clinicadmin.dto.SecurityStaffDTO;
 import com.clinicadmin.entity.DoctorLoginCredentials;
@@ -19,7 +18,6 @@ import com.clinicadmin.repository.DoctorLoginCredentialsRepository;
 import com.clinicadmin.repository.SecurityStaffRepository;
 import com.clinicadmin.service.SecurityStaffService;
 import com.clinicadmin.utils.IdGenerator;
-import com.clinicadmin.utils.ReceptionistMapper;
 import com.clinicadmin.utils.SecurityStaffMapper;
 
 import lombok.RequiredArgsConstructor;
@@ -51,16 +49,17 @@ public class SecurityStaffServiceImpl implements SecurityStaffService {
 
 		SecurityStaff saved = repository.save(staff);
 
-		String userName = saved.getContactNumber();
+		String username = saved.getContactNumber();
 		String rawPassword = generateStructuredPassword();
 		String encodedPassword = passwordEncoder.encode(rawPassword);
 
 		DoctorLoginCredentials credentials = DoctorLoginCredentials.builder().staffId(saved.getSecurityStaffId())
-				.username(userName).password(encodedPassword).hospitalId(saved.getClinicId()).role(saved.getRole())
-				.build();
+				.staffName(saved.getFullName()).hospitalId(saved.getClinicId()).hospitalName(saved.getHospitalName())
+				.branchId(saved.getBranchId()).username(username).password(encodedPassword).role(dto.getRole())
+				.permissions(saved.getPermissions()).build();
 		credentialsRepository.save(credentials);
 		SecurityStaffDTO responseDTO = SecurityStaffMapper.toDTO(saved);
-		responseDTO.setUserName(userName);
+		responseDTO.setUserName(username);
 		responseDTO.setPassword(rawPassword); // expose only on create
 		return ResponseStructure.buildResponse(responseDTO, "Security staff added successfully", HttpStatus.CREATED,
 				HttpStatus.CREATED.value());
@@ -86,6 +85,10 @@ public class SecurityStaffServiceImpl implements SecurityStaffService {
 		SecurityStaff existing = existingOpt.get();
 
 		existing.setFullName(staff.getFullName());
+		existing.setHospitalName(staff.getHospitalName());
+		existing.setBranchId(staff.getBranchId());
+		existing.setRole(staff.getRole());
+		existing.setPermissions(staff.getPermissions());
 		existing.setDateOfBirth(staff.getDateOfBirth());
 		existing.setGender(staff.getGender());
 		existing.setContactNumber(staff.getContactNumber());

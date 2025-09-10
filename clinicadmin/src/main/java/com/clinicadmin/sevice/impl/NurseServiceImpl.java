@@ -1,10 +1,9 @@
 package com.clinicadmin.sevice.impl;
 
+import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.util.Base64;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +18,6 @@ import com.clinicadmin.entity.Nurse;
 import com.clinicadmin.repository.DoctorLoginCredentialsRepository;
 import com.clinicadmin.repository.NurseRepository;
 import com.clinicadmin.service.NurseService;
-import com.clinicadmin.utils.Base64CompressionUtil;
 
 @Service
 public class NurseServiceImpl implements NurseService {
@@ -46,19 +44,27 @@ public class NurseServiceImpl implements NurseService {
 		Nurse nurse = mapNurseDtoTONurseEntity(dto);
 		String nurseId = generateNurseId();
 		nurse.setNurseId(nurseId);
-		String userName = dto.getNurseContactNumber();
+		String username = dto.getNurseContactNumber();
 		String rawPassword = generateStructuredPassword();
 		String encodedPassword = passwordEncoder.encode(rawPassword);
 
 		Nurse savedNurse = nurseRepository.save(nurse);
 
-		DoctorLoginCredentials credentials = DoctorLoginCredentials.builder().staffId(savedNurse.getNurseId())
-				.username(userName).password(encodedPassword).hospitalId(savedNurse.getHospitalId())
-				.role(savedNurse.getRole()).build();
+		DoctorLoginCredentials credentials = DoctorLoginCredentials.builder()
+				.staffId(savedNurse.getNurseId())
+				.staffName(savedNurse.getFullName())
+				.hospitalId(savedNurse.getHospitalId())
+				.hospitalName(savedNurse.getHospitalName())
+				.branchId(savedNurse.getBranchId())
+				.username(username)
+				.password(encodedPassword)
+				.role(dto.getRole())
+				.permissions(savedNurse.getPermissions())
+				.build();
 		credentialsRepository.save(credentials);
 
 		NurseDTO savedNurseDTO = mapNurseEntityToNurseDTO(savedNurse);
-		savedNurseDTO.setUserName(userName);
+		savedNurseDTO.setUserName(username);
 		savedNurseDTO.setPassword(rawPassword);
 
 		response.setSuccess(true);
@@ -164,6 +170,10 @@ public class NurseServiceImpl implements NurseService {
 
 		return nurseRepository.findByHospitalIdAndNurseId(hospitalId, nurseId).map(existingNurse -> {
 			// update fields from DTO only if not null
+			if (dto.getHospitalName() != null)
+				existingNurse.setHospitalName(dto.getHospitalName());
+			if (dto.getHospitalId() != null)
+				existingNurse.setHospitalId(dto.getHospitalId());
 			if (dto.getRole() != null)
 				existingNurse.setRole(dto.getRole());
 			if (dto.getFullName() != null)
@@ -227,7 +237,7 @@ public class NurseServiceImpl implements NurseService {
 			}
 			if (dto.getPermissions() != null)
 				existingNurse.setPermissions(dto.getPermissions());
-			
+
 			Nurse updated = nurseRepository.save(existingNurse);
 			NurseDTO updatedDTO = mapNurseEntityToNurseDTO(updated);
 
@@ -277,23 +287,25 @@ public class NurseServiceImpl implements NurseService {
 		Nurse nurse = new Nurse();
 //		nurse.setNurseId(dto.getNurseId());
 		nurse.setHospitalId(dto.getHospitalId());
+		nurse.setHospitalName(dto.getHospitalName());
+		nurse.setBranchId(dto.getBranchId());
 		nurse.setRole(dto.getRole());
 		nurse.setFullName(dto.getFullName());
 		nurse.setDateOfBirth(dto.getDateOfBirth());
 		nurse.setNurseContactNumber(dto.getNurseContactNumber());
 		nurse.setGovernmentId(dto.getGovernmentId());
-		nurse.setNursingLicense(Base64CompressionUtil.compressBase64(dto.getNursingLicense()));
-		nurse.setNursingCouncilRegistration(Base64CompressionUtil.compressBase64(dto.getNursingCouncilRegistration()));
+		nurse.setNursingLicense(encodeIfNotBase64(dto.getNursingLicense()));
+		nurse.setNursingCouncilRegistration(encodeIfNotBase64(dto.getNursingCouncilRegistration()));
 		nurse.setNursingDegreeOrDiplomaCertificate(
-				Base64CompressionUtil.compressBase64(dto.getNursingDegreeOrDiplomaCertificate()));
+				encodeIfNotBase64(dto.getNursingDegreeOrDiplomaCertificate()));
 		nurse.setDateOfJoining(dto.getDateOfJoining());
 		nurse.setDepartment(dto.getDepartment());
 		nurse.setBankAccountDetails(dto.getBankAccountDetails());
-		nurse.setMedicalFitnessCertificate(Base64CompressionUtil.compressBase64(dto.getMedicalFitnessCertificate()));
+		nurse.setMedicalFitnessCertificate(encodeIfNotBase64(dto.getMedicalFitnessCertificate()));
 		nurse.setEmailId(dto.getEmailId());
 		nurse.setPreviousEmploymentHistory(dto.getPreviousEmploymentHistory());
-		nurse.setExperienceCertificates(Base64CompressionUtil.compressBase64(dto.getExperienceCertificates()));
-		nurse.setProfilePicture(Base64CompressionUtil.compressBase64(dto.getProfilePicture()));
+		nurse.setExperienceCertificates(encodeIfNotBase64(dto.getExperienceCertificates()));
+		nurse.setProfilePicture(encodeIfNotBase64(dto.getProfilePicture()));
 		nurse.setVaccinationStatus(dto.getVaccinationStatus());
 		nurse.setInsuranceOrESIdetails(dto.getInsuranceOrESIdetails());
 
@@ -313,26 +325,28 @@ public class NurseServiceImpl implements NurseService {
 		dto.setId(nurse.getId().toString());
 		dto.setNurseId(nurse.getNurseId());
 		dto.setHospitalId(nurse.getHospitalId());
+		dto.setHospitalName(nurse.getHospitalName());
+		dto.setBranchId(nurse.getBranchId());
 		dto.setRole(nurse.getRole());
 		dto.setFullName(nurse.getFullName());
 		dto.setDateOfBirth(nurse.getDateOfBirth());
 		dto.setNurseContactNumber(nurse.getNurseContactNumber());
 		dto.setGovernmentId(nurse.getGovernmentId());
-		dto.setNursingLicense(Base64CompressionUtil.decompressBase64(nurse.getNursingLicense()));
+		dto.setNursingLicense(safeReturnAsBase64(nurse.getNursingLicense()));
 		dto.setNursingDegreeOrDiplomaCertificate(
-				Base64CompressionUtil.decompressBase64(nurse.getNursingDegreeOrDiplomaCertificate()));
+				safeReturnAsBase64(nurse.getNursingDegreeOrDiplomaCertificate()));
 		dto.setNursingCouncilRegistration(
-				Base64CompressionUtil.decompressBase64(nurse.getNursingCouncilRegistration()));
+				safeReturnAsBase64(nurse.getNursingCouncilRegistration()));
 		dto.setDateOfJoining(nurse.getDateOfJoining());
 		dto.setDepartment(nurse.getDepartment());
 		dto.setBankAccountDetails(nurse.getBankAccountDetails());
-		dto.setMedicalFitnessCertificate(Base64CompressionUtil.decompressBase64(nurse.getMedicalFitnessCertificate()));
+		dto.setMedicalFitnessCertificate(safeReturnAsBase64(nurse.getMedicalFitnessCertificate()));
 		dto.setEmailId(nurse.getEmailId());
-		dto.setPreviousEmploymentHistory(Base64CompressionUtil.decompressBase64(nurse.getPreviousEmploymentHistory()));
+		dto.setPreviousEmploymentHistory(safeReturnAsBase64(nurse.getPreviousEmploymentHistory()));
 		dto.setVaccinationStatus(nurse.getVaccinationStatus());
 		dto.setInsuranceOrESIdetails(nurse.getInsuranceOrESIdetails());
-		dto.setExperienceCertificates(Base64CompressionUtil.decompressBase64(nurse.getExperienceCertificates()));
-		dto.setProfilePicture(Base64CompressionUtil.decompressBase64(nurse.getProfilePicture()));
+		dto.setExperienceCertificates(safeReturnAsBase64(nurse.getExperienceCertificates()));
+		dto.setProfilePicture(safeReturnAsBase64(nurse.getProfilePicture()));
 
 		dto.setAddress(nurse.getAddress());
 
@@ -374,6 +388,37 @@ public class NurseServiceImpl implements NurseService {
 		return capitalizedWord + specialChar + numberPart;
 	}
 
+	
+
+    // Encode to Base64
+    private static String encodeIfNotBase64(String input) {
+        if (input == null || input.isBlank()) return input;
+
+        String base64Pattern = "^[A-Za-z0-9+/]*={0,2}$";
+        if (input.matches(base64Pattern) && input.length() % 4 == 0) {
+            try {
+                Base64.getDecoder().decode(input);
+                return input; // already Base64
+            } catch (IllegalArgumentException e) {
+                // not valid, so encode
+            }
+        }
+        return Base64.getEncoder().encodeToString(input.getBytes(StandardCharsets.UTF_8));
+    }
+
+    // Ensure Base64 for returning
+    private static String safeReturnAsBase64(String input) {
+        if (input == null) return null;
+        try {
+            Base64.getDecoder().decode(input);
+            return input;
+        } catch (Exception e) {
+            return Base64.getEncoder().encodeToString(input.getBytes(StandardCharsets.UTF_8));
+        }
+    }
+
+
+	
 //---------------------------------------------------------------------------------------------------
 //--------------------------------- NurseLogin-------------------------------------------------------
 //---------------------------------------------------------------------------------------------------

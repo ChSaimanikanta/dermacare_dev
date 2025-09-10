@@ -22,6 +22,8 @@ public class Nurse {
 	private ObjectId id;
 	private String nurseId;
 	private String hospitalId;
+	private String hospitalName;
+	private String branchId;
 	private String role;
 	private String fullName;
 	private String gender;
@@ -46,6 +48,6 @@ public class Nurse {
 	private String shiftTimingOrAvailability;
 	private Address address;
     private String profilePicture;
-    private Map<String, Map<String, List<String>>> permissions;
+    private Map<String, List<String>> permissions;
 
 }

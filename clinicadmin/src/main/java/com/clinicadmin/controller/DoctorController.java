@@ -343,7 +343,7 @@ public class DoctorController {
 		
 // --------------------Login By Using roles-------------------
 		@PostMapping("/loginUsingRoles")
-		public ResponseEntity<Response> loginUsingRoles(@RequestBody LoginBasedOnRoleDTO dto){
+		public ResponseEntity<Response> loginUsingRoles(@RequestBody DoctorLoginDTO dto){
 			  Response response = doctorService.loginUsingRoles(dto);
 			    return ResponseEntity.status(response.getStatus()).body(response);
 			

@@ -25,6 +25,8 @@ public class NurseDTO {
 	private String nurseId;
 
 	private String hospitalId;
+	private String hospitalName;
+	private String branchId;
 
 	private String role;
 
@@ -80,7 +82,7 @@ public class NurseDTO {
 	private Address address;
 	private String yearsOfExperience;
 	private String emergencyContactNumber;
-	private Map<String, Map<String, List<String>>> permissions;
+	private Map<String, List<String>> permissions;
 
 	private String userName;
 	private String password;

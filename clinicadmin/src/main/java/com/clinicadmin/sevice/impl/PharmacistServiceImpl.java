@@ -1,9 +1,7 @@
 package com.clinicadmin.sevice.impl;
 
 import java.security.SecureRandom;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -12,10 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.clinicadmin.dto.NurseDTO;
 import com.clinicadmin.dto.PharmacistDTO;
-import com.clinicadmin.dto.PharmacistLoginDTO;
-import com.clinicadmin.dto.ResetPharmacistLoginPasswordDTO;
 import com.clinicadmin.dto.Response;
 import com.clinicadmin.entity.DoctorLoginCredentials;
 import com.clinicadmin.entity.Pharmacist;
@@ -53,19 +48,27 @@ public class PharmacistServiceImpl implements PharmacistService {
 
 		// username = contact number
 
-		String userName = dto.getContactNumber();
+		String username = dto.getContactNumber();
 		String rawPassword = generateStructuredPassword();
 		String encodedPassword = passwordEncoder.encode(rawPassword);
 
 		Pharmacist saved = pharmacistRepository.save(pharmacist);
 
-		DoctorLoginCredentials credentials = DoctorLoginCredentials.builder().staffId(saved.getPharmacistId())
-				.username(userName).password(encodedPassword).hospitalId(saved.getHospitalId()).role(saved.getRole())
+		DoctorLoginCredentials credentials = DoctorLoginCredentials.builder()
+				.staffId(saved.getPharmacistId())
+				.staffName(saved.getFullName())
+				.hospitalId(saved.getHospitalId())
+				.hospitalName(saved.getHospitalName())
+				.branchId(saved.getBranchId())
+				.username(username)
+				.password(encodedPassword)
+				.role(dto.getRole())
+				.permissions(saved.getPermissions())
 				.build();
 		credentialsRepository.save(credentials);
 
 		PharmacistDTO savedDTO = mapEntityToDto(saved);
-		savedDTO.setUserName(userName);
+		savedDTO.setUserName(username);
 		savedDTO.setPassword(rawPassword);
 
 		response.setSuccess(true);
@@ -243,6 +246,10 @@ public class PharmacistServiceImpl implements PharmacistService {
 	private Pharmacist mapDtoToEntity(PharmacistDTO dto) {
 		Pharmacist pharmacist = new Pharmacist();
 		pharmacist.setHospitalId(dto.getHospitalId());
+		pharmacist.setHospitalName(dto.getHospitalName());
+		pharmacist.setBranchId(dto.getBranchId());
+		pharmacist.setRole(dto.getRole());
+		pharmacist.setPermissions(dto.getPermissions());		
 		pharmacist.setFullName(dto.getFullName());
 		pharmacist.setGender(dto.getGender());
 		pharmacist.setQualification(dto.getQualification());
@@ -271,6 +278,8 @@ public class PharmacistServiceImpl implements PharmacistService {
 		dto.setId(pharmacist.getId().toString());
 		dto.setPharmacistId(pharmacist.getPharmacistId());
 		dto.setHospitalId(pharmacist.getHospitalId());
+		dto.setHospitalName(pharmacist.getHospitalName());
+		dto.setBranchId(pharmacist.getBranchId());
 		dto.setRole(pharmacist.getRole());
 		dto.setFullName(pharmacist.getFullName());
 		dto.setGender(pharmacist.getGender());
@@ -292,6 +301,7 @@ public class PharmacistServiceImpl implements PharmacistService {
 		dto.setExperienceCertificates(Base64CompressionUtil.decompressBase64(pharmacist.getExperienceCertificates()));
 		dto.setStatePharmacyCouncilRegistration(
 				Base64CompressionUtil.decompressBase64(pharmacist.getStatePharmacyCouncilRegistration()));
+		dto.setPermissions(pharmacist.getPermissions());
 		return dto;
 	}
 

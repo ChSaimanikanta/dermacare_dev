@@ -19,6 +19,8 @@ import lombok.NoArgsConstructor;
 public class LabTechnicianRequestDTO {
 	private String id;
 	private String clinicId;
+	private String hospitalName;
+	private String branchId;
     @NotBlank(message = "Full name is required")
     private String fullName;
 
@@ -63,7 +65,7 @@ public class LabTechnicianRequestDTO {
     private String userName;
     private String password;
     
-    private String role ="LAB_TECHNICIAN";
+    private String role;
     
     private Map<String, List<String>> permissions;
 
@@ -74,4 +76,6 @@ public class LabTechnicianRequestDTO {
     private String vaccinationStatus;
 
     private String previousEmploymentHistory;
+    
+   
 }

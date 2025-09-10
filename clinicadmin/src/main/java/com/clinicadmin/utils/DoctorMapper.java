@@ -25,6 +25,9 @@ public class DoctorMapper {
 
 		doctor.setDoctorId(dto.getDoctorId());
 		doctor.setHospitalId(dto.getHospitalId());
+		doctor.setHospitalName(dto.getHospitalName());
+		doctor.setBranchId(dto.getBranchId());
+		doctor.setPermissions(dto.getPermissions());
 		doctor.setRole(dto.getRole());
 		doctor.setDoctorAverageRating(dto.getDoctorAverageRating());
 		doctor.setDoctorEmail(dto.getDoctorEmail());
@@ -79,6 +82,9 @@ public class DoctorMapper {
 		}
 
 		dto.setDoctorId(doctor.getDoctorId());
+		dto.setBranchId(doctor.getBranchId());
+		dto.setHospitalId(doctor.getHospitalName());
+		dto.setPermissions(dto.getPermissions());
 		dto.setRole(doctor.getRole());
 		dto.setHospitalId(doctor.getHospitalId());
 

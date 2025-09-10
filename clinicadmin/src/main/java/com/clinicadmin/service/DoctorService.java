@@ -66,5 +66,7 @@ public interface DoctorService {
 
 	public Response getAllDoctorsWithRespectiveClinic();
 
-	public Response loginUsingRoles(LoginBasedOnRoleDTO dto);
+	
+
+	public Response loginUsingRoles(DoctorLoginDTO dto);
 }
