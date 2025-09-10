@@ -61,6 +61,7 @@ public class DoctorSaveDetailsServiceImpl implements DoctorSaveDetailsService {
     @Override
     public Response saveDoctorDetails(DoctorSaveDetailsDTO dto) {
         try {
+            // Step 1: Fetch doctor details from Clinic Admin service
             Response doctorResponse = clinicAdminClient.getDoctorById(dto.getDoctorId()).getBody();
 
             if (doctorResponse == null || !doctorResponse.isSuccess() || doctorResponse.getData() == null) {
@@ -91,16 +92,25 @@ public class DoctorSaveDetailsServiceImpl implements DoctorSaveDetailsService {
 
             dto.setVisitDateTime(LocalDateTime.now());
             int visitTypeCount = (int) uniqueBookingCount + (isRevisit ? 0 : 1);
-            dto.setVisitType(VisitTypeUtil.getVisitTypeFromCount(visitTypeCount));
 
+            // Step 2: Save doctor details
             DoctorSaveDetails entity = convertToEntity(dto);
             DoctorSaveDetails saved = repository.save(entity);
 
-            BookingResponse bookingUpdate = new BookingResponse();
-            bookingUpdate.setBookingId(dto.getBookingId());
-            bookingUpdate.setStatus("In-Progress");
-
-            bookingFeignClient.updateAppointment(bookingUpdate);
+            // Step 3: Update booking status to "In-Progress" via Feign
+            BookingResponse bookres = bookingFeignClient.getBookedService(saved.getBookingId()).getBody().getData();
+            bookres.setBookingId(dto.getBookingId());
+            bookres.setStatus("In-Progress");
+             
+            if(saved.getVisitType().equalsIgnoreCase("Follow-up") && bookres.getFreeFollowUpsLeft() != 0) {
+            	Integer value = bookres.getFreeFollowUpsLeft();
+            	value = value - 1;
+            	bookres.setFreeFollowUpsLeft(value);
+            }
+            if(saved.getVisitType().equalsIgnoreCase("Follow-up") && bookres.getFreeFollowUpsLeft() == 0) {
+            	bookres.setStatus("Completed");
+            }          
+            bookingFeignClient.updateAppointment(bookres);
 
             DoctorSaveDetailsDTO savedDto = convertToDto(saved);
 
@@ -111,10 +121,10 @@ public class DoctorSaveDetailsServiceImpl implements DoctorSaveDetailsService {
 
         } catch (FeignException e) {
             return buildResponse(false, null, "Error fetching doctor/booking details: " + e.getMessage(), HttpStatus.BAD_GATEWAY.value());
-        } catch (Exception e) {
+} catch (Exception e){
             return buildResponse(false, null, "Unexpected error: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
-        }
-    }
+  }
+}
     @Override
     public Response getDoctorDetailsById(String id) {
         Optional<DoctorSaveDetails> optional = repository.findById(id);

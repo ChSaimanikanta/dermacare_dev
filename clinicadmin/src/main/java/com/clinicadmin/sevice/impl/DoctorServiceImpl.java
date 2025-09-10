@@ -1512,7 +1512,7 @@ public class DoctorServiceImpl implements DoctorService {
 		resDto.setStaffId(cr.getStaffId());
 		resDto.setStaffName(cr.getStaffName());
 		resDto.setHospitalId(cr.getHospitalId());
-		resDto.setHospitalId(cr.getHospitalId());
+		resDto.setHospitalName(cr.getHospitalName());
 		resDto.setBranchId(cr.getBranchId());
 		resDto.setPermissions(cr.getPermissions());
 		

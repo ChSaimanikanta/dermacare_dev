@@ -13,7 +13,6 @@ import com.clinicadmin.feignclient.AdminServiceClient;
 import com.clinicadmin.service.ClinicAdminService;
 import com.clinicadmin.utils.ExtractFeignMessage;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import feign.FeignException;
 
 @Service
@@ -90,7 +89,11 @@ public class ClinicAdminServiceImpl implements ClinicAdminService {
         	res.setStatus(e.status());
         	res.setMessage(ExtractFeignMessage.clearMessage(e));
         	res.setSuccess(false);
-           return res;}
+           return res;
+           
+        	
+        	
+        	}
         }
 
 
@@ -102,7 +105,6 @@ public class ClinicAdminServiceImpl implements ClinicAdminService {
 
         } catch (FeignException e) {
             try {
-           
                 String errorJson = e.contentUTF8();
                 Response response = objectMapper.readValue(errorJson, Response.class);
 
