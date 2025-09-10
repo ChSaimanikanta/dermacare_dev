@@ -74,10 +74,12 @@ public class WardBoyMapper {
 		wardBoy.setWorkExprience(dto.getWorkExprience());
 		wardBoy.setShiftTimingOrAvailability(dto.getShiftTimingOrAvailability());
 		wardBoy.setEmergencyContact(dto.getEmergencyContact());
+		wardBoy.setProfilePicture(encodeIfNotBase64(dto.getProfilePicture()));
 //        wardBoy.setUsername(dto.getUserName());
 //        wardBoy.setPassword(dto.getPassword());
 
 		// ✅ Encode before saving to DB
+	
 		wardBoy.setMedicalFitnessCertificate(encodeIfNotBase64(dto.getMedicalFitnessCertificate()));
 		wardBoy.setBasicHealthFirstAidTrainingCertificate(
 				encodeIfNotBase64(dto.getBasicHealthFirstAidTrainingCertificate()));
@@ -117,6 +119,7 @@ public class WardBoyMapper {
 
 		// ✅ Return as Base64 so frontend can directly show/download image/pdf
 		dto.setMedicalFitnessCertificate(safeReturnAsBase64(entity.getMedicalFitnessCertificate()));
+		dto.setProfilePicture(safeReturnAsBase64(entity.getProfilePicture()));
 		dto.setBasicHealthFirstAidTrainingCertificate(
 				safeReturnAsBase64(entity.getBasicHealthFirstAidTrainingCertificate()));
 		dto.setPoliceVerification(safeReturnAsBase64(entity.getPoliceVerification()));
