@@ -1092,7 +1092,7 @@ public Response getAllCategory() {
 public Response getSubServiceInfoBySubServiceId(String subServiceId) throws JsonProcessingException {
 	Response responseObj = new Response();
 	try {
-		ResponseEntity<ResponseStructure<List<SubServicesDto>>>  res = categoryServicesFeign.getAllSubServices();
+		 ResponseEntity<ResponseStructure<List<SubServicesDto>>>  res = categoryServicesFeign.retrieveSubServicesBySubServiceId(subServiceId);
 		//System.out.println(res);
 		List<SubServicesDetailsDto> hospitalAndSubServiceInfo = new ArrayList<>();
 		if(res.getBody().getData() != null && !res.getBody().getData().isEmpty()) {
@@ -1121,6 +1121,7 @@ public Response getSubServiceInfoBySubServiceId(String subServiceId) throws Json
 			 if( hospitalAndSubServiceInfo != null && !hospitalAndSubServiceInfo.isEmpty()) {
 				 responseObj.setData(hospitalAndSubServiceInfo);
 				 responseObj.setStatus(200);
+				 responseObj.setSuccess(true);
 			 }else {
 				 responseObj.setMessage("SubServices Not Found ");
 				 responseObj.setStatus(200);

@@ -7,6 +7,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,6 +28,8 @@ import com.dermacare.category_services.repository.SubServicesInfoRepository;
 import com.dermacare.category_services.service.SubServicesService;
 import com.dermacare.category_services.util.HelperForConversion;
 import com.dermacare.category_services.util.ResponseStructure;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Service
 public class SubServicesServiceImpl implements SubServicesService {
@@ -436,4 +440,64 @@ public class SubServicesServiceImpl implements SubServicesService {
 		}
 
 	}
-}
+	
+	public ResponseEntity<ResponseStructure<List<SubServicesDto>>> retrieveSubServicesBySubServiceId(String subServiceId) {
+	    ResponseStructure<List<SubServicesDto>> res = new ResponseStructure<>();
+	   	    
+	    try {
+	        List<SubServices> subServices = subServiceRepository.findBySubServiceId(new ObjectId(subServiceId));
+	       // System.out.println(subServices);
+	       
+			List<SubServicesDto> dtoList = new ArrayList<>();
+
+			for (SubServices service : subServices) {
+				SubServicesDto dto = new SubServicesDto();
+
+				// Handle nested object
+				if (service.getSubServiceId() != null) {
+					dto.setSubServiceId(service.getSubServiceId().toString());
+				}
+				dto.setHospitalId(service.getHospitalId());
+				dto.setSubServiceName(service.getSubServiceName());
+				dto.setServiceId(service.getServiceId().toString());
+				dto.setServiceName(service.getServiceName());
+				dto.setCategoryName(service.getCategoryName());
+				dto.setCategoryId(service.getCategoryId().toString());
+				dto.setViewDescription(service.getViewDescription());
+				if (service.getSubServiceImage() != null) {
+					String image = Base64.getEncoder().encodeToString(service.getSubServiceImage());
+					dto.setSubServiceImage(image);
+				}
+				dto.setStatus(service.getStatus());
+				dto.setMinTime(service.getMinTime());
+				dto.setPreProcedureQA(service.getPreProcedureQA());
+				dto.setProcedureQA(service.getProcedureQA());
+				dto.setPostProcedureQA(service.getPostProcedureQA());
+				dto.setPrice(service.getPrice());
+				dto.setDiscountPercentage(service.getDiscountPercentage());
+				dto.setTaxPercentage(service.getTaxPercentage());
+				dto.setPlatformFeePercentage(service.getPlatformFeePercentage());
+				dto.setDiscountAmount(service.getDiscountAmount());
+				dto.setTaxAmount(service.getTaxAmount());
+				dto.setPlatformFee(service.getPlatformFee());
+				dto.setDiscountedCost(service.getDiscountedCost());
+				dto.setGst(service.getGst());
+				dto.setGstAmount(service.getGstAmount());
+				dto.setConsultationFee(service.getConsultationFee());
+				dto.setClinicPay(service.getClinicPay());
+				dto.setFinalCost(service.getFinalCost());
+				dto.setConsentFormType(service.getConsentFormType());
+
+				dtoList.add(dto);
+			}
+			if(dtoList != null) {  
+	            res = new ResponseStructure<>(dtoList, "Retrieved data successfully", null, 200);
+	        }else{
+	            res = new ResponseStructure<>(null, "No data found", null, 404);
+	        }
+	    } catch (Exception e) {
+	        res = new ResponseStructure<>(null, e.getMessage(), null, 500);
+	    }
+	    
+	    return ResponseEntity.status(res.getStatusCode()).body(res);
+}}

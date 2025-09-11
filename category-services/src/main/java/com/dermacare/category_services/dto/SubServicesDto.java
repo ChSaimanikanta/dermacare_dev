@@ -3,6 +3,8 @@ package com.dermacare.category_services.dto;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SubServicesDto {
 
 	private String hospitalId;

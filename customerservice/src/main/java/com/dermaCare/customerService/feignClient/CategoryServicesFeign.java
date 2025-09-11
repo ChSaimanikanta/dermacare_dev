@@ -16,7 +16,7 @@ import com.dermaCare.customerService.util.ResponseStructure;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 
 @FeignClient(value = "category-services")
-@CircuitBreaker(name = "circuitBreaker", fallbackMethod = "categoryServiceFallBack")
+//@CircuitBreaker(name = "circuitBreaker", fallbackMethod = "categoryServiceFallBack")
 public interface CategoryServicesFeign {
 	
 	@GetMapping("/api/v1/subServices/getAllSubServices")
@@ -34,6 +34,8 @@ public interface CategoryServicesFeign {
 	@GetMapping("/api/v1/category/getCategories")
     ResponseEntity<ResponseStructure<List<CategoryDto>>> getAllCategory();
 	
+	@GetMapping("/api/v1/subServices/retrieveSubServicesBySubServiceId/{subServiceId}")
+	 public ResponseEntity<ResponseStructure<List<SubServicesDto>>> retrieveSubServicesBySubServiceId(@PathVariable String subServiceId);
 	//FALLBACK METHODS
 	
 	default ResponseEntity<?> categoryServiceFallBack(Exception e){		 
