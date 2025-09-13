@@ -269,7 +269,6 @@ public class AdminController {
 			 return ResponseEntity.status(response.getStatus()).body(response.getData());
 
 		 }
-
 		else {
 
 				return null;}
@@ -277,10 +276,6 @@ public class AdminController {
     
 
     }
-
-    
-
-    
 
     @GetMapping("/getcategoryById/{categoryId}")
 
@@ -305,8 +300,6 @@ public class AdminController {
  
 
     }
-
-    
 
     @DeleteMapping("/deleteCategory/{categoryId}")
 

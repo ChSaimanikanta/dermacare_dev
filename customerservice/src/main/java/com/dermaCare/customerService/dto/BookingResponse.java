@@ -51,6 +51,7 @@ public class BookingResponse {
 	private double totalFee;
 	private List<String> attachments;
 	private String consentFormPdf;
+	private List<String> prescriptionPdf;
 	private String paymentType;
 
 }

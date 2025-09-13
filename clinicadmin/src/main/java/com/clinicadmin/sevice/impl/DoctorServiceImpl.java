@@ -502,7 +502,7 @@ public class DoctorServiceImpl implements DoctorService {
 				responseDTO.setSuccess(true);
 			} else {
 				responseDTO.setData(null);
-				responseDTO.setStatus(HttpStatus.UNAUTHORIZED.value());
+				responseDTO.setStatus(HttpStatus.NOT_FOUND.value());
 				responseDTO.setMessage("Invalid password");
 				responseDTO.setSuccess(false);
 			}
