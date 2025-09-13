@@ -35,5 +35,6 @@ public class DoctorSaveDetailsDTO {
     private FollowUpDetailsDTO followUp;
     private PrescriptionDetailsDTO prescription;
     private List<String> prescriptionPdf;
+//    private int visitNumber;
 }
 

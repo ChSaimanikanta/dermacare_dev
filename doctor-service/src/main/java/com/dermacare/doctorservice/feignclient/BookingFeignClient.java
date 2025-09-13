@@ -42,6 +42,7 @@ public interface  BookingFeignClient {
 	@GetMapping("/api/v1/getInProgressAppointments/{mobilenumber}")
 	public ResponseEntity<?> inProgressAppointments(@PathVariable String mobilenumber);
 	
-
-
+	@GetMapping("/api/v1/getDoctorFutureAppointments/{doctorId}")
+	public ResponseEntity<?> getDoctorFutureAppointments(@PathVariable String doctorId);
+	
 }

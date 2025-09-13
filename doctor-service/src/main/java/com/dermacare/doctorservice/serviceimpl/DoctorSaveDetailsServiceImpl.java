@@ -520,7 +520,6 @@ public class DoctorSaveDetailsServiceImpl implements DoctorSaveDetailsService {
             return buildResponse(false, null, "Error fetching visit history: " + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
     }
-    
     @Override
     public Response getInProgressDetails(String patientId, String bookingId) {
         try {

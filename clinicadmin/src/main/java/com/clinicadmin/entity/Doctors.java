@@ -39,7 +39,7 @@ public class Doctors {
 	private String doctorName;
 	private List<DoctorCategoryDTO> category;
 	private List<DoctorServicesDTO> service;
-	private List<DoctorSubServiceDTO> subServices; // ✅ fix the typo here
+	private List<DoctorSubServiceDTO> subServices;
 	private String specialization;
 	private String gender;
 	private String experience;
