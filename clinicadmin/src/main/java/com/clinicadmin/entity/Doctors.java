@@ -7,6 +7,7 @@ import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import com.clinicadmin.dto.DoctorBranches;
 import com.clinicadmin.dto.DoctorCategoryDTO;
 import com.clinicadmin.dto.DoctorServicesDTO;
 import com.clinicadmin.dto.DoctorSubServiceDTO;
@@ -56,7 +57,7 @@ public class Doctors {
 	private String doctorSignature;
 	private boolean associatedWithIADVC;
 	private String associationsOrMemberships;
-	private List<String> branches;
+	private List<DoctorBranches> branches;
 	private ConsultationType Consultation;
 	private Map<String, List<String>> permissions;
 

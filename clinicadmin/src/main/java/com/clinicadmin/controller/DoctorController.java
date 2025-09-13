@@ -151,7 +151,7 @@ public class DoctorController {
 	// ----------------------------Doctor
 	// Login----------------------------------------------------------
 	@PostMapping("/doctorLogin")
-	public ResponseEntity<Response> updateDoctorById(@Valid @RequestBody DoctorLoginDTO loginDTO) {
+	public ResponseEntity<Response> doctorLogin(@Valid @RequestBody DoctorLoginDTO loginDTO) {
 		Response response = doctorService.login(loginDTO);
 		return ResponseEntity.status(response.getStatus()).body(response);
 	}

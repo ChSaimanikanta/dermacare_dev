@@ -13,9 +13,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class Branch {
-	private String id;
 	private String clinicId;
-	private String branchId;
+	private String branchId;	
 	private String branchName;
 	private String address;
 	private String city;
@@ -24,7 +23,6 @@ public class Branch {
 	private String latitude;
 	private String longitude;
 	private String virtualClinicTour;
-
-	private String role;            
-	private Map<String, Map<String, List<String>>> permissions;
+	private String role;      
+	private Map<String, List<String>> permissions;
 }

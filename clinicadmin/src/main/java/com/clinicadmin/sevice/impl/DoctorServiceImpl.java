@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.clinicadmin.dto.Branch;
 import com.clinicadmin.dto.ChangeDoctorPasswordDTO;
 import com.clinicadmin.dto.ClinicDTO;
 import com.clinicadmin.dto.ClinicWithDoctorsDTO;
@@ -25,13 +26,13 @@ import com.clinicadmin.dto.ClinicWithDoctorsDTO2;
 import com.clinicadmin.dto.ConsultationTypeDTO;
 import com.clinicadmin.dto.DoctorAvailabilityStatusDTO;
 import com.clinicadmin.dto.DoctorAvailableSlotDTO;
+import com.clinicadmin.dto.DoctorBranches;
 import com.clinicadmin.dto.DoctorCategoryDTO;
 import com.clinicadmin.dto.DoctorLoginDTO;
 import com.clinicadmin.dto.DoctorServicesDTO;
 import com.clinicadmin.dto.DoctorSlotDTO;
 import com.clinicadmin.dto.DoctorSubServiceDTO;
 import com.clinicadmin.dto.DoctorsDTO;
-import com.clinicadmin.dto.LoginBasedOnRoleDTO;
 import com.clinicadmin.dto.ResBody;
 import com.clinicadmin.dto.Response;
 import com.clinicadmin.entity.ConsultationType;
@@ -50,6 +51,7 @@ import com.clinicadmin.utils.DoctorMapper;
 import com.clinicadmin.utils.DoctorSlotMapper;
 import com.clinicadmin.utils.ExtractFeignMessage;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import feign.FeignException;
@@ -87,100 +89,149 @@ public class DoctorServiceImpl implements DoctorService {
 
 	@Override
 	public Response addDoctor(DoctorsDTO dto) {
-		Response response = new Response();
-		try {
-			dto.trimAllDoctorFields();
+	    Response response = new Response();
+	    try {
+	        dto.trimAllDoctorFields();
 
-			if (doctorsRepository.existsByDoctorMobileNumber(dto.getDoctorMobileNumber())) {
-				response.setSuccess(false);
-				response.setData(null);
-				response.setMessage("Doctor with this mobile number already exists");
-				response.setStatus(HttpStatus.BAD_REQUEST.value());
-				return response;
-			}
-			for (DoctorCategoryDTO DoctorCatDTO : dto.getCategory()) {
-				if (!serviceFeignClient.isCategoryExists(DoctorCatDTO.getCategoryId())) {
-					response.setSuccess(false);
-					response.setData(null);
-					response.setMessage("Category is not exists");
-					response.setStatus(HttpStatus.NOT_FOUND.value());
-					return response;
-				}
-			}
-			for (DoctorServicesDTO DoctorSerDTO : dto.getService()) {
-				if (!serviceFeignClient.isServiceExists(DoctorSerDTO.getServiceId())) {
-					response.setSuccess(false);
-					response.setData(null);
-					response.setMessage("Service is not exists");
-					response.setStatus(HttpStatus.NOT_FOUND.value());
-					return response;
-				}
-			}
-			for (DoctorSubServiceDTO DoctorSubSerDTO : dto.getSubServices()) {
-				if (!serviceFeignClient.isSubServiceExists(DoctorSubSerDTO.getSubServiceId())) {
-					response.setSuccess(false);
-					response.setData(null);
-					response.setMessage("SubService is not exists");
-					response.setStatus(HttpStatus.NOT_FOUND.value());
-					return response;
-				}
-			}
+	        if (doctorsRepository.existsByDoctorMobileNumber(dto.getDoctorMobileNumber())) {
+	            response.setSuccess(false);
+	            response.setData(null);
+	            response.setMessage("Doctor with this mobile number already exists");
+	            response.setStatus(HttpStatus.BAD_REQUEST.value());
+	            return response;
+	        }
 
-			// Generate custom doctorId like DC_1, DC_2, etc.
-			String doctorId = generateDoctorId();
+	        // Validate categories
+	        for (DoctorCategoryDTO catDTO : dto.getCategory()) {
+	            if (!serviceFeignClient.isCategoryExists(catDTO.getCategoryId())) {
+	                response.setSuccess(false);
+	                response.setData(null);
+	                response.setMessage("Category does not exist");
+	                response.setStatus(HttpStatus.NOT_FOUND.value());
+	                return response;
+	            }
+	        }
 
-			// Set the custom doctorId in the DTO
-			dto.setDoctorId(doctorId);
+	        // Validate services
+	        for (DoctorServicesDTO serDTO : dto.getService()) {
+	            if (!serviceFeignClient.isServiceExists(serDTO.getServiceId())) {
+	                response.setSuccess(false);
+	                response.setData(null);
+	                response.setMessage("Service does not exist");
+	                response.setStatus(HttpStatus.NOT_FOUND.value());
+	                return response;
+	            }
+	        }
 
-			// Map DTO to Doctor Entity and ensure doctorId is assigned
-			Doctors doctor = DoctorMapper.mapDoctorDTOtoDoctorEntity(dto);
-			doctor.setDoctorId(doctorId); // Ensure that doctorId is set in the entity
+	        // Validate sub-services
+	        for (DoctorSubServiceDTO subSerDTO : dto.getSubServices()) {
+	            if (!serviceFeignClient.isSubServiceExists(subSerDTO.getSubServiceId())) {
+	                response.setSuccess(false);
+	                response.setData(null);
+	                response.setMessage("SubService does not exist");
+	                response.setStatus(HttpStatus.NOT_FOUND.value());
+	                return response;
+	            }
+	        }
 
-			if (doctor != null) {
-				Doctors savedDoctor = doctorsRepository.save(doctor);
+	        // Generate doctorId
+	        String doctorId = generateDoctorId();
+	        dto.setDoctorId(doctorId);
 
-				String username = savedDoctor.getDoctorMobileNumber();
-				String rawPassword = generateStructuredPassword();
-				String encodedPassword = passwordEncoder.encode(rawPassword);
+	        // Map DTO -> Entity
+	        Doctors doctor = DoctorMapper.mapDoctorDTOtoDoctorEntity(dto);
+	        doctor.setDoctorId(doctorId);
 
-				DoctorLoginCredentials credentials = DoctorLoginCredentials.builder()
-						.staffId(savedDoctor.getDoctorId())
-						.staffName(savedDoctor.getDoctorName())
-						.hospitalId(savedDoctor.getHospitalId())
-						.hospitalName(savedDoctor.getHospitalName())
-						.branchId(savedDoctor.getBranchId())
-						.username(username)
-						.password(encodedPassword)
-						.role(dto.getRole())
-						.permissions(savedDoctor.getPermissions())
-						.build();
+	        // ✅ Validate branches with Admin Service
+	        if (dto.getBranches() != null && !dto.getBranches().isEmpty()) {
+	            List<DoctorBranches> validatedBranches = new ArrayList<>();
 
-				credentialsRepository.save(credentials);
+	            for (DoctorBranches br : dto.getBranches()) {
+	                // use br.getBranchId(), not dto.getBranchId()
+	                ResponseEntity<Response> branchResponse =
+	                        adminServiceClient.getBranchByClinicAndBranchId(dto.getHospitalId(), br.getBranchId());
 
-				Map<String, Object> data = new HashMap<>();
-				data.put("doctor", savedDoctor);
-				data.put("username", username);
-				data.put("temporaryPassword", rawPassword);
+	                if (branchResponse == null || branchResponse.getBody() == null
+	                        || !branchResponse.getBody().isSuccess()) {
+	                    response.setSuccess(false);
+	                    response.setData(null);
+	                    response.setMessage("Branch with ID " + br.getBranchId() + " does not exist for this clinic");
+	                    response.setStatus(HttpStatus.NOT_FOUND.value());
+	                    return response;
+	                }
 
-				response.setSuccess(true);
-				response.setData(data);
-				response.setMessage("Doctor added successfully with login credentials");
-				response.setStatus(HttpStatus.CREATED.value());
-			} else {
-				response.setSuccess(false);
-				response.setData(null);
-				response.setMessage("Doctor data is invalid or could not be saved");
-				response.setStatus(HttpStatus.BAD_REQUEST.value());
-}
+	                Branch branch = objectMapper.convertValue(branchResponse.getBody().getData(), Branch.class);
 
-		} catch (Exception e) {
-			response.setSuccess(false);
-			response.setData(null);
-			response.setMessage("Error occurred while adding doctor: " + e.getMessage());
-			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-		}
-		return response;
+	                if (branch != null) {
+	                    DoctorBranches validatedBranch = new DoctorBranches();
+	                    validatedBranch.setBranchId(branch.getBranchId());
+	                    validatedBranch.setBranchName(branch.getBranchName()); // ✅ now always filled
+	                    validatedBranches.add(validatedBranch);
+	                }
+	            }
+
+	            dto.setBranches(validatedBranches);
+	            doctor.setBranches(validatedBranches);
+	        }
+
+	        // Save doctor
+	        Doctors savedDoctor = doctorsRepository.save(doctor);
+
+	        // Create login credentials
+	        String username = savedDoctor.getDoctorMobileNumber();
+	        String rawPassword = generateStructuredPassword();
+	        String encodedPassword = passwordEncoder.encode(rawPassword);
+
+	        DoctorLoginCredentials credentials = DoctorLoginCredentials.builder()
+	                .staffId(savedDoctor.getDoctorId())
+	                .staffName(savedDoctor.getDoctorName())
+	                .hospitalId(savedDoctor.getHospitalId())
+	                .hospitalName(savedDoctor.getHospitalName())
+	                .branchId(savedDoctor.getBranchId())
+	                .username(username)
+	                .password(encodedPassword)
+	                .role(dto.getRole())
+	                .permissions(savedDoctor.getPermissions())
+	                .build();
+
+	        credentialsRepository.save(credentials);
+
+	        Map<String, Object> data = new HashMap<>();
+	        data.put("doctor", savedDoctor);
+	        data.put("username", username);
+	        data.put("temporaryPassword", rawPassword);
+
+	        response.setSuccess(true);
+	        response.setData(data);
+	        response.setMessage("Doctor added successfully with login credentials");
+	        response.setStatus(HttpStatus.CREATED.value());
+
+	    } catch (FeignException fe) {
+	        try {
+	            String errorJson = fe.contentUTF8();
+	            JsonNode node = objectMapper.readTree(errorJson);
+	            String errorMessage = node.has("message") ? node.get("message").asText() : "Unknown error";
+	            int errorStatus = node.has("status") ? node.get("status").asInt() : fe.status();
+
+	            response.setSuccess(false);
+	            response.setData(null);
+	            response.setMessage(errorMessage);
+	            response.setStatus(errorStatus);
+	        } catch (Exception ex) {
+	            response.setSuccess(false);
+	            response.setData(null);
+	            response.setMessage("Admin Service error: " + fe.getMessage());
+	            response.setStatus(fe.status());
+	        }
+	    } catch (Exception e) {
+	        response.setSuccess(false);
+	        response.setData(null);
+	        response.setMessage("Error occurred while adding doctor: " + e.getMessage());
+	        response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+	    }
+	    return response;
 	}
+
 
 	@Override
 	public Response getAllDoctors() {
@@ -494,7 +545,6 @@ public class DoctorServiceImpl implements DoctorService {
 				dto.setDeviceId(loginDTO.getDeviceId());
 				dto.setStaffId(credentials.getStaffId());
 				dto.setHospitalId(credentials.getHospitalId());
-			
 
 				responseDTO.setData(dto);
 				responseDTO.setStatus(HttpStatus.OK.value());
@@ -1487,7 +1537,6 @@ public class DoctorServiceImpl implements DoctorService {
 		}
 
 		DoctorLoginCredentials cr = credentials.get();
-		
 
 		// Fix: dto.getPassword() should come first
 		if (!passwordEncoder.matches(dto.getPassword(), cr.getPassword())) {
@@ -1515,12 +1564,11 @@ public class DoctorServiceImpl implements DoctorService {
 		resDto.setHospitalName(cr.getHospitalName());
 		resDto.setBranchId(cr.getBranchId());
 		resDto.setPermissions(cr.getPermissions());
-		
+
 		response.setSuccess(true);
 		response.setMessage("Login Successfully");
 		response.setData(resDto);
 		response.setStatus(200);
-		
 
 		return response;
 	}
