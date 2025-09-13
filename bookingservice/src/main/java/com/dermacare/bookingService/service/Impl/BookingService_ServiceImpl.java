@@ -677,4 +677,33 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 			return ResponseEntity.status(res.getStatusCode()).body(res);
 		}
 
+		public ResponseEntity<?> getDoctorFutureAppointments(String doctorId){
+			ResponseStructure<List<BookingResponse>> res = new ResponseStructure<List<BookingResponse>>();
+			   try{
+				List<Booking> booked=repository.findByDoctorId(doctorId);
+				List<BookingResponse> response=new ArrayList<>();
+				if(booked!=null && !booked.isEmpty()){
+					for(Booking b:booked){
+					DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+					LocalDate serviceDate = LocalDate.parse(b.getServiceDate(), formatter);
+					LocalDate currentDate = LocalDate.now();
+					LocalDate plus = currentDate.plusDays(15);
+						if(!serviceDate.isBefore(currentDate) && !serviceDate.isAfter(plus)){
+							response.add(toResponse(b));}}
+					if(response!=null && !response.isEmpty()){
+						res.setStatusCode(200);
+						res.setHttpStatus(HttpStatus.OK);
+						res.setData(response);
+						res.setMessage("appointments found");
+					}else{
+						res.setStatusCode(200);
+						res.setHttpStatus(HttpStatus.OK);
+						res.setData(response);
+						res.setMessage("appointments not found");}}}
+			catch(Exception e){
+				res.setStatusCode(500);
+				res.setMessage(e.getMessage());}
+			return ResponseEntity.status(res.getStatusCode()).body(res);
+		}
 }
+
