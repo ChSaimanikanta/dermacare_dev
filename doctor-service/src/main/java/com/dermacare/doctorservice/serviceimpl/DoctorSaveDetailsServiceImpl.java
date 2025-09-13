@@ -485,7 +485,7 @@ public class DoctorSaveDetailsServiceImpl implements DoctorSaveDetailsService {
             List<DoctorSaveDetails> visits = repository.findByPatientId(patientId);
 
             if (visits.isEmpty()) {
-                return buildResponse(false, null, "No visit history found for the patient ID", HttpStatus.OK.value());
+                return buildResponse(true, null, "No visit history found for the patient ID", HttpStatus.OK.value());
             }
 
             if (doctorId != null && !doctorId.isBlank()) {
@@ -494,7 +494,7 @@ public class DoctorSaveDetailsServiceImpl implements DoctorSaveDetailsService {
                         .collect(Collectors.toList());
 
                 if (visits.isEmpty()) {
-                    return buildResponse(false, null, "No visit history found for the patient with the specified doctor ID", HttpStatus.NOT_FOUND.value());
+                    return buildResponse(true, null, "No visit history found for the patient with the specified doctor ID", HttpStatus.OK.value());
                 }
             }
 

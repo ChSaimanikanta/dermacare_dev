@@ -134,54 +134,79 @@ public class VitalServiceImpl implements VitalService {
 
 	@Override
 	public Response updateVitals(String bookingId, String patientId, VitalsDTO dto) {
-		Response res = new Response();
-		try {
-			Optional<Vitals> vit = vitalsRepository.findByBookingIdAndPatientId(bookingId, patientId);
-			if (vit.isPresent()) {
-				Vitals vital = vit.get();
-				vital.setBloodPressure(dto.getBloodPressure());
-				vital.setBmi(dto.getBmi());
-				vital.setHeight(dto.getHeight());
-				vital.setPatientName(dto.getPatientName());
-				vital.setTemperature(dto.getTemperature());
-				vital.setWeight(dto.getWeight());
+	    Response res = new Response();
 
-				Vitals savedVitals = vitalsRepository.save(vital);
+	    try {
+	        // 🔹 Check for required input values
+	        if (bookingId == null || bookingId.trim().isEmpty()) {
+	            res.setSuccess(false);
+	            res.setMessage("Booking ID cannot be null or empty");
+	            res.setStatus(HttpStatus.BAD_REQUEST.value());
+	            return res;
+	        }
 
-				VitalsDTO dto1 = new VitalsDTO();
-				dto1.setId(savedVitals.getId().toString()); // ✅ set id
-				dto1.setPatientId(savedVitals.getPatientId()); // ✅ set patientId
-				dto1.setPatientName(savedVitals.getPatientName());
-				dto1.setBloodPressure(savedVitals.getBloodPressure());
-				dto1.setBmi(savedVitals.getBmi());
-				dto1.setHeight(savedVitals.getHeight());
-				dto1.setTemperature(savedVitals.getTemperature());
-				dto1.setWeight(savedVitals.getWeight());
-				dto1.setBookingId(savedVitals.getBookingId());
+	        if (patientId == null || patientId.trim().isEmpty()) {
+	            res.setSuccess(false);
+	            res.setMessage("Patient ID cannot be null or empty");
+	            res.setStatus(HttpStatus.BAD_REQUEST.value());
+	            return res;
+	        }
 
-				res.setSuccess(true);
-				res.setData(dto1);
-				res.setMessage("Vitals updated successfully");
-				res.setStatus(HttpStatus.OK.value());
+	        if (dto == null) {
+	            res.setSuccess(false);
+	            res.setMessage("Vitals data cannot be null");
+	            res.setStatus(HttpStatus.BAD_REQUEST.value());
+	            return res;
+	        }
 
-				return res;
-			} else {
-				res.setSuccess(true);
-				res.setData(Collections.emptyList());
-				res.setMessage("Vitals Data not found");
-				res.setStatus(HttpStatus.OK.value());
+	        // 🔹 Find the existing vitals record
+	        Optional<Vitals> vitOpt = vitalsRepository.findByBookingIdAndPatientId(bookingId, patientId);
 
-				return res;
-			}
-		} catch (Exception e) {
-			res.setSuccess(false);
-			res.setMessage("Exception occured during updating data " + e.getMessage());
-			res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+	        if (vitOpt.isPresent()) {
+	            Vitals vital = vitOpt.get();
 
-			return res;
-		}
+	       
+	            if (dto.getBloodPressure() != null) vital.setBloodPressure(dto.getBloodPressure());
+	            if (dto.getBmi() != null)           vital.setBmi(dto.getBmi());
+	            if (dto.getHeight() != null)        vital.setHeight(dto.getHeight());
+	            if (dto.getPatientName() != null)   vital.setPatientName(dto.getPatientName());
+	            if (dto.getTemperature() != null)   vital.setTemperature(dto.getTemperature());
+	            if (dto.getWeight() != 0)        vital.setWeight(dto.getWeight());
 
+	            Vitals savedVitals = vitalsRepository.save(vital);
+
+	            // 🔹 Prepare response DTO safely
+	            VitalsDTO dtoResp = new VitalsDTO();
+	            dtoResp.setId(savedVitals.getId() != null ? savedVitals.getId().toString() : null);
+	            dtoResp.setPatientId(savedVitals.getPatientId());
+	            dtoResp.setPatientName(savedVitals.getPatientName());
+	            dtoResp.setBloodPressure(savedVitals.getBloodPressure());
+	            dtoResp.setBmi(savedVitals.getBmi());
+	            dtoResp.setHeight(savedVitals.getHeight());
+	            dtoResp.setTemperature(savedVitals.getTemperature());
+	            dtoResp.setWeight(savedVitals.getWeight());
+	            dtoResp.setBookingId(savedVitals.getBookingId());
+
+	            res.setSuccess(true);
+	            res.setData(dtoResp);
+	            res.setMessage("Vitals updated successfully");
+	            res.setStatus(HttpStatus.OK.value());
+	        } else {
+	            res.setSuccess(true);
+	            res.setData(Collections.emptyList());
+	            res.setMessage("Vitals data not found");
+	            res.setStatus(HttpStatus.OK.value());
+	        }
+
+	    } catch (Exception e) {
+	        res.setSuccess(false);
+	        res.setMessage("Exception occurred while updating data: " + e.getMessage());
+	        res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+	    }
+
+	    return res;
 	}
+
 
 	@Override
 	public Response deleteVitals(String bookingId, String patientId) {
