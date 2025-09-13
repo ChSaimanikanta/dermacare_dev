@@ -66,4 +66,10 @@ public class BranchController {
 		return serviceImpl.getBranchByClinicId(clinicId);
 
 	}
+	@GetMapping("/getBranchByClinicAndBranchId/{clinicId}/{branchId}")
+	public ResponseEntity<?> getBranchByClinicAndBranchId(@PathVariable String clinicId,
+	                                                      @PathVariable String branchId) {
+	    return serviceImpl.getBranchByClinicAndBranchId(clinicId, branchId);
+	}
+
 }
