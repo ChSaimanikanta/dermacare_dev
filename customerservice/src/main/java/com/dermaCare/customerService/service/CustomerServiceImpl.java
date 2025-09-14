@@ -20,6 +20,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import com.dermaCare.customerService.dto.BookingRequset;
 import com.dermaCare.customerService.dto.BookingResponse;
+import com.dermaCare.customerService.dto.BranchDTO;
+import com.dermaCare.customerService.dto.BranchInfo;
 import com.dermaCare.customerService.dto.CategoryDto;
 import com.dermaCare.customerService.dto.ClinicAndDoctorsResponse;
 import com.dermaCare.customerService.dto.ClinicDTO;
@@ -875,7 +877,7 @@ public Response getDoctorsSlots(String hospitalId,String doctorId) {
 			            response.setSuccess(false);}
 		    	}else{
 		    		 CustomerRating cRating = new CustomerRating(
-		 		        	null,ratingRequest.getDoctorRating(),ratingRequest.getHospitalRating(),ratingRequest.getFeedback(),ratingRequest.getHospitalId(),ratingRequest.getDoctorId(),
+		 		        	null,ratingRequest.getDoctorRating(),ratingRequest.getHospitalRating(),ratingRequest.getFeedback(),ratingRequest.getHospitalId(),ratingRequest.getBranchId(),ratingRequest.getDoctorId(),
 		 		        	ratingRequest.getCustomerMobileNumber(),ratingRequest.getPatientId(),ratingRequest.getPatientName(),ratingRequest.getAppointmentId(),true,formattedTime
 		 		        );
 		 		customerRatingRepository.save(cRating);
@@ -934,7 +936,7 @@ public Response getDoctorsSlots(String hospitalId,String doctorId) {
 					return response;}
 				for(CustomerRating rating : ratings){
 				CustomerRatingDomain c = new CustomerRatingDomain(rating.getDoctorRating(), rating.getHospitalRating(),
-						rating.getFeedback(), rating.getHospitalId(), rating.getDoctorId(), rating.getCustomerMobileNumber(),rating.getPatientId(),
+						rating.getFeedback(), rating.getHospitalId(),rating.getBranchId(), rating.getDoctorId(), rating.getCustomerMobileNumber(),rating.getPatientId(),
 						rating.getPatientName(),rating.getAppointmentId(), rating.getRated(),rating.getDateAndTimeAtRating());
 				 listDto.add(c);}
 				response.setStatus(200);
@@ -1116,7 +1118,8 @@ public Response getSubServiceInfoBySubServiceId(String subServiceId) throws Json
 			 subServicesDetailsDto.setRecommanded(clinicDto.isRecommended());
 			 subServicesDetailsDto.setHospitalOverallRating(clinicDto.getHospitalOverallRating());
 			 subServicesDetailsDto.setWebsite(clinicDto.getWebsite());
-			 subServicesDetailsDto.setWalkthrough(clinicDto.getWalkthrough());}
+			 subServicesDetailsDto.setWalkthrough(clinicDto.getWalkthrough());
+			 subServicesDetailsDto.setCity(clinicDto.getCity());}
 			 hospitalAndSubServiceInfo.add(subServicesDetailsDto);}
 			 if( hospitalAndSubServiceInfo != null && !hospitalAndSubServiceInfo.isEmpty()) {
 				 responseObj.setData(hospitalAndSubServiceInfo);
@@ -1134,9 +1137,59 @@ public Response getSubServiceInfoBySubServiceId(String subServiceId) throws Json
 			 responseObj.setSuccess(false);
 		}
 	return responseObj;
+  }
+
+
+
+public Response getBranchesInfoBySubServiceId(String clinicId,String subServiceId) throws JsonProcessingException {
+	Response responseObj = new Response();
+	try {
+		 ResponseEntity<ResponseStructure<SubServicesDto>>  res = categoryServicesFeign.getSubServiceBySubServiceId(clinicId, subServiceId);
+		//System.out.println(res);
+		 BranchInfo hospitalAndSubServiceInfo = new BranchInfo();
+		if(res.getBody().getData() != null) {
+			SubServicesDto subsrvice = res.getBody().getData();
+			//System.out.println(subsrvice);
+			hospitalAndSubServiceInfo.setServiceName(subsrvice.getServiceName());
+			hospitalAndSubServiceInfo.setSubServiceName(subsrvice.getSubServiceName());
+			hospitalAndSubServiceInfo.setSubServicePrice(subsrvice.getFinalCost());
+			hospitalAndSubServiceInfo.setDiscountedCost(subsrvice.getDiscountedCost());
+			hospitalAndSubServiceInfo.setDiscountPercentage(subsrvice.getDiscountPercentage());
+			hospitalAndSubServiceInfo.setPrice(subsrvice.getPrice());
+			hospitalAndSubServiceInfo.setTaxAmount(subsrvice.getTaxAmount());
+			hospitalAndSubServiceInfo.setConsultationFee(subsrvice.getConsultationFee());
+            Response response = adminFeign.getBranchByClinicId(subsrvice.getHospitalId()).getBody();
+            Response respnse = adminFeign.getClinicById(subsrvice.getHospitalId());
+		    if(response.getData() != null) {
+		    	 ClinicDTO clinicDto = new ObjectMapper().convertValue(respnse.getData(),ClinicDTO.class);
+		    	 hospitalAndSubServiceInfo.setHospitalId(clinicDto.getHospitalId());
+		    	 hospitalAndSubServiceInfo.setHospitalName(clinicDto.getName());
+		    	 hospitalAndSubServiceInfo.setHospitalLogo(clinicDto.getHospitalLogo());
+		    	 hospitalAndSubServiceInfo.setRecommanded(clinicDto.isRecommended());
+		    	 hospitalAndSubServiceInfo.setHospitalOverallRating(clinicDto.getHospitalOverallRating());
+		    	 hospitalAndSubServiceInfo.setWebsite(clinicDto.getWebsite());
+		    	 hospitalAndSubServiceInfo.setWalkthrough(clinicDto.getWalkthrough());
+		    	 hospitalAndSubServiceInfo.setCity(clinicDto.getCity());	
+		     List<BranchDTO> branchDto = new ObjectMapper().convertValue(response.getData(),new TypeReference<List<BranchDTO>>() {});
+		     List<BranchDTO> matchedBranches = branchDto.stream().filter(n->n.getBranchId().startsWith(subsrvice.getHospitalId())).toList();
+			 hospitalAndSubServiceInfo.setBranches(matchedBranches);}
+			 if(hospitalAndSubServiceInfo != null) {
+				 responseObj.setData(hospitalAndSubServiceInfo);
+				 responseObj.setStatus(200);
+				 responseObj.setSuccess(true);
+			 }else{
+				 responseObj.setMessage("SubServices Not Found ");
+				 responseObj.setStatus(200);
+			 }}else{
+				 responseObj.setMessage("No SubService Found ");
+				 responseObj.setStatus(200);}
+	    }catch(FeignException e) {
+			 responseObj.setMessage(ExtractFeignMessage.clearMessage(e));
+			 responseObj.setStatus(e.status());
+			 responseObj.setSuccess(false);
+		}
+	return responseObj;
 }
-
-
 
 
 //CUSTOMERNOTIFICATION
@@ -1158,8 +1211,6 @@ try {
 }catch(FeignException e) {		
 	 ResBody<List<NotificationToCustomer>>  res = new  ResBody<List<NotificationToCustomer>>(ExtractFeignMessage.clearMessage(e),e.status(),null);		
 	return ResponseEntity.status(e.status()).body(res);		
-}
-}
-
+}}
 
 }

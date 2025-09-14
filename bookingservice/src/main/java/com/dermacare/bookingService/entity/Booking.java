@@ -4,7 +4,9 @@ import java.util.List;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -34,6 +36,8 @@ public class Booking  {
 	private String symptomsDuration;
 	private String clinicId;
 	private String clinicName;
+	private String branchId;
+	private String branchname;
 	private String clinicDeviceId;
 	private String doctorId;
 	private String doctorName;

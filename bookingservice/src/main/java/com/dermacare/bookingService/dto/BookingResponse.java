@@ -34,6 +34,8 @@ public class BookingResponse {
 	private String clinicId;
 	private String clinicDeviceId;
 	private String clinicName;
+	private String branchId;
+	private String branchname;
 	private String doctorId;
 	private String doctorName;
 	private String doctorMobileDeviceId;

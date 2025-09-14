@@ -1,22 +1,13 @@
 package com.dermaCare.customerService.dto;
 
-import lombok.AllArgsConstructor;
+import java.util.List;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
-public class SubServicesDetailsDto {
-	
-	private String hospitalId;
-	private String hospitalName;
-	private String hospitalLogo;
-	private String city;
-	private boolean recommanded;
-	private double hospitalOverallRating;
-	private String website;
-	private String walkthrough;
+public class BranchInfo {
+		
 	private String serviceName;
 	private String subServiceName;
 	private double subServicePrice;
@@ -25,5 +16,15 @@ public class SubServicesDetailsDto {
 	private double taxAmount;
 	private byte discountPercentage;
 	private double consultationFee;
+	private String hospitalId;
+	private String hospitalName;
+	private String hospitalLogo;
+	private String city;
+	private boolean recommanded;
+	private double hospitalOverallRating;
+	private String website;
+	private String walkthrough;
+	private List<BranchDTO> branches;
+
 
 }

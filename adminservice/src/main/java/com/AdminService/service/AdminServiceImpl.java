@@ -176,7 +176,7 @@ public class AdminServiceImpl implements AdminService {
 	                response.setStatus(200);
 	                response.setSuccess(true);
 	            } else {
-	                response.setMessage("Invalid Password");
+	                response.setMessage("Incorrect Password");
 	                response.setStatus(401);
 	                response.setSuccess(false);
 	            }
@@ -187,9 +187,9 @@ public class AdminServiceImpl implements AdminService {
 	                    .anyMatch(admin -> admin.getPassword().equals(password));
 
 	            if (passwordExists) {
-	                response.setMessage("Invalid UserName");
+	                response.setMessage("Incorrect UserName");
 	            } else {
-	                response.setMessage("Invalid UserName and Password");
+	                response.setMessage("Incorrect UserName and Password");
 	            }
 
 	            response.setStatus(401);
@@ -220,7 +220,27 @@ public class AdminServiceImpl implements AdminService {
 	            response.setStatus(409);
 	            return response;
 	        }
+	        
+	        Clinic existingclnc = clinicRep.findByLicenseNumber(clinic.getLicenseNumber());
 
+	        if (existingclnc != null) {
+	            response.setMessage("licenseNumber already exists");
+	            response.setSuccess(false);
+	            response.setStatus(409);
+	            return response;
+	        }
+	        
+	        
+	        Clinic existingcnc = clinicRep.findByEmailAddress(clinic.getEmailAddress());
+
+	        if (existingcnc != null) {
+	            response.setMessage("emailAddress already exists");
+	            response.setSuccess(false);
+	            response.setStatus(409);
+	            return response;
+	        }
+	        
+	        
 	        Clinic savedClinic = new Clinic();
 
 	        savedClinic.setName(clinic.getName());
@@ -1694,104 +1714,86 @@ public class AdminServiceImpl implements AdminService {
                 return response;
             }
 
-            // Check clinic credentials by username
-            ClinicCredentials clinicCredentials = clinicCredentialsRepository.findByUserName(userName);
+            // 1) Check clinic credentials
+            ClinicCredentials clinicCredentials =
+                    clinicCredentialsRepository.findByUserNameAndPassword(userName, password);
+
             if (clinicCredentials != null) {
-                if (clinicCredentials.getPassword().equals(password)) {
-                    // ✅ Login Successful (Clinic)
-                    Clinic clinicEntity = clinicRep.findByHospitalId(clinicCredentials.getUserName());
-                    Branch defaultBranch = branchRepository.findFirstByClinicId(clinicCredentials.getUserName());
-                    String clinicDefaultBranchId = defaultBranch != null ? defaultBranch.getBranchId() : null;
+                Clinic clinicEntity = clinicRep.findByHospitalId(clinicCredentials.getUserName());
 
-                    response.setSuccess(true);
-                    response.setMessage("Login Successful");
-                    response.setStatus(200);
-                    response.setHospitalName(clinicEntity != null ? clinicEntity.getName() : clinicCredentials.getHospitalName());
-                    response.setHospitalId(clinicCredentials.getUserName());
-                    response.setBranchId(clinicDefaultBranchId);
+                // Default branch for this clinic
+                Branch defaultBranch = branchRepository.findFirstByClinicId(clinicCredentials.getUserName());
+                String clinicDefaultBranchId = defaultBranch != null ? defaultBranch.getBranchId() : null;
 
-                    String role = (clinicEntity != null && clinicEntity.getRole() != null)
-                            ? clinicEntity.getRole()
-                            : "admin";
-                    response.setRole(role);
+                response.setSuccess(true);
+                response.setMessage("Clinic login successful");
+                response.setStatus(200);
+                response.setHospitalName(
+                        clinicEntity != null ? clinicEntity.getName() : clinicCredentials.getHospitalName());
+                response.setHospitalId(clinicCredentials.getUserName());
+                response.setBranchId(clinicDefaultBranchId);
 
-                    Map<String, List<String>> permissions = (clinicEntity != null && clinicEntity.getPermissions() != null)
-                            ? clinicEntity.getPermissions()
-                            : PermissionsUtil.getAdminPermissions();
-                    response.setPermissions(permissions);
+            
+                String role = (clinicEntity != null && clinicEntity.getRole() != null)
+                        ? clinicEntity.getRole()
+                        : "admin";
+                response.setRole(role);
 
-                    return response;
-                } else {
-                    // ❌ Invalid Password (Clinic)
-                    response.setSuccess(false);
-                    response.setMessage("Invalid Password");
-                    response.setStatus(401);
-                    return response;
-                }
+                
+                Map<String, List<String>>permissions =
+                        (clinicEntity != null && clinicEntity.getPermissions() != null)
+                                ? clinicEntity.getPermissions()              // already role → modules → actions
+                                : PermissionsUtil.getAdminPermissions();     // default admin
+                response.setPermissions(permissions);
+
+                return response; // 🔴 missing in your code
             }
 
-            // Check branch credentials by username
-            BranchCredentials branchCredentials = branchCredentialsRepository.findByUserName(userName);
+            // 2) Check branch credentials
+            BranchCredentials branchCredentials =
+                    branchCredentialsRepository.findByUserNameAndPassword(userName, password);
+
             if (branchCredentials != null) {
-                if (branchCredentials.getPassword().equals(password)) {
-                    // ✅ Login Successful (Branch)
-                    String branchId = branchCredentials.getBranchId();
-                    String clinicId = branchId.contains("-B_") ? branchId.split("-B_")[0] : branchId;
+                String branchId = branchCredentials.getBranchId(); // e.g., H_1-B_2
+                String clinicId = branchId.contains("-B_") ? branchId.split("-B_")[0] : branchId;
 
-                    Branch branchEntity = branchRepository.findByBranchId(branchId).orElse(null);
+                Optional<Branch> branchEntityOpt = branchRepository.findByBranchId(branchId);
+                Branch branchEntity = branchEntityOpt.orElse(null);
 
-                    response.setSuccess(true);
-                    response.setMessage("Login Successful");
-                    response.setStatus(200);
-                    response.setHospitalName(branchCredentials.getBranchName());
-                    response.setHospitalId(clinicId);
-                    response.setBranchId(branchId);
-
-                    String role = (branchEntity != null && branchEntity.getRole() != null)
-                            ? branchEntity.getRole()
-                            : "admin";
-                    response.setRole(role);
-
-                    Map<String, List<String>> permissions = (branchEntity != null && branchEntity.getPermissions() != null)
-                            ? branchEntity.getPermissions()
-                            : PermissionsUtil.getAdminPermissions();
-                    response.setPermissions(permissions);
-
-                    return response;
+                response.setSuccess(true);
+                response.setMessage("Branch login successful");
+                response.setStatus(200);
+                response.setHospitalName(branchCredentials.getBranchName());
+                response.setHospitalId(clinicId);
+                response.setBranchId(branchId);
+      
+                if (branchEntity != null) {
+                    response.setRole(branchEntity.getRole());
+                    response.setPermissions(branchEntity.getPermissions());
                 } else {
-                    // ❌ Invalid Password (Branch)
-                    response.setSuccess(false);
-                    response.setMessage("Invalid Password");
-                    response.setStatus(401);
-                    return response;
+                    response.setRole("admin"); 
+                    response.setPermissions(PermissionsUtil.getAdminPermissions());
                 }
+
+                // ✅ Role
+                String role = (branchEntity != null && branchEntity.getRole() != null)
+                        ? branchEntity.getRole()
+                        : "admin";
+                response.setRole(role);
+
+                // ✅ Permissions
+                Map<String, List<String>> permissions =
+                        (branchEntity != null && branchEntity.getPermissions() != null)
+                                ? branchEntity.getPermissions()
+                                : PermissionsUtil.getAdminPermissions();
+                response.setPermissions(permissions);
+
+                return response;
             }
 
-            // Username not found in either clinic or branch
-            boolean passwordExists = false;
-
-            // Check if password exists in any clinic
-            List<ClinicCredentials> allClinics = clinicCredentialsRepository.findAll();
-            passwordExists = allClinics.stream()
-                    .anyMatch(c -> c.getPassword().equals(password));
-
-            // Check if password exists in any branch
-            if (!passwordExists) {
-                List<BranchCredentials> allBranches = branchCredentialsRepository.findAll();
-                passwordExists = allBranches.stream()
-                        .anyMatch(b -> b.getPassword().equals(password));
-            }
-
-            if (passwordExists) {
-                // ❌ Invalid UserName
-                response.setSuccess(false);
-                response.setMessage("Invalid UserName");
-            } else {
-                // ❌ Invalid UserName and Password
-                response.setSuccess(false);
-                response.setMessage("Invalid UserName and Password");
-            }
-
+            // 3) Neither matched
+            response.setSuccess(false);
+            response.setMessage("Invalid username or password");
             response.setStatus(401);
             return response;
 
@@ -1802,6 +1804,7 @@ public class AdminServiceImpl implements AdminService {
             return response;
         }
     }
+
     @Override
 
     public Response addNewCategory(CategoryDto dto){

@@ -22,6 +22,8 @@
 	import com.AdminService.repository.ClinicRep;
 	import com.AdminService.util.PermissionsUtil;
 	import com.AdminService.util.Response;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 	
 	@Service
 	public class BranchServiceImpl implements BranchService {
@@ -340,27 +342,5 @@
 	        return dtoList;
 	    }
 	    
-	    public ResponseEntity<?> getBranchByClinicAndBranchId(String clinicId, String branchId) {
-	        Response response = new Response();
-	        try {
-	            Optional<Branch> branchOpt = branchRepository
-	                    .findByClinicIdAndBranchId(clinicId, branchId);
-	            if (branchOpt.isPresent()) {
-	                response.setSuccess(true);
-	                response.setStatus(200);
-	                response.setMessage("Branch details fetched successfully");
-	                response.setData(branchOpt.get());
-	            } else {
-	                response.setSuccess(false);
-	                response.setStatus(404);
-	                response.setMessage("No branch found for the given clinicId and branchId");
-	            }
-	        } catch (Exception e) {
-	            response.setSuccess(false);
-	            response.setStatus(500);
-	            response.setMessage("Something went wrong: " + e.getMessage());
-	        }
-	        return ResponseEntity.status(response.getStatus()).body(response);
-	    }
-
+	    
 	}

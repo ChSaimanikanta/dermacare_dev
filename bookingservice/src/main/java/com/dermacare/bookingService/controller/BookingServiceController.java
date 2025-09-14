@@ -188,10 +188,11 @@ public class BookingServiceController {
 		{
 			return service.getInProgressAppointments(mobilenumber);
 		}
+		
+		
 		@GetMapping("/getDoctorFutureAppointments/{doctorId}")
 		public ResponseEntity<?> getDoctorFutureAppointments(@PathVariable String doctorId)
 		{
 			return service.getDoctorFutureAppointments(doctorId);
-		}
-			
+		}	
 }

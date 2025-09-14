@@ -1,19 +1,20 @@
 package com.dermaCare.customerService.dto;
 
-import java.util.List;
-import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
-public class Branch {
-	private String id;
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class BranchDTO {
+
 	private String clinicId;
-	private String branchId;
+	private String branchId;	
 	private String branchName;
 	private String address;
 	private String city;
@@ -21,8 +22,6 @@ public class Branch {
 	private String email;
 	private String latitude;
 	private String longitude;
-	private String virtualClinicTour;
+	private String virtualClinicTour;     
 
-	private String role;            
-	private Map<String, Map<String, List<String>>> permissions;
 }

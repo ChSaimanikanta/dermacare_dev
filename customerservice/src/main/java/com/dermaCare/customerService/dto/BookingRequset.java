@@ -30,6 +30,8 @@ public class BookingRequset {
 	private String symptomsDuration;
 	private String clinicId;
 	private String clinicName;
+	private String branchId;
+	private String branchname;
 	private String clinicDeviceId;
 	private String doctorId;
 	private String doctorName;

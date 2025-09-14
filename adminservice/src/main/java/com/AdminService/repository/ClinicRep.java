@@ -19,4 +19,8 @@ public interface ClinicRep extends MongoRepository<Clinic, String> {
 	List<Clinic> findByRecommendedTrue();
 
 	List<Clinic> findAllByOrderByRecommendedDescNameAsc();
+	Clinic findByLicenseNumber(String licenseNumber);
+	Clinic findByEmailAddress(String emailAddress);
+	
+	
 }

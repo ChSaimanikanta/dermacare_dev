@@ -2,14 +2,14 @@ package com.AdminService.dto;
 
 import java.util.List;
 import java.util.Map;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
-
 public class SubServicesDto {
 
 	private String hospitalId;
@@ -18,7 +18,7 @@ public class SubServicesDto {
 
 	private String subServiceName;
 
-	private String serviceId;
+	private String serviceID;
 
 	private String serviceName;
 
@@ -34,9 +34,7 @@ public class SubServicesDto {
 
 	private String minTime;
 
-	private List<Map<String, List<String>>> preProcedureQA;
-	private List<Map<String, List<String>>> procedureQA;
-	private List<Map<String, List<String>>> postProcedureQA;
+	private List<Map<String, List<String>>> descriptionQA;
 
 	private double price;
 
@@ -52,18 +50,9 @@ public class SubServicesDto {
 
 	private double platformFee;
 
-	private byte gst;
-
-	private double gstAmount;
-
-	private double consultationFee;
-
 	private double discountedCost; // price - discount Amount
 
 	private double clinicPay; // Price - platformFee
 
 	private double finalCost; // taxAmount + discounedCost
-
-	private String consentFormType; // Generic or procedureConsent (1,2)
-
 }

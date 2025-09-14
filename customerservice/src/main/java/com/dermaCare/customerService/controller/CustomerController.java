@@ -418,6 +418,19 @@ public ResponseEntity<Response> getRatingAverageRating(@PathVariable String hosp
 			 }
    }
    
+    
+   
+   @GetMapping("/getBranchesInfoBySubServiceId/{clinicId}/{subServiceId}")
+   public ResponseEntity<Object> getBranchesInfoBySubServiceId(@PathVariable String clinicId,@PathVariable String subServiceId)throws JsonProcessingException{
+	   Response response = customerService.getBranchesInfoBySubServiceId(clinicId, subServiceId);
+		if(response != null) {
+			 return ResponseEntity.status(response.getStatus()).body(response);
+			 }else{
+				 return null;
+			 }
+   }
+   
+   
    @GetMapping("/getAllCategories")
   	public ResponseEntity<?> getAllCategory() {
       	Response response = customerService.getAllCategory();

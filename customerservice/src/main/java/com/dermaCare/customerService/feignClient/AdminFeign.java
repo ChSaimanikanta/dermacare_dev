@@ -1,6 +1,7 @@
 package com.dermaCare.customerService.feignClient;
 
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -18,6 +19,9 @@ public interface AdminFeign {
 	 
 	 @PutMapping("/admin/updateClinic/{clinicId}")
 	    public Response updateClinic(@PathVariable String clinicId, @RequestBody ClinicDTO clinic);
+	 
+	 @GetMapping("/admin/getBranchByClinicId/{clinicId}")
+		public ResponseEntity<Response> getBranchByClinicId(@PathVariable String clinicId);
 	 
 	 
 //	//FALLBACK METHODS		

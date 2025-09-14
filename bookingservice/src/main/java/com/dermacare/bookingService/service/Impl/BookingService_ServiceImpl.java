@@ -1,6 +1,7 @@
 package com.dermacare.bookingService.service.Impl;
 
 
+import java.lang.annotation.Annotation;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -16,6 +17,12 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.ReferenceType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeVisitor;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -76,6 +83,7 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 				ety.setNotes(null);
 				ety.setAttachments(null);
 				ety.setConsentFormPdf(null);
+				ety.setPrescriptionPdf(null);
 				try {
 					kafkaProducer.publishBooking(ety);
 					}catch (Exception e) {
@@ -99,6 +107,7 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 		res.setNotes(null);
 		res.setAttachments(null);
 		res.setConsentFormPdf(null);
+		res.setPrescriptionPdf(null);
 		try {
 			kafkaProducer.publishBooking(res);
 			}catch (Exception e) {
@@ -118,6 +127,7 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 	    String formattedTime = istTime.format(formatter);
 		entity.setBookedAt(formattedTime);
 		entity.setFreeFollowUpsLeft(request.getFreeFollowUps());
+		entity.setPrescriptionPdf(new ObjectMapper().convertValue(request.getPrescriptionPdf(),new TypeReference<List<byte[]>>(){}));
 		if(request.getConsultationType() != null){
 		if(request.getConsultationType().equalsIgnoreCase("video consultation") || request.getConsultationType().equalsIgnoreCase("online consultation") ) {
 			entity.setChannelId(randomNumber());
@@ -142,6 +152,7 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 	
 	private static BookingResponse toResponse(Booking entity) {
 		BookingResponse response = new ObjectMapper().convertValue(entity,BookingResponse.class );
+		response.setPrescriptionPdf(new ObjectMapper().convertValue(entity.getPrescriptionPdf(),new TypeReference<List<String>>(){}));
 		response.setBookingId(String.valueOf(entity.getBookingId()));
 		return response;
 	}
@@ -676,7 +687,9 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 				res.setMessage(e.getMessage());}
 			return ResponseEntity.status(res.getStatusCode()).body(res);
 		}
-
+		
+		
+		
 		public ResponseEntity<?> getDoctorFutureAppointments(String doctorId){
 			ResponseStructure<List<BookingResponse>> res = new ResponseStructure<List<BookingResponse>>();
 			   try{
@@ -705,5 +718,5 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 				res.setMessage(e.getMessage());}
 			return ResponseEntity.status(res.getStatusCode()).body(res);
 		}
+		
 }
-
