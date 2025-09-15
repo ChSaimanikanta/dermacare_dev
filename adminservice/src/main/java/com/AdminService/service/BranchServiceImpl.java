@@ -342,5 +342,27 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 	        return dtoList;
 	    }
 	    
-	    
+	    @Override
+	    public ResponseEntity<?> getBranchByClinicAndBranchId(String clinicId, String branchId) {
+	        Response response = new Response();
+	        try {
+	            Optional<Branch> branchOpt = branchRepository
+	                    .findByClinicIdAndBranchId(clinicId, branchId);
+	            if (branchOpt.isPresent()) {
+	                response.setSuccess(true);
+	                response.setStatus(200);
+	                response.setMessage("Branch details fetched successfully");
+	                response.setData(branchOpt.get());
+	            } else {
+	                response.setSuccess(false);
+	                response.setStatus(404);
+	                response.setMessage("No branch found for the given clinicId and branchId");
+	            }
+	        } catch (Exception e) {
+	            response.setSuccess(false);
+	            response.setStatus(500);
+	            response.setMessage("Something went wrong: " + e.getMessage());
+	        }
+	        return ResponseEntity.status(response.getStatus()).body(response);
+	    }
 	}
