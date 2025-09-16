@@ -34,7 +34,7 @@ import org.springframework.http.HttpStatus;
 
 @RestController
 @RequestMapping("/customer")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
+// @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
 public class CustomerController {
 
 	@Autowired(required = true)
@@ -334,9 +334,9 @@ public ResponseEntity<Response> submitCustomerRating(@RequestBody CustomerRating
 }
 }
 
-@GetMapping("/getRatingInfo/{hospitalId}/{doctorId}")
-public ResponseEntity<Response> getRatingInfo(@PathVariable String hospitalId, @PathVariable String doctorId) {
-	 Response response = customerService.getRatingForService( hospitalId,doctorId);
+@GetMapping("/getRatingInfo/{branchlId}/{doctorId}")
+public ResponseEntity<Response> getRatingInfo(@PathVariable String branchlId, @PathVariable String doctorId) {
+	 Response response = customerService.getRatingForService( branchlId,doctorId);
 	 if(response != null && response.getStatus() != 0) {
 		 return ResponseEntity.status(response.getStatus()).body(response);
 	 }else {
@@ -345,9 +345,9 @@ public ResponseEntity<Response> getRatingInfo(@PathVariable String hospitalId, @
 }
 
 
-@GetMapping("/getAverageRating/{hospitalId}/{doctorId}")
-public ResponseEntity<Response> getRatingAverageRating(@PathVariable String hospitalId, @PathVariable String doctorId) {
-	 Response response = customerService.getAverageRating( hospitalId,doctorId);
+@GetMapping("/getAverageRating/{branchId}/{doctorId}")
+public ResponseEntity<Response> getRatingAverageRating(@PathVariable String branchId, @PathVariable String doctorId) {
+	 Response response = customerService.getAverageRating(branchId,doctorId);
 	 if(response != null && response.getStatus() != 0) {
 		 return ResponseEntity.status(response.getStatus()).body(response);
 	 }else {
@@ -420,9 +420,9 @@ public ResponseEntity<Response> getRatingAverageRating(@PathVariable String hosp
    
     
    
-   @GetMapping("/getBranchesInfoBySubServiceId/{clinicId}/{subServiceId}")
-   public ResponseEntity<Object> getBranchesInfoBySubServiceId(@PathVariable String clinicId,@PathVariable String subServiceId)throws JsonProcessingException{
-	   Response response = customerService.getBranchesInfoBySubServiceId(clinicId, subServiceId);
+   @GetMapping("/getBranchesInfoBySubServiceId/{clinicId}/{subServiceId}/{latitude}/{longtitude}")
+   public ResponseEntity<Object> getBranchesInfoBySubServiceId(@PathVariable String clinicId,@PathVariable String subServiceId,@PathVariable String latitude,@PathVariable String longtitude)throws JsonProcessingException{
+	   Response response = customerService.getBranchesInfoBySubServiceId(clinicId, subServiceId,latitude,longtitude);
 		if(response != null) {
 			 return ResponseEntity.status(response.getStatus()).body(response);
 			 }else{

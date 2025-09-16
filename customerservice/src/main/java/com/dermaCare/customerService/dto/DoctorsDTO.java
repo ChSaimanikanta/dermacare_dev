@@ -3,9 +3,7 @@ package com.dermaCare.customerService.dto;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,11 +21,12 @@ public class DoctorsDTO {
 	private String role;
 
 	private String deviceId;
-
+	
 	private String doctorEmail;
 
 	private String hospitalId;
-
+	private String branchId;
+	private String hospitalName;
 	private String doctorPicture;
 
 	private String doctorLicence;
@@ -36,13 +35,12 @@ public class DoctorsDTO {
 
 	private String doctorName;
 
-	
-	private List<DoctorCategoryDTO> category;
 
-	private List<DoctorServicesDTO> service;
+	private List< DoctorCategoryDTO> category;
 
+	private List< DoctorServicesDTO> service;
 
-	private List<DoctorSubServiceDTO> subServices;
+	private List< DoctorSubServiceDTO> subServices;
 
 	private String specialization;
 
@@ -58,13 +56,14 @@ public class DoctorsDTO {
 
 	private String profileDescription;
 
+
 	private DoctorFeeDTO doctorFees;
 
-	private List<String> focusAreas;
+	private List< String> focusAreas;
 
 	private List<String> languages;
 
-	private List<String> careerPath;
+	private List< String> careerPath;
 
 	private List<String> highlights;
 
@@ -80,10 +79,10 @@ public class DoctorsDTO {
 
 	private String associationsOrMemberships;
 
-	private List<String> branches;
+	private List<DoctorBranches> branches;
 
 	private ConsultationTypeDTO Consultation;
-	private Map<String, List<String>> permissions;
+	  private Map<String, List<String>> permissions;
 
 	public void trimAllDoctorFields() {
 		id = trim(id);

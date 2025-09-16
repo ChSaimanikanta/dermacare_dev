@@ -6,6 +6,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -862,12 +863,14 @@ public Response getDoctorsSlots(String hospitalId,String doctorId) {
 			    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm a");
 			    String formattedTime = istTime.format(formatter);
 		    	try {
-		    		CustomerRating customerRating =	customerRatingRepository.findByHospitalIdAndDoctorIdAndCustomerMobileNumberAndPatientIdAndAppointmentId(ratingRequest.getHospitalId(), ratingRequest.getDoctorId(), 
-		    		ratingRequest.getCustomerMobileNumber(),ratingRequest.getPatientId(), ratingRequest.getAppointmentId());
-		    	if(customerRating != null) {
-		    	if(customerRating.getRated() == false){		    	
-		    	  customerRating.setRated(true);
-		        customerRatingRepository.save(customerRating);
+		    		CustomerRating customerRating =	customerRatingRepository.findByBranchIdAndDoctorIdAndAppointmentId(ratingRequest.getBranchId(), ratingRequest.getDoctorId() 
+		    		,ratingRequest.getAppointmentId());
+		    	if(customerRating == null) {
+		    		CustomerRating cRating = new CustomerRating(
+		 		        	null,ratingRequest.getDoctorRating(),ratingRequest.getBranchRating(),ratingRequest.getFeedback(),ratingRequest.getHospitalId(),ratingRequest.getBranchId(),ratingRequest.getDoctorId(),
+		 		        	ratingRequest.getCustomerMobileNumber(),ratingRequest.getPatientId(),ratingRequest.getPatientName(),ratingRequest.getAppointmentId(),true,formattedTime
+		 		        );
+		        customerRatingRepository.save(cRating);
 		        response.setStatus(200);
 	            response.setMessage("Successfully Submitted Rating");
 	            response.setSuccess(true);
@@ -875,19 +878,7 @@ public Response getDoctorsSlots(String hospitalId,String doctorId) {
 		    		 response.setStatus(409);
 			            response.setMessage("Already Rated");
 			            response.setSuccess(false);}
-		    	}else{
-		    		 CustomerRating cRating = new CustomerRating(
-		 		        	null,ratingRequest.getDoctorRating(),ratingRequest.getHospitalRating(),ratingRequest.getFeedback(),ratingRequest.getHospitalId(),ratingRequest.getBranchId(),ratingRequest.getDoctorId(),
-		 		        	ratingRequest.getCustomerMobileNumber(),ratingRequest.getPatientId(),ratingRequest.getPatientName(),ratingRequest.getAppointmentId(),true,formattedTime
-		 		        );
-		 		customerRatingRepository.save(cRating);
-		 		 response.setStatus(200);
-		         response.setMessage("Successfully Submitted Rating");
-		         response.setSuccess(true);}
-		        updateAvgRatingInClinicAndDoctorObject(ratingRequest.getHospitalId(),ratingRequest.getDoctorId());
-		        response.setStatus(200);
-	            response.setMessage("Rating saved successfully");
-	            response.setSuccess(true);
+		        updateAvgRatingInClinicAndDoctorObject(ratingRequest.getBranchId(),ratingRequest.getDoctorId());
 	            return response;
 		       }catch(Exception e) {
 		        	 response.setStatus(500);
@@ -895,47 +886,52 @@ public Response getDoctorsSlots(String hospitalId,String doctorId) {
 		                response.setSuccess(false);
 		                return response;
 		   }
-		        }
+		 }
 	   
 	   
-	   public void updateAvgRatingInClinicAndDoctorObject(String clinicId,String doctorId) {
+	   public void updateAvgRatingInClinicAndDoctorObject(String bId,String doctorId) {
 		   try {
-			   List<CustomerRating> clinicRatings =  customerRatingRepository.findByHospitalId(clinicId);
+			   List<CustomerRating> clinicRatings =  customerRatingRepository.findByBranchId(bId);
 			   List<CustomerRating> doctorRatings =  customerRatingRepository.findByDoctorId(doctorId); 
 			   double avgClinicRating = clinicRatings.stream()
-			            .mapToDouble(CustomerRating::getHospitalRating)
+			            .mapToDouble(CustomerRating::getBranchRating)
 			            .average()
 			            .orElse(0.0);
-
+                //System.out.println(avgClinicRating);
 			    double avgDoctorRating = doctorRatings.stream()
 			            .mapToDouble(CustomerRating::getDoctorRating)
 			            .average()
-			            .orElse(0.0);			    
-			  Response res = adminFeign.getClinicById(clinicId);
-			  ClinicDTO dto = new ObjectMapper().convertValue(res.getData(),ClinicDTO.class );
-			  dto.setHospitalOverallRating(avgClinicRating);
-			  adminFeign.updateClinic(clinicId, dto);
+			            .orElse(0.0);
+			   // System.out.println(avgDoctorRating);
+			  Response res = adminFeign.getBranchById(bId).getBody();
+			 // System.out.println(res);
+			  BranchDTO dto = new ObjectMapper().convertValue(res.getData(),BranchDTO.class );
+			  dto.setBranchOverallRating(avgClinicRating);
+			 // System.out.println(dto);
+			  adminFeign.updateBranch(bId, dto);
 			 ResponseEntity<Response> doctorsDTO =  clinicAdminFeign.getDoctorById(doctorId);
 			  DoctorsDTO dctDto = new ObjectMapper().convertValue(doctorsDTO.getBody().getData(),DoctorsDTO.class );
 			  dctDto.setDoctorAverageRating(avgDoctorRating);
-			  clinicAdminFeign.updateDoctorById(doctorId, dctDto);
+			 // System.out.println(dctDto);
+		     clinicAdminFeign.updateDoctorById(doctorId, dctDto);
+		    //System.out.println(r);
 		   }catch(FeignException e) {}
 	   }
 
 	   
 
-	   public Response getRatingForService(String hospitalId, String doctorId) {
+	   public Response getRatingForService(String bId, String doctorId) {
 			Response response = new Response();
 			try {
 			    List<CustomerRatingDomain> listDto = new ArrayList<>();
-				List<CustomerRating> ratings = customerRatingRepository.findByHospitalIdAndDoctorId(hospitalId, doctorId);
+				List<CustomerRating> ratings = customerRatingRepository.findByBranchIdAndDoctorId(bId, doctorId);
 				if (ratings.isEmpty()) {
 					response.setStatus(200);
 					response.setMessage("Rating Not Found");
 					response.setSuccess(true);
 					return response;}
 				for(CustomerRating rating : ratings){
-				CustomerRatingDomain c = new CustomerRatingDomain(rating.getDoctorRating(), rating.getHospitalRating(),
+				CustomerRatingDomain c = new CustomerRatingDomain(rating.getDoctorRating(), rating.getBranchRating(),
 						rating.getFeedback(), rating.getHospitalId(),rating.getBranchId(), rating.getDoctorId(), rating.getCustomerMobileNumber(),rating.getPatientId(),
 						rating.getPatientName(),rating.getAppointmentId(), rating.getRated(),rating.getDateAndTimeAtRating());
 				 listDto.add(c);}
@@ -954,10 +950,10 @@ public Response getDoctorsSlots(String hospitalId,String doctorId) {
 	   
 	   	   
 	   
-	   public Response getAverageRating(String hospitalId, String doctorId) {
+	   public Response getAverageRating(String branchId, String doctorId) {
 			Response response = new Response();
 			try {
-		ResponseEntity<Response> ratings = clinicAdminFeign.getAverageRatings(hospitalId, doctorId);
+		ResponseEntity<Response> ratings = clinicAdminFeign.getAverageRatings(branchId, doctorId);
 				if (!ratings.hasBody()) {
 					response.setStatus(200);
 					response.setMessage("Rating Not Found");
@@ -1100,6 +1096,9 @@ public Response getSubServiceInfoBySubServiceId(String subServiceId) throws Json
 		if(res.getBody().getData() != null && !res.getBody().getData().isEmpty()) {
 			for(SubServicesDto subsrvice:res.getBody().getData()) {
 			if(subsrvice.getSubServiceId().equals(subServiceId)){
+			Response respnse = adminFeign.getClinicById(subsrvice.getHospitalId());
+			ClinicDTO clncDto = new ObjectMapper().convertValue(respnse.getData(),ClinicDTO.class);
+			if(clncDto != null) {
 			SubServicesDetailsDto subServicesDetailsDto = new SubServicesDetailsDto();
 			subServicesDetailsDto.setServiceName(subsrvice.getServiceName());
 			subServicesDetailsDto.setSubServiceName(subsrvice.getSubServiceName());
@@ -1120,16 +1119,16 @@ public Response getSubServiceInfoBySubServiceId(String subServiceId) throws Json
 			 subServicesDetailsDto.setWebsite(clinicDto.getWebsite());
 			 subServicesDetailsDto.setWalkthrough(clinicDto.getWalkthrough());
 			 subServicesDetailsDto.setCity(clinicDto.getCity());}
-			 hospitalAndSubServiceInfo.add(subServicesDetailsDto);}
+			 hospitalAndSubServiceInfo.add(subServicesDetailsDto);}}
 			 if( hospitalAndSubServiceInfo != null && !hospitalAndSubServiceInfo.isEmpty()) {
 				 responseObj.setData(hospitalAndSubServiceInfo);
 				 responseObj.setStatus(200);
 				 responseObj.setSuccess(true);
 			 }else {
-				 responseObj.setMessage("SubServices Not Found ");
+				 responseObj.setMessage("SubServices Data Not Found ");
 				 responseObj.setStatus(200);
 			 }}}else{
-				 responseObj.setMessage("No SubService Found ");
+				 responseObj.setMessage("No SubService Data Found ");
 				 responseObj.setStatus(200);}
 	    }catch(FeignException e) {
 			 responseObj.setMessage(ExtractFeignMessage.clearMessage(e));
@@ -1141,7 +1140,7 @@ public Response getSubServiceInfoBySubServiceId(String subServiceId) throws Json
 
 
 
-public Response getBranchesInfoBySubServiceId(String clinicId,String subServiceId) throws JsonProcessingException {
+public Response getBranchesInfoBySubServiceId(String clinicId,String subServiceId,String latitude,String longtitude) throws JsonProcessingException {
 	Response responseObj = new Response();
 	try {
 		 ResponseEntity<ResponseStructure<SubServicesDto>>  res = categoryServicesFeign.getSubServiceBySubServiceId(clinicId, subServiceId);
@@ -1149,6 +1148,9 @@ public Response getBranchesInfoBySubServiceId(String clinicId,String subServiceI
 		 BranchInfo hospitalAndSubServiceInfo = new BranchInfo();
 		if(res.getBody().getData() != null) {
 			SubServicesDto subsrvice = res.getBody().getData();
+			 Response rs = adminFeign.getClinicById(subsrvice.getHospitalId());
+			 ClinicDTO cDto = new ObjectMapper().convertValue(rs.getData(),ClinicDTO.class);
+			 if(cDto != null) {
 			//System.out.println(subsrvice);
 			hospitalAndSubServiceInfo.setServiceName(subsrvice.getServiceName());
 			hospitalAndSubServiceInfo.setSubServiceName(subsrvice.getSubServiceName());
@@ -1169,10 +1171,17 @@ public Response getBranchesInfoBySubServiceId(String clinicId,String subServiceI
 		    	 hospitalAndSubServiceInfo.setHospitalOverallRating(clinicDto.getHospitalOverallRating());
 		    	 hospitalAndSubServiceInfo.setWebsite(clinicDto.getWebsite());
 		    	 hospitalAndSubServiceInfo.setWalkthrough(clinicDto.getWalkthrough());
-		    	 hospitalAndSubServiceInfo.setCity(clinicDto.getCity());	
-		     List<BranchDTO> branchDto = new ObjectMapper().convertValue(response.getData(),new TypeReference<List<BranchDTO>>() {});
-		     List<BranchDTO> matchedBranches = branchDto.stream().filter(n->n.getBranchId().startsWith(subsrvice.getHospitalId())).toList();
-			 hospitalAndSubServiceInfo.setBranches(matchedBranches);}
+		    	 hospitalAndSubServiceInfo.setCity(clinicDto.getCity());}
+		    //System.out.println(response.getData());
+		     List<BranchDTO> branchDto = new ObjectMapper().convertValue(response.getData(),new TypeReference<List<BranchDTO>>() {});	
+		     List<BranchDTO> branchDtoWithKms = branchDto.stream().map(n->{int d = (int)haversine(Double.valueOf(latitude),Double.valueOf(longtitude),Double.valueOf(n.getLatitude()),Double.valueOf(n.getLongitude()));
+		     n.setDistance(d); n.setKms(String.valueOf(d)+" km");return n;}).toList();
+		     List<BranchDTO> branchDtoWithKmsAsndng = branchDtoWithKms.stream().sorted(Comparator.comparingInt(BranchDTO::getDistance)).toList();
+			 hospitalAndSubServiceInfo.setBranches(branchDtoWithKmsAsndng);
+			 }else {
+				 responseObj.setMessage("Hospital Not Found ");
+				 responseObj.setStatus(200); 
+			 }
 			 if(hospitalAndSubServiceInfo != null) {
 				 responseObj.setData(hospitalAndSubServiceInfo);
 				 responseObj.setStatus(200);
@@ -1189,6 +1198,27 @@ public Response getBranchesInfoBySubServiceId(String clinicId,String subServiceI
 			 responseObj.setSuccess(false);
 		}
 	return responseObj;
+}
+
+
+
+private static final double EARTH_RADIUS_KM = 6371.0;
+private double haversine(double lat1, double lon1, double lat2, double lon2) {
+    // Convert degrees to radians
+    double dLat = Math.toRadians(lat2 - lat1);
+    double dLon = Math.toRadians(lon2 - lon1);
+    
+    lat1 = Math.toRadians(lat1);
+    lat2 = Math.toRadians(lat2);
+
+    // Haversine formula
+    double a = Math.pow(Math.sin(dLat / 2), 2)
+             + Math.cos(lat1) * Math.cos(lat2)
+             * Math.pow(Math.sin(dLon / 2), 2);
+
+    double c = 2 * Math.asin(Math.sqrt(a));
+
+    return EARTH_RADIUS_KM * c; // Distance in KM
 }
 
 

@@ -83,7 +83,7 @@ public interface CustomerService {
     
     public Response getRatingForService(String hospitalId,String doctorId);
     
-    public Response getAverageRating(String hospitalId, String doctorId);
+    public Response getAverageRating(String branchId, String doctorId);
     
     // SUBSERVICE
     public Response getSubServiceInfoBySubServiceId(String subServiceId) throws JsonProcessingException ;
@@ -105,5 +105,5 @@ public interface CustomerService {
 
 	public ResponseEntity<?> getInProgressAppointments( String mnumber);
 	
-	public Response getBranchesInfoBySubServiceId(String clinicId,String subServiceId) throws JsonProcessingException;
+	public Response getBranchesInfoBySubServiceId(String clinicId,String subServiceId,String latitude,String longtitude) throws JsonProcessingException;
 }

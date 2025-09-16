@@ -31,7 +31,7 @@ public class Branch {
 	private String latitude;
 	private String longitude;
 	private String virtualClinicTour;
-
+	private double branchOverallRating;
 	private String role;            
 	private Map<String, List<String>> permissions;
 

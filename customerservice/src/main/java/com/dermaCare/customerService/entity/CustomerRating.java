@@ -20,7 +20,7 @@ public class CustomerRating {
     @Id
     private ObjectId id; // MongoDB ObjectId
     private double doctorRating;
-    private double hospitalRating;
+    private double branchRating;
     private String feedback;
     private String hospitalId;
     private String branchId;

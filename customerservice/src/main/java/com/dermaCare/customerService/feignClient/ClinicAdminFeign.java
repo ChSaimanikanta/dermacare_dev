@@ -6,11 +6,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-
 import com.dermaCare.customerService.dto.DoctorsDTO;
 import com.dermaCare.customerService.util.Response;
-import jakarta.validation.Valid;
-
 
 
 @FeignClient(value = "clinicadmin")
@@ -35,8 +32,8 @@ public interface ClinicAdminFeign {
 	@GetMapping("/clinic-admin/getAllDoctorsBySubServiceId/{subServiceId}")
 	public ResponseEntity<Response> getAllDoctorsBySubServiceId(@PathVariable String subServiceId);
 	
-	@GetMapping("/clinic-admin/averageRatings/{hospitalId}/{doctorId}")
-	public ResponseEntity<Response> getAverageRatings(@PathVariable String hospitalId, @PathVariable String doctorId);
+	@GetMapping("/clinic-admin/averageRatings/{branchId}/{doctorId}")
+	public ResponseEntity<Response> getAverageRatings(@PathVariable String branchId, @PathVariable String doctorId);
 	
 	@PutMapping("/clinic-admin/updateDoctorSlotWhileBooking/{doctorId}/{date}/{time}")
 	public Boolean updateDoctorSlotWhileBooking(@PathVariable String doctorId, @PathVariable String date,
@@ -44,7 +41,7 @@ public interface ClinicAdminFeign {
 	
 	@PutMapping("/clinic-admin/updateDoctor/{doctorId}")
 	public ResponseEntity<Response> updateDoctorById(@PathVariable String doctorId,
-			@Valid @RequestBody DoctorsDTO dto);
+			@RequestBody DoctorsDTO dto);
 	
 //	//FALLBACK METHODS
 //	

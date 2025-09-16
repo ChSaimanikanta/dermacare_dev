@@ -201,7 +201,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 	                branch.setLatitude(branchDto.getLatitude() != null ? branchDto.getLatitude() : branch.getLatitude());
 	                branch.setLongitude(branchDto.getLongitude() != null ? branchDto.getLongitude() : branch.getLongitude());
 	                branch.setVirtualClinicTour(branchDto.getVirtualClinicTour() != null ? branchDto.getVirtualClinicTour() : branch.getVirtualClinicTour());
-	
+	                branch.setBranchOverallRating(branchDto.getBranchOverallRating());
 	                Branch updatedBranch = branchRepository.save(branch);
 	
 	                response.setMessage("Branch updated successfully");
@@ -329,6 +329,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 	        dto.setVirtualClinicTour(branch.getVirtualClinicTour());
 	        dto.setRole(branch.getRole());
 	        dto.setPermissions(branch.getPermissions());
+	        dto.setBranchOverallRating(branch.getBranchOverallRating());
 	        return dto;
 	    }
 	
@@ -342,7 +343,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 	        return dtoList;
 	    }
 	    
-	    @Override
+	    
 	    public ResponseEntity<?> getBranchByClinicAndBranchId(String clinicId, String branchId) {
 	        Response response = new Response();
 	        try {
@@ -365,4 +366,5 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 	        }
 	        return ResponseEntity.status(response.getStatus()).body(response);
 	    }
+	    
 	}
