@@ -9,40 +9,43 @@ import org.springframework.web.bind.annotation.RequestBody;
 import com.dermaCare.customerService.dto.DoctorsDTO;
 import com.dermaCare.customerService.util.Response;
 
-
 @FeignClient(value = "clinicadmin")
 //@CircuitBreaker(name = "circuitBreaker", fallbackMethod = "clinicAdminServiceFallBack")
 public interface ClinicAdminFeign {
 
 	@GetMapping("/clinic-admin/getDoctorByServiceId/{hospitalId}/{service}")
 	public ResponseEntity<Response> getDoctorByService(@PathVariable String hospitalId, @PathVariable String service);
-	
+
 	@GetMapping("/clinic-admin/doctors/hospital/{hospitalId}/subServiceId/{subServiceId}")
-	public ResponseEntity<Response> getDoctorsBySubServiceId(@PathVariable String hospitalId, @PathVariable String subServiceId);
-	
+	public ResponseEntity<Response> getDoctorsBySubServiceId(@PathVariable String hospitalId,
+			@PathVariable String subServiceId);
+
+	@GetMapping("/clinic-admin/doctors/{hospitalId}/{branchId}/{subServiceId}")
+	public ResponseEntity<Response> getDoctorsByHospitalBranchAndSubService(@PathVariable String hospitalId,
+			@PathVariable String branchId, @PathVariable String subServiceId);
+
 	@GetMapping("/clinic-admin/getDoctorslots/{hospitalId}/{doctorId}")
-	public ResponseEntity<Response> getDoctorSlot(@PathVariable String hospitalId,@PathVariable String doctorId);
-	
+	public ResponseEntity<Response> getDoctorSlot(@PathVariable String hospitalId, @PathVariable String doctorId);
+
 	@GetMapping("/clinic-admin/doctor/{id}")
 	public ResponseEntity<Response> getDoctorById(@PathVariable String id);
-	
+
 	@GetMapping("/clinic-admin/getHospitalAndDoctorUsingSubServiceId/{subServiceId}")
 	public ResponseEntity<Response> getHospitalAndDoctorUsingSubServiceId(@PathVariable String subServiceId);
-	
+
 	@GetMapping("/clinic-admin/getAllDoctorsBySubServiceId/{subServiceId}")
 	public ResponseEntity<Response> getAllDoctorsBySubServiceId(@PathVariable String subServiceId);
-	
+
 	@GetMapping("/clinic-admin/averageRatings/{branchId}/{doctorId}")
 	public ResponseEntity<Response> getAverageRatings(@PathVariable String branchId, @PathVariable String doctorId);
-	
+
 	@PutMapping("/clinic-admin/updateDoctorSlotWhileBooking/{doctorId}/{date}/{time}")
 	public Boolean updateDoctorSlotWhileBooking(@PathVariable String doctorId, @PathVariable String date,
 			@PathVariable String time);
-	
+
 	@PutMapping("/clinic-admin/updateDoctor/{doctorId}")
-	public ResponseEntity<Response> updateDoctorById(@PathVariable String doctorId,
-			@RequestBody DoctorsDTO dto);
-	
+	public ResponseEntity<Response> updateDoctorById(@PathVariable String doctorId, @RequestBody DoctorsDTO dto);
+
 //	//FALLBACK METHODS
 //	
 //		default ResponseEntity<?> clinicAdminServiceFallBack(Exception e){		 

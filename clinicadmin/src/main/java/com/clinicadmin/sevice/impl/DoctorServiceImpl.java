@@ -89,149 +89,146 @@ public class DoctorServiceImpl implements DoctorService {
 
 	@Override
 	public Response addDoctor(DoctorsDTO dto) {
-	    Response response = new Response();
-	    try {
-	        dto.trimAllDoctorFields();
+		Response response = new Response();
+		try {
+			dto.trimAllDoctorFields();
 
-	        if (doctorsRepository.existsByDoctorMobileNumber(dto.getDoctorMobileNumber())) {
-	            response.setSuccess(false);
-	            response.setData(null);
-	            response.setMessage("Doctor with this mobile number already exists");
-	            response.setStatus(HttpStatus.BAD_REQUEST.value());
-	            return response;
-	        }
+			if (doctorsRepository.existsByDoctorMobileNumber(dto.getDoctorMobileNumber())) {
+				response.setSuccess(false);
+				response.setData(null);
+				response.setMessage("Doctor with this mobile number already exists");
+				response.setStatus(HttpStatus.BAD_REQUEST.value());
+				return response;
+			}
 
-	        // Validate categories
-	        for (DoctorCategoryDTO catDTO : dto.getCategory()) {
-	            if (!serviceFeignClient.isCategoryExists(catDTO.getCategoryId())) {
-	                response.setSuccess(false);
-	                response.setData(null);
-	                response.setMessage("Category does not exist");
-	                response.setStatus(HttpStatus.NOT_FOUND.value());
-	                return response;
-	            }
-	        }
+			// Validate categories
+			for (DoctorCategoryDTO catDTO : dto.getCategory()) {
+				if (!serviceFeignClient.isCategoryExists(catDTO.getCategoryId())) {
+					response.setSuccess(false);
+					response.setData(null);
+					response.setMessage("Category does not exist");
+					response.setStatus(HttpStatus.NOT_FOUND.value());
+					return response;
+				}
+			}
 
-	        // Validate services
-	        for (DoctorServicesDTO serDTO : dto.getService()) {
-	            if (!serviceFeignClient.isServiceExists(serDTO.getServiceId())) {
-	                response.setSuccess(false);
-	                response.setData(null);
-	                response.setMessage("Service does not exist");
-	                response.setStatus(HttpStatus.NOT_FOUND.value());
-	                return response;
-	            }
-	        }
+			// Validate services
+			for (DoctorServicesDTO serDTO : dto.getService()) {
+				if (!serviceFeignClient.isServiceExists(serDTO.getServiceId())) {
+					response.setSuccess(false);
+					response.setData(null);
+					response.setMessage("Service does not exist");
+					response.setStatus(HttpStatus.NOT_FOUND.value());
+					return response;
+				}
+			}
 
-	        // Validate sub-services
-	        for (DoctorSubServiceDTO subSerDTO : dto.getSubServices()) {
-	            if (!serviceFeignClient.isSubServiceExists(subSerDTO.getSubServiceId())) {
-	                response.setSuccess(false);
-	                response.setData(null);
-	                response.setMessage("SubService does not exist");
-	                response.setStatus(HttpStatus.NOT_FOUND.value());
-	                return response;
-	            }
-	        }
+			// Validate sub-services
+			for (DoctorSubServiceDTO subSerDTO : dto.getSubServices()) {
+				if (!serviceFeignClient.isSubServiceExists(subSerDTO.getSubServiceId())) {
+					response.setSuccess(false);
+					response.setData(null);
+					response.setMessage("SubService does not exist");
+					response.setStatus(HttpStatus.NOT_FOUND.value());
+					return response;
+				}
+			}
 
-	        // Generate doctorId
-	        String doctorId = generateDoctorId();
-	        dto.setDoctorId(doctorId);
+			// Generate doctorId
+			String doctorId = generateDoctorId();
+			dto.setDoctorId(doctorId);
 
-	        // Map DTO -> Entity
-	        Doctors doctor = DoctorMapper.mapDoctorDTOtoDoctorEntity(dto);
-	        doctor.setDoctorId(doctorId);
+			ResponseEntity<Response> hsRes = adminServiceClient.getClinicById(dto.getHospitalId());
+			Object obj = hsRes.getBody().getData();
+			ClinicDTO clDTO=objectMapper.convertValue(obj, ClinicDTO.class);
 
-	        // ✅ Validate branches with Admin Service
-	        if (dto.getBranches() != null && !dto.getBranches().isEmpty()) {
-	            List<DoctorBranches> validatedBranches = new ArrayList<>();
+			// Map DTO -> Entity
+			Doctors doctor = DoctorMapper.mapDoctorDTOtoDoctorEntity(dto);
+			doctor.setDoctorId(doctorId);
+			doctor.setHospitalName(clDTO.getName());
 
-	            for (DoctorBranches br : dto.getBranches()) {
-	                // use br.getBranchId(), not dto.getBranchId()
-	                ResponseEntity<Response> branchResponse =
-	                        adminServiceClient.getBranchByClinicAndBranchId(dto.getHospitalId(), br.getBranchId());
+			// ✅ Validate branches with Admin Service
+			if (dto.getBranches() != null && !dto.getBranches().isEmpty()) {
+				List<DoctorBranches> validatedBranches = new ArrayList<>();
 
-	                if (branchResponse == null || branchResponse.getBody() == null
-	                        || !branchResponse.getBody().isSuccess()) {
-	                    response.setSuccess(false);
-	                    response.setData(null);
-	                    response.setMessage("Branch with ID " + br.getBranchId() + " does not exist for this clinic");
-	                    response.setStatus(HttpStatus.NOT_FOUND.value());
-	                    return response;
-	                }
+				for (DoctorBranches br : dto.getBranches()) {
+					// use br.getBranchId(), not dto.getBranchId()
+					ResponseEntity<Response> branchResponse = adminServiceClient
+							.getBranchByClinicAndBranchId(dto.getHospitalId(), br.getBranchId());
 
-	                Branch branch = objectMapper.convertValue(branchResponse.getBody().getData(), Branch.class);
+					if (branchResponse == null || branchResponse.getBody() == null
+							|| !branchResponse.getBody().isSuccess()) {
+						response.setSuccess(false);
+						response.setData(null);
+						response.setMessage("Branch with ID " + br.getBranchId() + " does not exist for this clinic");
+						response.setStatus(HttpStatus.NOT_FOUND.value());
+						return response;
+					}
 
-	                if (branch != null) {
-	                    DoctorBranches validatedBranch = new DoctorBranches();
-	                    validatedBranch.setBranchId(branch.getBranchId());
-	                    validatedBranch.setBranchName(branch.getBranchName()); // ✅ now always filled
-	                    validatedBranches.add(validatedBranch);
-	                }
-	            }
+					Branch branch = objectMapper.convertValue(branchResponse.getBody().getData(), Branch.class);
 
-	            dto.setBranches(validatedBranches);
-	            doctor.setBranches(validatedBranches);
-	        }
+					if (branch != null) {
+						DoctorBranches validatedBranch = new DoctorBranches();
+						validatedBranch.setBranchId(branch.getBranchId());
+						validatedBranch.setBranchName(branch.getBranchName()); // ✅ now always filled
+						validatedBranches.add(validatedBranch);
+					}
+				}
 
-	        // Save doctor
-	        Doctors savedDoctor = doctorsRepository.save(doctor);
+				dto.setBranches(validatedBranches);
+				doctor.setBranches(validatedBranches);
+			}
 
-	        // Create login credentials
-	        String username = savedDoctor.getDoctorMobileNumber();
-	        String rawPassword = generateStructuredPassword();
-	        String encodedPassword = passwordEncoder.encode(rawPassword);
+			// Save doctor
+			Doctors savedDoctor = doctorsRepository.save(doctor);
 
-	        DoctorLoginCredentials credentials = DoctorLoginCredentials.builder()
-	                .staffId(savedDoctor.getDoctorId())
-	                .staffName(savedDoctor.getDoctorName())
-	                .hospitalId(savedDoctor.getHospitalId())
-	                .hospitalName(savedDoctor.getHospitalName())
-	                .branchId(savedDoctor.getBranchId())
-	                .username(username)
-	                .password(encodedPassword)
-	                .role(dto.getRole())
-	                .permissions(savedDoctor.getPermissions())
-	                .build();
+			// Create login credentials
+			String username = savedDoctor.getDoctorMobileNumber();
+			String rawPassword = generateStructuredPassword();
+			String encodedPassword = passwordEncoder.encode(rawPassword);
 
-	        credentialsRepository.save(credentials);
+			DoctorLoginCredentials credentials = DoctorLoginCredentials.builder().staffId(savedDoctor.getDoctorId())
+					.staffName(savedDoctor.getDoctorName()).hospitalId(savedDoctor.getHospitalId())
+					.hospitalName(savedDoctor.getHospitalName()).branchId(savedDoctor.getBranchId()).username(username)
+					.password(encodedPassword).role(dto.getRole()).permissions(savedDoctor.getPermissions()).build();
 
-	        Map<String, Object> data = new HashMap<>();
-	        data.put("doctor", savedDoctor);
-	        data.put("username", username);
-	        data.put("temporaryPassword", rawPassword);
+			credentialsRepository.save(credentials);
 
-	        response.setSuccess(true);
-	        response.setData(data);
-	        response.setMessage("Doctor added successfully with login credentials");
-	        response.setStatus(HttpStatus.CREATED.value());
+			Map<String, Object> data = new HashMap<>();
+			data.put("doctor", savedDoctor);
+			data.put("username", username);
+			data.put("temporaryPassword", rawPassword);
 
-	    } catch (FeignException fe) {
-	        try {
-	            String errorJson = fe.contentUTF8();
-	            JsonNode node = objectMapper.readTree(errorJson);
-	            String errorMessage = node.has("message") ? node.get("message").asText() : "Unknown error";
-	            int errorStatus = node.has("status") ? node.get("status").asInt() : fe.status();
+			response.setSuccess(true);
+			response.setData(data);
+			response.setMessage("Doctor added successfully with login credentials");
+			response.setStatus(HttpStatus.CREATED.value());
 
-	            response.setSuccess(false);
-	            response.setData(null);
-	            response.setMessage(errorMessage);
-	            response.setStatus(errorStatus);
-	        } catch (Exception ex) {
-	            response.setSuccess(false);
-	            response.setData(null);
-	            response.setMessage("Admin Service error: " + fe.getMessage());
-	            response.setStatus(fe.status());
-	        }
-	    } catch (Exception e) {
-	        response.setSuccess(false);
-	        response.setData(null);
-	        response.setMessage("Error occurred while adding doctor: " + e.getMessage());
-	        response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-	    }
-	    return response;
+		} catch (FeignException fe) {
+			try {
+				String errorJson = fe.contentUTF8();
+				JsonNode node = objectMapper.readTree(errorJson);
+				String errorMessage = node.has("message") ? node.get("message").asText() : "Unknown error";
+				int errorStatus = node.has("status") ? node.get("status").asInt() : fe.status();
+
+				response.setSuccess(false);
+				response.setData(null);
+				response.setMessage(errorMessage);
+				response.setStatus(errorStatus);
+			} catch (Exception ex) {
+				response.setSuccess(false);
+				response.setData(null);
+				response.setMessage("Admin Service error: " + fe.getMessage());
+				response.setStatus(fe.status());
+			}
+		} catch (Exception e) {
+			response.setSuccess(false);
+			response.setData(null);
+			response.setMessage("Error occurred while adding doctor: " + e.getMessage());
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+		}
+		return response;
 	}
-
 
 	@Override
 	public Response getAllDoctors() {
@@ -944,6 +941,65 @@ public class DoctorServiceImpl implements DoctorService {
 			response.setSuccess(false);
 			response.setMessage("Internal server error: " + e.getMessage());
 			response.setStatus(500); // Internal Server Error
+		}
+
+		return response;
+	}
+
+	@Override
+	public Response getDoctorsByHospitalIdAndBranchIdSubserviceId(String hospitalId, String branchId,
+			String subServiceId) {
+		Response response = new Response();
+
+		try {
+			// Validate hospitalId
+			if (hospitalId == null || hospitalId.trim().isEmpty()) {
+				response.setSuccess(false);
+				response.setMessage("Hospital ID must not be null or empty.");
+				response.setStatus(HttpStatus.BAD_REQUEST.value());
+				return response;
+			}
+
+			// Validate branchId
+			if (branchId == null || branchId.trim().isEmpty()) {
+				response.setSuccess(false);
+				response.setMessage("Branch ID must not be null or empty.");
+				response.setStatus(HttpStatus.BAD_REQUEST.value());
+				return response;
+			}
+
+			// Validate subServiceId
+			if (subServiceId == null || subServiceId.trim().isEmpty()) {
+				response.setSuccess(false);
+				response.setMessage("SubService ID must not be null or empty.");
+				response.setStatus(HttpStatus.BAD_REQUEST.value());
+				return response;
+			}
+
+			// Fetch doctors by hospitalId, branchId, and subServiceId
+			List<Doctors> doctors = doctorsRepository.findByHospitalIdAndBranchIdAndSubServicesSubServiceId(hospitalId,
+					branchId, subServiceId);
+
+			List<DoctorsDTO> doctorDTOs = doctors.stream().map(DoctorMapper::mapDoctorEntityToDoctorDTO)
+					.collect(Collectors.toList());
+
+			if (doctorDTOs.isEmpty()) {
+				response.setSuccess(true);
+				response.setData(Collections.emptyList());
+				response.setStatus(HttpStatus.OK.value());
+				response.setMessage("No doctors found for hospitalId: " + hospitalId + ", branchId: " + branchId
+						+ ", subServiceId: " + subServiceId);
+			} else {
+				response.setSuccess(true);
+				response.setData(doctorDTOs); // ✅ Use DTOs here
+				response.setMessage("Doctors fetched successfully.");
+				response.setStatus(HttpStatus.OK.value());
+			}
+
+		} catch (Exception e) {
+			response.setSuccess(false);
+			response.setMessage("Internal server error occurred.");
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
 		}
 
 		return response;

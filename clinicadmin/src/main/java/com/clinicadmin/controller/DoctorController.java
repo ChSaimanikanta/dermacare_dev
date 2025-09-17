@@ -208,6 +208,15 @@ public class DoctorController {
 		return ResponseEntity.status(response.getStatus()).body(response);
 	}
 
+	  @GetMapping("doctors/{hospitalId}/{branchId}/{subServiceId}")
+	    public ResponseEntity<Response> getDoctorsByHospitalBranchAndSubService(
+	            @PathVariable String hospitalId,
+	            @PathVariable String branchId,
+	            @PathVariable String subServiceId) {
+
+	        Response response = doctorService.getDoctorsByHospitalIdAndBranchIdSubserviceId(hospitalId, branchId, subServiceId);
+	        return ResponseEntity.status(response.getStatus()).body(response);
+	    }
 	/*
 	 * -----------------------------------------------------------------------------
 	 * -------------------------------------------------

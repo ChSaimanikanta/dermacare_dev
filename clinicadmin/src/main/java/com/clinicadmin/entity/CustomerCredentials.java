@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-@Document(collation = "Customer_Credentials")
+@Document(collection = "Customer_Credentials")
 public class CustomerCredentials {
 	@Id
 	private String Id;

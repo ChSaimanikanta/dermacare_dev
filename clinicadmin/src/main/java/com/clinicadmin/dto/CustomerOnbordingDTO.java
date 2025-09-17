@@ -1,7 +1,6 @@
 package com.clinicadmin.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonIgnoreType;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,7 +11,6 @@ import lombok.NoArgsConstructor;
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class CustomerOnbordingDTO {
-	
 	private String id;
 	private String mobileNumber;
 	private String email;
@@ -26,6 +24,9 @@ public class CustomerOnbordingDTO {
 	private String branchId;
 	private String customerId;
 	private String patientId;
+	private String deviceId;
+	private String referralCode;
+	private String referredBy;
 	private String userName;
 	private String password;
 }

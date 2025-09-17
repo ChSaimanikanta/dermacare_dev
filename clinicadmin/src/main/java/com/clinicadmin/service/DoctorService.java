@@ -69,4 +69,6 @@ public interface DoctorService {
 	
 
 	public Response loginUsingRoles(DoctorLoginDTO dto);
+
+	Response getDoctorsByHospitalIdAndBranchIdSubserviceId(String hospitalId, String branchId, String subServiceId);
 }

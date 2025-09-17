@@ -106,4 +106,7 @@ public interface CustomerService {
 	public ResponseEntity<?> getInProgressAppointments( String mnumber);
 	
 	public Response getBranchesInfoBySubServiceId(String clinicId,String subServiceId,String latitude,String longtitude) throws JsonProcessingException;
+
+	public Response getDoctorsByHospitalBranchAndSubService(String hospitalId, String branchId, String subServiceId)
+			throws JsonProcessingException;
 }

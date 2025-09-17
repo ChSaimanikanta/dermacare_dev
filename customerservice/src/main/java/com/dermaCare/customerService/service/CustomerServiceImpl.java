@@ -19,6 +19,8 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+
 import com.dermaCare.customerService.dto.BookingRequset;
 import com.dermaCare.customerService.dto.BookingResponse;
 import com.dermaCare.customerService.dto.BranchDTO;
@@ -979,6 +981,37 @@ public Response getDoctorsandHospitalDetails(String hospitalId, String subServic
 		Response hospitalResponse = adminFeign.getClinicById(hospitalId);
 		if(hospitalResponse.getData()!= null ) {
 		ResponseEntity<Response> doctorsResponse = clinicAdminFeign.getDoctorsBySubServiceId(hospitalId,subServiceId);
+		 Object obj = doctorsResponse.getBody().getData();
+		List<DoctorsDTO> doctors =  new ObjectMapper().convertValue(obj, new TypeReference<List<DoctorsDTO>>() {});
+		if(doctors!= null && !doctors.isEmpty()) {
+			ClinicDTO hospital = new ObjectMapper().convertValue(hospitalResponse.getData(), ClinicDTO.class);
+			ClinicAndDoctorsResponse combinedData = new ClinicAndDoctorsResponse(hospital, doctors);
+			response.setSuccess(true);
+			response.setData(combinedData);
+			response.setMessage("Hospital and doctors fetched successfully");
+			response.setStatus(200);
+		}else {		
+			response.setData( doctorsResponse.getBody());;
+			response.setStatus( doctorsResponse.getBody().getStatus());
+		}}else{        	
+			response.setData(hospitalResponse);;
+			response.setStatus(hospitalResponse.getStatus());
+		}}catch (FeignException e) {
+		response.setSuccess(false);
+		response.setMessage(ExtractFeignMessage.clearMessage(e));
+		response.setStatus(500);
+	}
+	return response;
+}
+
+@Override
+public Response getDoctorsByHospitalBranchAndSubService( String hospitalId,
+		String branchId,  String subServiceId)throws JsonProcessingException {
+	Response response = new Response();
+	try {
+		Response hospitalResponse = adminFeign.getClinicById(hospitalId);
+		if(hospitalResponse.getData()!= null ) {
+		ResponseEntity<Response> doctorsResponse = clinicAdminFeign.getDoctorsByHospitalBranchAndSubService(hospitalId, branchId, subServiceId);
 		 Object obj = doctorsResponse.getBody().getData();
 		List<DoctorsDTO> doctors =  new ObjectMapper().convertValue(obj, new TypeReference<List<DoctorsDTO>>() {});
 		if(doctors!= null && !doctors.isEmpty()) {

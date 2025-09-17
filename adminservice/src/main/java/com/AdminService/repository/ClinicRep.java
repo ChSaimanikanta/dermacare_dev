@@ -23,4 +23,5 @@ public interface ClinicRep extends MongoRepository<Clinic, String> {
 	Clinic findByEmailAddress(String emailAddress);
 	
 	
+	
 }

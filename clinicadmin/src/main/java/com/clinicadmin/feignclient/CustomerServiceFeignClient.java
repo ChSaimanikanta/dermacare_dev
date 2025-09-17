@@ -13,10 +13,13 @@ import com.clinicadmin.dto.Response;
 @FeignClient(name="customerservice")
 public interface CustomerServiceFeignClient {
 
-    @GetMapping("/api/customer/getRatingInfo/{hospitalId}/{doctorId}")
-    public ResponseEntity<Response> getRatingInfo(@PathVariable String hospitalId, @PathVariable String doctorId);
+//    @GetMapping("/api/customer/getRatingInfo/{hospitalId}/{doctorId}")
+//    public ResponseEntity<Response> getRatingInfo(@PathVariable String hospitalId, @PathVariable String doctorId);
     
     @DeleteMapping("/api/customer/deleteService/{id}")
     public ResponseEntity<Response> deleteBookedService(@PathVariable String id);
+    
+    @GetMapping("/api/customer/getRatingInfo/{branchlId}/{doctorId}")
+    public ResponseEntity<Response> getRatingInfo(@PathVariable String branchlId, @PathVariable String doctorId);
     
 }
