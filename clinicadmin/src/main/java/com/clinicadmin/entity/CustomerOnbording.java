@@ -28,5 +28,8 @@ public class CustomerOnbording {
 	private String branchId;
 	private String customerId;
 	private String patientId;
+	private String deviceId;
+	private String referralCode;
+	private String referredBy;
 
 }

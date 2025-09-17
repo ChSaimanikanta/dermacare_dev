@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.clinicadmin.dto.ChangeDoctorPasswordDTO;
+import com.clinicadmin.dto.CustomerLoginDTO;
 import com.clinicadmin.dto.CustomerOnbordingDTO;
 import com.clinicadmin.dto.Response;
 import com.clinicadmin.entity.CustomerCredentials;
@@ -43,11 +45,21 @@ public class CustomerOnboardingServiceImpl implements CustomerOnboardingService 
 
 			String customerId = dto.getHospitalId() + "_CR_" + String.format("%05d", customerSeq);
 			String patientId = dto.getHospitalId() + dto.getBranchId() + "_PT_" + String.format("%05d", patientSeq);
+			
+			// Generate Referral Code
+			String prefix = dto.getFullName()
+			                   .replaceAll("\\s+", "")
+			                   .toUpperCase()
+			                   .substring(0, Math.min(3, dto.getFullName().length()));
+
+			long referralSeq = sequenceGeneratorService.getNextSequence("referral_code_seq");
+			String referralCode = prefix + "_" + String.format("%05d", referralSeq);
 
 			// Convert DTO -> Entity
 			CustomerOnbording entity = convertToEntity(dto);
 			entity.setCustomerId(customerId);
 			entity.setPatientId(patientId);
+			entity.setReferralCode(referralCode);
 
 			onboardingRepository.save(entity);
 
@@ -59,11 +71,11 @@ public class CustomerOnboardingServiceImpl implements CustomerOnboardingService 
 			credentials.setBranchId(dto.getBranchId());
 			credentials.setHospitalName(dto.getHospitalName());
 			credentialsRepository.save(credentials);
-           
-			CustomerOnbordingDTO resDTO= convertToDTO(entity);
+
+			CustomerOnbordingDTO resDTO = convertToDTO(entity);
 			resDTO.setUserName(customerId);
 			resDTO.setPassword(dto.getMobileNumber());
-			
+
 			response.setSuccess(true);
 			response.setMessage("Customer onboarded successfully");
 			response.setData(resDTO);
@@ -226,11 +238,11 @@ public class CustomerOnboardingServiceImpl implements CustomerOnboardingService 
 
 	// ----------------- LOGIN -----------------
 	@Override
-	public Response login(String username, String password) {
+	public Response login(CustomerLoginDTO dto) {
 		Response response = new Response();
 
 		try {
-			Optional<CustomerCredentials> optional = credentialsRepository.findByUserName(username);
+			Optional<CustomerCredentials> optional = credentialsRepository.findByUserName(dto.getUserName());
 			if (optional.isEmpty()) {
 				response.setSuccess(false);
 				response.setMessage("Invalid username");
@@ -240,16 +252,45 @@ public class CustomerOnboardingServiceImpl implements CustomerOnboardingService 
 
 			CustomerCredentials credentials = optional.get();
 
-			if (!passwordEncoder.matches(password, credentials.getPassword())) {
+			// check password
+			if (!passwordEncoder.matches(dto.getPassword(), credentials.getPassword())) {
 				response.setSuccess(false);
 				response.setMessage("Invalid password");
 				response.setStatus(401);
 				return response;
 			}
 
+			// fetch customer onboarding details using userName (or customerId if you store
+			// it in credentials)
+			Optional<CustomerOnbording> customerOpt = onboardingRepository.findByCustomerId(credentials.getUserName());
+
+			if (customerOpt.isEmpty()) {
+				response.setSuccess(false);
+				response.setMessage("Customer profile not found");
+				response.setStatus(404);
+				return response;
+			}
+
+			CustomerOnbording customer = customerOpt.get();
+
+			customer.setDeviceId(dto.getDeviceId());
+			CustomerOnbording cs = onboardingRepository.save(customer);
+
+			// map to response DTO
+			CustomerResponseDTO resDTO = new CustomerResponseDTO();
+			resDTO.setUserName(credentials.getUserName());
+			resDTO.setCustomerName(customer.getFullName());
+			resDTO.setCustomerId(customer.getCustomerId());
+			resDTO.setPatientId(customer.getPatientId());
+			resDTO.setDeviceId(cs.getDeviceId());
+			resDTO.setHospitalName(customer.getHospitalName());
+			resDTO.setHospitalId(customer.getHospitalId());
+			resDTO.setBranchId(customer.getBranchId());
+
+			// final response
 			response.setSuccess(true);
 			response.setMessage("Login successful");
-			response.setData(credentials);
+			response.setData(resDTO);
 			response.setStatus(200);
 
 		} catch (Exception e) {
@@ -262,43 +303,43 @@ public class CustomerOnboardingServiceImpl implements CustomerOnboardingService 
 	}
 
 	// ----------------- RESET PASSWORD -----------------
-	@Override
-	public Response resetPassword(String username, String oldPassword, String newPassword) {
-		Response response = new Response();
-
-		try {
-			Optional<CustomerCredentials> optional = credentialsRepository.findByUserName(username);
-			if (optional.isEmpty()) {
-				response.setSuccess(false);
-				response.setMessage("Invalid username");
-				response.setStatus(404);
-				return response;
-			}
-
-			CustomerCredentials credentials = optional.get();
-
-			if (!passwordEncoder.matches(oldPassword, credentials.getPassword())) {
-				response.setSuccess(false);
-				response.setMessage("Old password is incorrect");
-				response.setStatus(400);
-				return response;
-			}
-
-			credentials.setPassword(passwordEncoder.encode(newPassword));
-			credentialsRepository.save(credentials);
-
-			response.setSuccess(true);
-			response.setMessage("Password updated successfully");
-			response.setStatus(200);
-
-		} catch (Exception e) {
-			response.setSuccess(false);
-			response.setMessage("Reset password error: " + e.getMessage());
-			response.setStatus(500);
-		}
-
-		return response;
-	}
+//	@Override
+//	public Response resetPassword(ChangeDoctorPasswordDTO dto) {
+//		Response response = new Response();
+//
+//		try {
+//			Optional<CustomerCredentials> optional = credentialsRepository.findByUserName(dto.getUserName());
+//			if (optional.isEmpty()) {
+//				response.setSuccess(false);
+//				response.setMessage("Invalid username");
+//				response.setStatus(404);
+//				return response;
+//			}
+//
+//			CustomerCredentials credentials = optional.get();
+//
+//			if (!passwordEncoder.matches(dto.getCurrentPassword(), credentials.getPassword())) {
+//				response.setSuccess(false);
+//				response.setMessage("Old password is incorrect");
+//				response.setStatus(400);
+//				return response;
+//			}
+//
+//			credentials.setPassword(passwordEncoder.encode(newPassword));
+//			credentialsRepository.save(credentials);
+//
+//			response.setSuccess(true);
+//			response.setMessage("Password updated successfully");
+//			response.setStatus(200);
+//
+//		} catch (Exception e) {
+//			response.setSuccess(false);
+//			response.setMessage("Reset password error: " + e.getMessage());
+//			response.setStatus(500);
+//		}
+//
+//		return response;
+//	}
 
 	// ------------------ DTO ↔ Entity Conversion ------------------
 	private CustomerOnbording convertToEntity(CustomerOnbordingDTO dto) {
@@ -316,6 +357,9 @@ public class CustomerOnboardingServiceImpl implements CustomerOnboardingService 
 		entity.setBranchId(dto.getBranchId());
 		entity.setCustomerId(dto.getCustomerId());
 		entity.setPatientId(dto.getPatientId());
+		entity.setDeviceId(dto.getDeviceId());
+//		entity.setReferralCode(dto.getReferralCode());
+		entity.setReferredBy(dto.getReferredBy());
 		return entity;
 	}
 
@@ -334,6 +378,10 @@ public class CustomerOnboardingServiceImpl implements CustomerOnboardingService 
 		dto.setBranchId(entity.getBranchId());
 		dto.setCustomerId(entity.getCustomerId());
 		dto.setPatientId(entity.getPatientId());
+		dto.setDeviceId(entity.getDeviceId());
+		dto.setReferralCode(entity.getReferralCode());
+		dto.setReferredBy(entity.getReferredBy());
+
 		return dto;
 	}
 }

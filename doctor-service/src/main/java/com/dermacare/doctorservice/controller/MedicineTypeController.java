@@ -14,7 +14,7 @@ import com.dermacare.doctorservice.service.MedicineTypeService;
 public class MedicineTypeController {
 
     @Autowired
-    private MedicineTypeService service; // ✅ Autowired instead of final + constructor
+    private MedicineTypeService service; 
 
     @PostMapping("/search-or-add")
     public ResponseEntity<Response> searchOrAddMedicineType(@RequestBody MedicineTypeDTO dto) {

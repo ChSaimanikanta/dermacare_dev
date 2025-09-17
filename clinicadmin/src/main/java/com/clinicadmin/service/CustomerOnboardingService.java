@@ -1,9 +1,10 @@
 package com.clinicadmin.service;
 
+import com.clinicadmin.dto.ChangeDoctorPasswordDTO;
+import com.clinicadmin.dto.CustomerLoginDTO;
 import com.clinicadmin.dto.CustomerOnbordingDTO;
 import com.clinicadmin.dto.Response;
-
-import java.util.List;
+import com.clinicadmin.sevice.impl.CustomerResponseDTO;
 
 public interface CustomerOnboardingService {
 	Response onboardCustomer(CustomerOnbordingDTO dto);
@@ -16,7 +17,7 @@ public interface CustomerOnboardingService {
 
 	Response deleteCustomer(String id);
 
-	Response login(String username, String password);
-
-	Response resetPassword(String username, String oldPassword, String newPassword);
+	Response login(CustomerLoginDTO dto);
+//
+//	Response resetPassword(ChangeDoctorPasswordDTO dto);
 }

@@ -2,8 +2,17 @@ package com.clinicadmin.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+import com.clinicadmin.dto.CustomerLoginDTO;
 import com.clinicadmin.dto.CustomerOnbordingDTO;
 import com.clinicadmin.dto.Response;
 import com.clinicadmin.service.CustomerOnboardingService;
@@ -52,17 +61,17 @@ public class CustomerOnboardingController {
 	}
 
 	// ✅ Login with PathVariable
-	@PostMapping("/customers/login/{username}/{password}")
-	public ResponseEntity<Response> login(@PathVariable String username, @PathVariable String password) {
-		Response response = customerOnboardingService.login(username, password);
+	@PostMapping("/customers/login")
+	public ResponseEntity<Response> login(@RequestBody CustomerLoginDTO dto) {
+		Response response = customerOnboardingService.login(dto);
 		return ResponseEntity.status(response.getStatus()).body(response);
 	}
 
-	// ✅ Reset Password with PathVariable
-	@PostMapping("/customers/reset-password/{username}/{oldPassword}/{newPassword}")
-	public ResponseEntity<Response> resetPassword(@PathVariable String username, @PathVariable String oldPassword,
-			@PathVariable String newPassword) {
-		Response response = customerOnboardingService.resetPassword(username, oldPassword, newPassword);
-		return ResponseEntity.status(response.getStatus()).body(response);
-	}
+//	// ✅ Reset Password with PathVariable
+//	@PostMapping("/customers/reset-password/{username}/{oldPassword}/{newPassword}")
+//	public ResponseEntity<Response> resetPassword(@PathVariable String username, @PathVariable String oldPassword,
+//			@PathVariable String newPassword) {
+//		Response response = customerOnboardingService.resetPassword(username, oldPassword, newPassword);
+//		return ResponseEntity.status(response.getStatus()).body(response);
+//	}
 }
