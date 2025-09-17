@@ -114,7 +114,7 @@ public class CustomerOnboardingServiceImpl implements CustomerOnboardingService 
 	public Response getCustomerById(String id) {
 		Response response = new Response();
 		try {
-			Optional<CustomerOnbording> optional = onboardingRepository.findById(id);
+			Optional<CustomerOnbording> optional = onboardingRepository.findByCustomerById(id);
 			if (optional.isPresent()) {
 				response.setSuccess(true);
 				response.setMessage("Customer found successfully");

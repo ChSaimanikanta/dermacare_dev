@@ -8,4 +8,6 @@ import com.clinicadmin.entity.CustomerOnbording;
 public interface CustomerOnboardingRepository extends MongoRepository<CustomerOnbording, String> {
 
 	Optional<CustomerOnbording> findByCustomerId(String userName);
+
+	Optional<CustomerOnbording> findByCustomerById(String id);
 }

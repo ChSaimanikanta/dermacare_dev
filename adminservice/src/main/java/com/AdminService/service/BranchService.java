@@ -13,6 +13,7 @@ public interface BranchService {
 	Response getAllBranches();
 	 ResponseEntity<?> getBranchByClinicId(String clinicId);
 	 Response getBranchesByClinicId(String clinicId);
+	 ResponseEntity<?> getBranchByClinicAndBranchId(String clinicId, String branchId);
      
 		
 }

@@ -26,23 +26,22 @@ public interface DoctorService {
 
 	public Response getDoctorsByClinicId(String clinicId);
 
-	public Response saveDoctorSlot(String hospitalId, String doctorId, DoctorSlotDTO dto);
-
+	public Response saveDoctorSlot(String hospitalId, String branchId, String doctorId, DoctorSlotDTO dto);
 //public Response getDoctorSlots(String doctorId);
 	public Response availabilityStatus(String doctorId, DoctorAvailabilityStatusDTO status);
 
-	public Response deleteDoctorSlot(String doctorId, String date, String slotToDelete);
+//	public Response deleteDoctorSlot(String doctorId, String date, String slotToDelete, String branchId);
 
 //Response updateDoctorSlot(String doctorId, String date, String oldSlotTime, String newSlotTime);
-	public Response updateDoctorSlot(String doctorId, String date, String oldSlot, String newSlot);
+	public Response updateDoctorSlot( String doctorId, String date, String oldSlot, String newSlot) ;
 
-	public Response deleteDoctorSlotbyDate(String doctorId, String date);
+	public Response deleteDoctorSlot( String doctorId, String date, String slotToDelete) ;
 
 	public Response deleteDoctorById(String doctorId);
 
 	public Response getDoctorsBySubserviceId(String hospitalId, String subServiceId);
 
-	public Response getDoctorSlots(String hospitalId, String doctorId);
+	public Response getDoctorSlots(String hospitalId, String branchId, String doctorId) ;
 
 	public Response getDoctorsByClinicIdAndDoctorId(String clinicId, String doctorId);
 
@@ -70,5 +69,12 @@ public interface DoctorService {
 
 	public Response loginUsingRoles(DoctorLoginDTO dto);
 
+
 	Response getDoctorsByHospitalIdAndBranchIdSubserviceId(String hospitalId, String branchId, String subServiceId);
+
+	public Response deleteDoctorSlotByDate(String doctorId, String date);
+
+
+
 }
+
