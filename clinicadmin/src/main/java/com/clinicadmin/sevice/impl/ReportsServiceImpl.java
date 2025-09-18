@@ -44,29 +44,35 @@ public class ReportsServiceImpl implements ReportsService {
 			for (ReportsDTO d : dto.getReportsList()) {
 				List<byte[]> list = new ArrayList<>();
 				bkngId = d.getBookingId();
-				if(d.getReportFile() != null) {
-				for(String s:d.getReportFile()) {
-				byte[] decodedFile = Base64.getDecoder().decode(s);
-				list.add(decodedFile);}}
+				if (d.getReportFile() != null) {
+					for (String s : d.getReportFile()) {
+						byte[] decodedFile = Base64.getDecoder().decode(s);
+						list.add(decodedFile);
+					}
+				}
 				Reports report = Reports.builder().bookingId(d.getBookingId()).reportName(d.getReportName())
 						.reportDate(d.getReportDate()).reportStatus(d.getReportStatus()).reportType(d.getReportType())
 						.customerMobileNumber(d.getCustomerMobileNumber()).reportFile(list).build();
-				reports.add(report);}
-				ResponseEntity<ResponseStructure<BookingResponseDTO>> r = bookingFeign.getBookedService(bkngId);
-				BookingResponseDTO res = r.getBody().getData();
-				if(res!=null) {			
-					res.setReports(dto);
-					bookingFeign.updateAppointment(res);}
+				reports.add(report);
+			}
+			ResponseEntity<ResponseStructure<BookingResponseDTO>> r = bookingFeign.getBookedService(bkngId);
+			BookingResponseDTO res = r.getBody().getData();
+			if (res != null) {
+				List<ReportsDtoList> rep = res.getReports();
+				rep.add(dto);
+				res.setReports(rep);
+				bookingFeign.updateAppointment(res);
+			}
+			reportsList.setCustomerId(dto.getCustomerId());
 			reportsList.setReportsList(reports);
 			ReportsList saved = reportsRepository.save(reportsList);
 			return Response.builder().success(true).data(saved).message("Report uploaded successfully")
-					.status(HttpStatus.CREATED.value()).build();			
+					.status(HttpStatus.CREATED.value()).build();
 		} catch (FeignException e) {
 			return Response.builder().success(false).data(null).message(e.getMessage())
 					.status(HttpStatus.INTERNAL_SERVER_ERROR.value()).build();
 		}
 	}
-	
 //	---------------------------------------Get Reports By BookingId--------------------------------------------
 	@Override
 	public Response getReportsByBookingId(String bookingId) {

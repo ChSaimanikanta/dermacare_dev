@@ -77,5 +77,12 @@ public class DoctorSaveDetailsController {
                 service.getInProgressDetails(patientId, bookingId)
         );
     }
+    
+    
+    @GetMapping("/getDoctorSaveDetailsByBookingId/{bookingId}")
+    public ResponseEntity<Response> getDoctorSaveDetailsByBookingId(@PathVariable String bookingId) {
+        Response response = service.getDoctorDetailsByBookingId(bookingId);
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }      
 
 }
