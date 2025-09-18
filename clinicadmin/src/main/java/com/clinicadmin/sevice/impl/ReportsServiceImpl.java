@@ -122,5 +122,32 @@ public class ReportsServiceImpl implements ReportsService {
 		}
 		return res;
 	}
+	
+	
+	@Override
+	public Response getReportsByCustomerId(String cId) {
+		Response res = new Response();
+	    try {
+	        List<ReportsList> reportsListData = reportsRepository.findByCustomerId(cId);
+	        List<ReportsDtoList> toDTO = new ObjectMapper().convertValue(reportsListData,new TypeReference<List<ReportsDtoList>>() {});
+			if (toDTO != null && !toDTO.isEmpty()) {
+				res.setSuccess(true);
+				res.setStatus(200);
+				res.setMessage("Records Fetched Successfully");
+				res.setData(toDTO);
+			} else {
+				res.setSuccess(true);
+				res.setStatus(200);
+				res.setMessage("Records Not Found");
+				res.setData(Collections.emptyList());
+			}
+		} catch (Exception e) {
+			res.setSuccess(false);
+			res.setStatus(500);
+			res.setMessage(e.getMessage());
+			res.setData(null);
+		}
+		return res;
+	}
 
 }

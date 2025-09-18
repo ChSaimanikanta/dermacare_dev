@@ -1766,8 +1766,18 @@ public class AdminServiceImpl implements AdminService {
                     branchCredentialsRepository.findByUserNameAndPassword(userName, password);
 
             if (branchCredentials != null) {
-                String branchId = branchCredentials.getBranchId(); // e.g., H_1-B_2
-                String clinicId = branchId.contains("-B_") ? branchId.split("-B_")[0] : branchId;
+                String branchId = branchCredentials.getBranchId(); 
+             // Fetch branch to get clinicId safely
+                Optional<Branch> branchOpt = branchRepository.findByBranchId(branchId);
+                Branch branch = branchOpt.orElse(null);
+
+                String clinicId;
+                if (branch != null && branch.getClinicId() != null) {
+                    clinicId = branch.getClinicId();  // safest
+                } else {
+                    // fallback if branch is not found but we know clinicId is first 4 chars (e.g. 0002xx)
+                    clinicId = branchId.length() >= 4 ? branchId.substring(0, 4) : branchId;
+                }
 
                 Optional<Branch> branchEntityOpt = branchRepository.findByBranchId(branchId);
                 Branch branchEntity = branchEntityOpt.orElse(null);

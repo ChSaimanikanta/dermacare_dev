@@ -26,5 +26,7 @@ public interface DoctorsRepository extends MongoRepository<Doctors, ObjectId> {
 	List<Doctors> findByHospitalIdAndBranchIdAndSubServicesSubServiceId(String hospitalId, String branchId,
 			String subServiceId);
 
+	List<Doctors> findByHospitalIdAndBranchId(String hospitalId, String branchId);
+
 	
 }

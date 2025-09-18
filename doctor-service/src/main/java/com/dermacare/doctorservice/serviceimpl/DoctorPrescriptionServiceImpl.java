@@ -74,6 +74,7 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
                     Medicine existingMed = existingMedOpt.get();
                     existingMed.setDose(incomingMed.getDose());
                     existingMed.setDuration(incomingMed.getDuration());
+                    existingMed.setDurationUnit(incomingMed.getDurationUnit());
                     existingMed.setNote(incomingMed.getNote());
                     existingMed.setFood(incomingMed.getFood());
                     existingMed.setMedicineType(incomingMed.getMedicineType());
@@ -89,6 +90,7 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
                             incomingMed.getName().trim(),
                             incomingMed.getDose(),
                             incomingMed.getDuration(),
+                            incomingMed.getDurationUnit(),
                             incomingMed.getNote(),
                             incomingMed.getFood(),
                             incomingMed.getMedicineType(),
@@ -114,6 +116,7 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
                             m.getName(),
                             m.getDose(),
                             m.getDuration(),
+                            m.getDurationUnit(),
                             m.getNote(),
                             m.getFood(),
                             m.getMedicineType(),
@@ -158,6 +161,7 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
                                 m.getName(),
                                 m.getDose(),
                                 m.getDuration(),
+                                m.getDurationUnit(),
                                 m.getNote(),
                                 m.getFood(),
                                 m.getMedicineType(),
@@ -195,6 +199,7 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
                                 m.getName(),
                                 m.getDose(),
                                 m.getDuration(),
+                                m.getDurationUnit(),
                                 m.getNote(),
                                 m.getFood(),
                                 m.getMedicineType(),
@@ -230,6 +235,7 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
                         m.getName(),
                         m.getDose(),
                         m.getDuration(),
+                        m.getDurationUnit(),
                         m.getNote(),
                         m.getFood(),
                         m.getMedicineType(),
@@ -324,6 +330,7 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
                     m.getName(),
                     m.getDose(),
                     m.getDuration(),
+                    m.getDurationUnit(),
                     m.getNote(),
                     m.getFood(),
                     m.getMedicineType(),
@@ -356,6 +363,7 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
                                 m.getName(),
                                 m.getDose(),
                                 m.getDuration(),
+                                m.getDurationUnit(),
                                 m.getNote(),
                                 m.getFood(),
                                 m.getMedicineType(),

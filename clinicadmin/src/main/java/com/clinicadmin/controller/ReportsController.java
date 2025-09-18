@@ -34,9 +34,15 @@ public class ReportsController {
     	 Response response = reportsService.getAllReports();
          return ResponseEntity.status(response.getStatus()).body(response);
      }
-     @GetMapping("getReportByBookingId/{bookingId}")
+     @GetMapping("/getReportByBookingId/{bookingId}")
      public ResponseEntity<Response> getReportsByBookingId(@PathVariable String bookingId) {
     	 Response response = reportsService.getReportsByBookingId(bookingId);
+         return ResponseEntity.status(response.getStatus()).body(response);
+     }
+     
+     @GetMapping("/getReportsBycustomerId/{customerId}")
+     public ResponseEntity<Response> getReportsBycustomerId(@PathVariable String customerId) {
+    	 Response response = reportsService.getReportsByCustomerId(customerId);
          return ResponseEntity.status(response.getStatus()).body(response);
      }
 }

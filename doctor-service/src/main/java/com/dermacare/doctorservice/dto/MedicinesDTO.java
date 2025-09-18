@@ -17,6 +17,8 @@ public class MedicinesDTO {
     private String name;
     private String dose;
     private String duration;
+    private String durationUnit;
+
     private String food;
     private String medicineType;
     private String note;
