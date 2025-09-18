@@ -963,6 +963,89 @@ public class DoctorServiceImpl implements DoctorService {
 			return false;
 		}
 	}
+	// ---------------------------------------------Slots using branchId----------------------------------------------
+
+	// -------------------------------------Adding Slots--------------------------------------------------------------
+	@Override
+	public Response saveDoctorSlot(String hospitalId, String branchId, String doctorId, DoctorSlotDTO dto) {
+
+		Response response = new Response();
+		try {
+			if (dto == null || dto.getAvailableSlots() == null || dto.getAvailableSlots().isEmpty()) {
+				throw new IllegalArgumentException("Invalid slot details provided");
+			}
+
+			Optional<Doctors> getDoctor = doctorsRepository.findByDoctorId(doctorId);
+			if (getDoctor.isEmpty()) {
+				response.setSuccess(false);
+				response.setMessage("Doctor not found with ID: " + doctorId);
+				response.setStatus(HttpStatus.NOT_FOUND.value());
+				return response;
+			}
+
+			DoctorSlot existingSlot = slotRepository.findByDoctorIdAndBranchIdAndDate(doctorId, branchId,
+					dto.getDate());
+			DoctorSlot savedSlot;
+
+			if (existingSlot != null) {
+				List<DoctorAvailableSlotDTO> currentSlots = existingSlot.getAvailableSlots();
+				List<DoctorAvailableSlotDTO> newUniqueSlots = dto.getAvailableSlots().stream()
+						.filter(incoming -> currentSlots.stream()
+								.noneMatch(existing -> existing.getSlot().equals(incoming.getSlot())))
+						.toList();
+
+				currentSlots.addAll(newUniqueSlots);
+				existingSlot.setAvailableSlots(currentSlots);
+				savedSlot = slotRepository.save(existingSlot);
+			} else {
+				DoctorSlot newSlot = DoctorSlotMapper.doctorSlotDTOtoEntity(dto);
+				newSlot.setDoctorId(doctorId);
+				newSlot.setHospitalId(hospitalId);
+				newSlot.setBranchId(branchId);
+				savedSlot = slotRepository.save(newSlot);
+			}
+
+			response.setSuccess(true);
+			response.setData(savedSlot);
+			response.setMessage("Slot(s) saved successfully");
+			response.setStatus(HttpStatus.CREATED.value());
+
+		} catch (IllegalArgumentException e) {
+			response.setSuccess(false);
+			response.setMessage("Validation Error: " + e.getMessage());
+			response.setStatus(HttpStatus.BAD_REQUEST.value());
+
+		} catch (Exception e) {
+			response.setSuccess(false);
+			response.setMessage("An error occurred while saving slots: " + e.getMessage());
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+		}
+
+		return response;
+	}
+
+//		-------------------------Get Slots by Doctors -------------------------------------------
+	@Override
+	public Response getDoctorSlots(String hospitalId, String branchId, String doctorId) {
+		List<DoctorSlot> slots = slotRepository.findByHospitalIdAndBranchIdAndDoctorId(hospitalId, branchId, doctorId);
+
+		Response response = new Response();
+		if (slots == null || slots.isEmpty()) {
+			response.setSuccess(true);
+			response.setData(null);
+			response.setMessage("Slots Not Found");
+			response.setStatus(HttpStatus.OK.value());
+			return response;
+		}
+
+		response.setSuccess(true);
+		response.setData(slots);
+		response.setMessage("Slots fetched successfully");
+		response.setStatus(HttpStatus.OK.value());
+		return response;
+	}
+
+//	-----------------------------slots end------------------------------------------------------------------
 
 	@Override
 	public Response getDoctorsBySubserviceId(String hospitalId, String subServiceId) {
@@ -1661,88 +1744,5 @@ public class DoctorServiceImpl implements DoctorService {
 
 		return response;
 	}
-
-	
-	//---------------------------------------------Slots using branchId----------------------------------------------
-
-	//-------------------------------------Adding Slots---------------------------------------------------------------------------------------
-		@Override
-		public Response saveDoctorSlot(String hospitalId, String branchId, String doctorId, DoctorSlotDTO dto) {
-			
-		    Response response = new Response();
-		    try {
-		        if (dto == null || dto.getAvailableSlots() == null || dto.getAvailableSlots().isEmpty()) {
-		            throw new IllegalArgumentException("Invalid slot details provided");
-		        }
-
-		        Optional<Doctors> getDoctor = doctorsRepository.findByDoctorId(doctorId);
-		        if (getDoctor.isEmpty()) {
-		            response.setSuccess(false);
-		            response.setMessage("Doctor not found with ID: " + doctorId);
-		            response.setStatus(HttpStatus.NOT_FOUND.value());
-		            return response;
-		        }
-
-		        DoctorSlot existingSlot = slotRepository.findByDoctorIdAndBranchIdAndDate(doctorId, branchId, dto.getDate());
-		        DoctorSlot savedSlot;
-
-		        if (existingSlot != null) {
-		            List<DoctorAvailableSlotDTO> currentSlots = existingSlot.getAvailableSlots();
-		            List<DoctorAvailableSlotDTO> newUniqueSlots = dto.getAvailableSlots().stream()
-		                    .filter(incoming -> currentSlots.stream()
-		                            .noneMatch(existing -> existing.getSlot().equals(incoming.getSlot())))
-		                    .toList();
-
-		            currentSlots.addAll(newUniqueSlots);
-		            existingSlot.setAvailableSlots(currentSlots);
-		            savedSlot = slotRepository.save(existingSlot);
-		        } else {
-		            DoctorSlot newSlot = DoctorSlotMapper.doctorSlotDTOtoEntity(dto);
-		            newSlot.setDoctorId(doctorId);
-		            newSlot.setHospitalId(hospitalId);
-		            newSlot.setBranchId(branchId);
-		            savedSlot = slotRepository.save(newSlot);
-		        }
-
-		        response.setSuccess(true);
-		        response.setData(savedSlot);
-		        response.setMessage("Slot(s) saved successfully");
-		        response.setStatus(HttpStatus.CREATED.value());
-
-		    } catch (IllegalArgumentException e) {
-		        response.setSuccess(false);
-		        response.setMessage("Validation Error: " + e.getMessage());
-		        response.setStatus(HttpStatus.BAD_REQUEST.value());
-
-		    } catch (Exception e) {
-		        response.setSuccess(false);
-		        response.setMessage("An error occurred while saving slots: " + e.getMessage());
-		        response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-		    }
-
-		    return response;
-		}
-
-
-//		-------------------------Get Slots by Doctors -------------------------------------------
-		@Override
-		public Response getDoctorSlots(String hospitalId, String branchId, String doctorId) {
-		    List<DoctorSlot> slots = slotRepository.findByHospitalIdAndBranchIdAndDoctorId(hospitalId, branchId, doctorId);
-
-		    Response response = new Response();
-		    if (slots == null || slots.isEmpty()) {
-		        response.setSuccess(true);
-		        response.setData(null);
-		        response.setMessage("Slots Not Found");
-		        response.setStatus(HttpStatus.OK.value());
-		        return response;
-		    }
-
-		    response.setSuccess(true);
-		    response.setData(slots);
-		    response.setMessage("Slots fetched successfully");
-		    response.setStatus(HttpStatus.OK.value());
-		    return response;
-		}
 
 }
