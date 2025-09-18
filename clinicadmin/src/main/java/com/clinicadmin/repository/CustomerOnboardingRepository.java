@@ -6,8 +6,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import com.clinicadmin.entity.CustomerOnbording;
 
 public interface CustomerOnboardingRepository extends MongoRepository<CustomerOnbording, String> {
+	 Optional<CustomerOnbording> findByCustomerId(String customerId);  // ✅ works because field exists
 
-	Optional<CustomerOnbording> findByCustomerId(String userName);
-
-	Optional<CustomerOnbording> findByCustomerById(String id);
 }

@@ -334,9 +334,9 @@ public ResponseEntity<Response> submitCustomerRating(@RequestBody CustomerRating
 }
 }
 
-@GetMapping("/getRatingInfo/{branchlId}/{doctorId}")
-public ResponseEntity<Response> getRatingInfo(@PathVariable String branchlId, @PathVariable String doctorId) {
-	 Response response = customerService.getRatingForService( branchlId,doctorId);
+@GetMapping("/getRatingInfo/{branchId}/{doctorId}")
+public ResponseEntity<Response> getRatingInfo(@PathVariable String branchId, @PathVariable String doctorId) {
+	 Response response = customerService.getRatingForService( branchId,doctorId);
 	 if(response != null && response.getStatus() != 0) {
 		 return ResponseEntity.status(response.getStatus()).body(response);
 	 }else {

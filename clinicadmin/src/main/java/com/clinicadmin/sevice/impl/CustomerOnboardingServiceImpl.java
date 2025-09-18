@@ -8,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.clinicadmin.dto.ChangeDoctorPasswordDTO;
 import com.clinicadmin.dto.CustomerLoginDTO;
 import com.clinicadmin.dto.CustomerOnbordingDTO;
 import com.clinicadmin.dto.Response;
@@ -114,7 +113,7 @@ public class CustomerOnboardingServiceImpl implements CustomerOnboardingService 
 	public Response getCustomerById(String id) {
 		Response response = new Response();
 		try {
-			Optional<CustomerOnbording> optional = onboardingRepository.findByCustomerById(id);
+			Optional<CustomerOnbording> optional = onboardingRepository.findByCustomerId(id);
 			if (optional.isPresent()) {
 				response.setSuccess(true);
 				response.setMessage("Customer found successfully");

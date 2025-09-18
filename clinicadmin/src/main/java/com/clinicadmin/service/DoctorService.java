@@ -74,6 +74,10 @@ public interface DoctorService {
 
 	public Response deleteDoctorSlotByDate(String doctorId, String date);
 
+	Response saveDoctorSlot(String hospitalId, String doctorId, DoctorSlotDTO dto);
+
+	Response getDoctorSlots(String hospitalId, String doctorId);
+
 
 
 }

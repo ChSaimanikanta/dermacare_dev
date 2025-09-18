@@ -693,190 +693,210 @@ public class DoctorServiceImpl implements DoctorService {
 	}
 
 //-------------------------------------Adding Slots---------------------------------------------------------------------------------------
-	public Response saveDoctorSlot(String hospitalId, String branchId, String doctorId, DoctorSlotDTO dto) {
-	    Response response = new Response();
-	    try {
-	        if (dto == null || dto.getAvailableSlots() == null || dto.getAvailableSlots().isEmpty()) {
-	            throw new IllegalArgumentException("Invalid slot details provided");
-	        }
+	@Override
+	public Response saveDoctorSlot(String hospitalId, String doctorId, DoctorSlotDTO dto) {
+		Response response = new Response();
 
-	        Optional<Doctors> getDoctor = doctorsRepository.findByDoctorId(doctorId);
-	        if (getDoctor.isEmpty()) {
-	            response.setSuccess(false);
-	            response.setMessage("Doctor not found with ID: " + doctorId);
-	            response.setStatus(HttpStatus.NOT_FOUND.value());
-	            return response;
-	        }
+		try {
+			if (dto == null || dto.getAvailableSlots() == null || dto.getAvailableSlots().isEmpty()) {
+				throw new IllegalArgumentException("Invalid slot details provided");
+			}
 
-	        DoctorSlot existingSlot = slotRepository.findByDoctorIdAndBranchIdAndDate(doctorId, branchId, dto.getDate());
-	        DoctorSlot savedSlot;
+			Optional<Doctors> getDoctor = doctorsRepository.findByDoctorId(doctorId);
+			if (getDoctor.isEmpty()) {
+				response.setSuccess(false);
+				response.setMessage("Doctor not found with ID: " + doctorId);
+				response.setStatus(HttpStatus.NOT_FOUND.value());
+				return response;
+			}
 
-	        if (existingSlot != null) {
-	            List<DoctorAvailableSlotDTO> currentSlots = existingSlot.getAvailableSlots();
-	            List<DoctorAvailableSlotDTO> newUniqueSlots = dto.getAvailableSlots().stream()
-	                    .filter(incoming -> currentSlots.stream()
-	                            .noneMatch(existing -> existing.getSlot().equals(incoming.getSlot())))
-	                    .toList();
+			// Corrected line: assuming repository returns Optional<DoctorSlot>
+			DoctorSlot existingSlot = slotRepository.findByDoctorIdAndDate(doctorId, dto.getDate());
+			DoctorSlot savedSlot;
+			if (existingSlot != null) {
+				List<DoctorAvailableSlotDTO> currentSlots = existingSlot.getAvailableSlots();
 
-	            currentSlots.addAll(newUniqueSlots);
-	            existingSlot.setAvailableSlots(currentSlots);
-	            savedSlot = slotRepository.save(existingSlot);
-	        } else {
-	            DoctorSlot newSlot = DoctorSlotMapper.doctorSlotDTOtoEntity(dto);
-	            newSlot.setDoctorId(doctorId);
-	            newSlot.setHospitalId(hospitalId);
-	            newSlot.setBranchId(branchId);
-	            savedSlot = slotRepository.save(newSlot);
-	        }
+				// Filter incoming slots to avoid duplicates
+				List<DoctorAvailableSlotDTO> newUniqueSlots = dto.getAvailableSlots().stream()
+						.filter(incoming -> currentSlots.stream()
+								.noneMatch(existing -> existing.getSlot().equals(incoming.getSlot())))
+						.toList();
 
-	        response.setSuccess(true);
-	        response.setData(savedSlot);
-	        response.setMessage("Slot(s) saved successfully");
-	        response.setStatus(HttpStatus.CREATED.value());
+				currentSlots.addAll(newUniqueSlots); // Add only new unique slots
+				existingSlot.setAvailableSlots(currentSlots);
 
-	    } catch (IllegalArgumentException e) {
-	        response.setSuccess(false);
-	        response.setMessage("Validation Error: " + e.getMessage());
-	        response.setStatus(HttpStatus.BAD_REQUEST.value());
+				savedSlot = slotRepository.save(existingSlot);
+			} else {
+				DoctorSlot newSlot = DoctorSlotMapper.doctorSlotDTOtoEntity(dto);
+				newSlot.setDoctorId(doctorId);
+				newSlot.setHospitalId(hospitalId);
+				savedSlot = slotRepository.save(newSlot);
+			}
 
-	    } catch (Exception e) {
-	        response.setSuccess(false);
-	        response.setMessage("An error occurred while saving slots: " + e.getMessage());
-	        response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-	    }
+			response.setSuccess(true);
+			response.setData(savedSlot);
+			response.setMessage("Slot(s) saved successfully");
+			response.setStatus(HttpStatus.CREATED.value());
 
-	    return response;
+		} catch (IllegalArgumentException e) {
+			response.setSuccess(false);
+			response.setMessage("Validation Error: " + e.getMessage());
+			response.setStatus(HttpStatus.BAD_REQUEST.value());
+
+		} catch (Exception e) {
+			response.setSuccess(false);
+			response.setMessage("An error occurred while saving slots: " + e.getMessage());
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+		}
+
+		return response;
 	}
-
 
 //	-------------------------Get Slots by Doctors -------------------------------------------
-	public Response getDoctorSlots(String hospitalId, String branchId, String doctorId) {
-	    List<DoctorSlot> slots = slotRepository.findByHospitalIdAndBranchIdAndDoctorId(hospitalId, branchId, doctorId);
+	@Override
+	public Response getDoctorSlots(String hospitalId, String doctorId) {
+		List<DoctorSlot> slots = slotRepository.findByHospitalIdAndDoctorId(hospitalId, doctorId);
 
-	    Response response = new Response();
-	    if (slots == null || slots.isEmpty()) {
-	        response.setSuccess(true);
-	        response.setData(null);
-	        response.setMessage("Slots Not Found");
-	        response.setStatus(HttpStatus.OK.value());
-	        return response;
-	    }
+		if (slots == null || slots.isEmpty()) {
+			Response response = new Response();
+			response.setSuccess(true);
+			response.setData(null);
+			response.setMessage("Slots Not Found");
+			response.setStatus(HttpStatus.OK.value());
+			return response;
+		}
 
-	    response.setSuccess(true);
-	    response.setData(slots);
-	    response.setMessage("Slots fetched successfully");
-	    response.setStatus(HttpStatus.OK.value());
-	    return response;
+		Response response = new Response();
+		response.setSuccess(true);
+		response.setData(slots);
+		response.setMessage("Slots fetched successfully");
+		response.setStatus(HttpStatus.OK.value());
+		return response;
 	}
-
 
 //--------------------------- detele slot by time and date using doctorId-----------------------------------------
-	@Override
-	public Response deleteDoctorSlot(String doctorId, String date, String slotToDelete) {
-	    Response response = new Response();
-	    try {
-	        DoctorSlot doctorSlot = slotRepository.findByDoctorIdAndDate(doctorId,date);
-
-	        if (doctorSlot == null) {
-	            response.setSuccess(false);
-	            response.setData(null);
-	            response.setMessage("No slot found for the doctor on the given date and branch");
-	            response.setStatus(HttpStatus.NOT_FOUND.value());
-	            return response;
-	        }
-
-	        boolean slotExists = doctorSlot.getAvailableSlots().stream()
-	                .anyMatch(s -> slotToDelete.equals(s.getSlot()) && !s.isSlotbooked());
-
-	        if (!slotExists) {
-	            response.setSuccess(false);
-	            response.setData(null);
-	            response.setMessage("Slot not found or already booked");
-	            response.setStatus(HttpStatus.BAD_REQUEST.value());
-	            return response;
-	        }
-
-	        List<DoctorAvailableSlotDTO> updatedSlots = doctorSlot.getAvailableSlots().stream()
-	                .filter(s -> !(slotToDelete.equals(s.getSlot()) && !s.isSlotbooked()))
-	                .collect(Collectors.toList());
-
-	        doctorSlot.setAvailableSlots(updatedSlots);
-	        slotRepository.save(doctorSlot);
-
-	        DoctorSlotDTO dto = new DoctorSlotDTO(
-	                doctorSlot.getDoctorId(),
-	                doctorSlot.getHospitalId(),
-	                doctorSlot.getDate(),
-	                doctorSlot.getBranchId(),
-	                
-	              
-	                updatedSlots
-	        );
-	        response.setSuccess(true);
-	        response.setData(dto);
-	        response.setMessage("Slot deleted successfully");
-	        response.setStatus(HttpStatus.OK.value());
-	    } catch (Exception e) {
-	        response.setSuccess(false);
-	        response.setData(null);
-	        response.setMessage("Internal server error occurred: " + e.getMessage());
-	        response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-	    }
-	    return response;
-	}
+//	@Override
+//	public Response deleteDoctorSlot(String doctorId, String date, String slotToDelete) {
+//		Response response = new Response();
+//		try {
+//			DoctorSlot doctorSlot = slotRepository.findByDoctorIdAndDate(doctorId, date);
+//
+//			if (doctorSlot == null) {
+//				response.setSuccess(false);
+//				response.setData(null);
+//				response.setMessage("No slot found for the doctor on the given date");
+//				response.setStatus(HttpStatus.NOT_FOUND.value());
+//				return response;
+//			}
+//
+//			boolean slotExists = doctorSlot.getAvailableSlots().stream()
+//					.anyMatch(s -> slotToDelete.equals(s.getSlot()) && !s.isSlotbooked());
+//
+//			if (!slotExists) {
+//				response.setSuccess(false);
+//				response.setData(null);
+//				response.setMessage("Slot not found or already booked");
+//				response.setStatus(HttpStatus.BAD_REQUEST.value());
+//				return response;
+//			}
+//
+//			List<DoctorAvailableSlotDTO> updatedSlots = doctorSlot.getAvailableSlots().stream()
+//					.filter(s -> !(slotToDelete.equals(s.getSlot()) && !s.isSlotbooked())).collect(Collectors.toList());
+//
+//			doctorSlot.setAvailableSlots(updatedSlots);
+//			slotRepository.save(doctorSlot);
+//
+////			DoctorSlotDTO dto = new DoctorSlotDTO(doctorSlot.getDoctorId(), doctorSlot.getHospitalId(),
+////					doctorSlot.getDate(), updatedSlots);
+//			response.setSuccess(true);
+//			response.setData(dto);
+//			response.setMessage("Slot deleted successfully");
+//			response.setStatus(HttpStatus.OK.value());
+//		} catch (Exception e) {
+//			response.setSuccess(false);
+//			response.setData(null);
+//			response.setMessage("Internal server error occurred: " + e.getMessage());
+//			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+//		}
+//		return response;
+//	}
 
 	// -----------------------------update
 	// Slot---------------------------------------------------------------------------
-	public Response updateDoctorSlot( String doctorId, String date, String oldSlot, String newSlot) {
-	    try {
-	        DoctorSlot doctorSlot = slotRepository.findByDoctorIdAndDate(doctorId, date);
-	        if (doctorSlot == null) {
-	            Response response = new Response();
-	            response.setSuccess(false);
-	            response.setData(null);
-	            response.setMessage("No slot found for the doctor on the given date and branch");
-	            response.setStatus(HttpStatus.NOT_FOUND.value());
-	            return response;
-	        }
+	@Override
+	public Response updateDoctorSlot(String doctorId, String date, String oldSlot, String newSlot) {
+		try {
+			DoctorSlot doctorSlot = slotRepository.findByDoctorIdAndDate(doctorId, date);
+			if (doctorSlot == null) {
+				Response response = new Response();
+				response.setSuccess(false);
+				response.setData(null);
+				response.setMessage("No slot found for the doctor on the given date");
+				response.setStatus(HttpStatus.NOT_FOUND.value());
+				return response;
+			}
+			List<DoctorAvailableSlotDTO> slots = doctorSlot.getAvailableSlots();
 
-	        List<DoctorAvailableSlotDTO> slots = doctorSlot.getAvailableSlots();
-	        boolean slotUpdated = false;
+			boolean slotUpdated = false;
 
-	        for (DoctorAvailableSlotDTO slot : slots) {
-	            if (slot.getSlot().equals(oldSlot) && !slot.isSlotbooked()) {
-	                slot.setSlot(newSlot);
-	                slotUpdated = true;
-	                break;
-	            }
-	        }
+			for (DoctorAvailableSlotDTO slot : slots) {
+				if (slot.getSlot().equals(oldSlot) && !slot.isSlotbooked()) {
+					slot.setSlot(newSlot);
+					slotUpdated = true;
+					break;
+				}
+			}
 
-	        if (!slotUpdated) {
-	            Response response = new Response();
-	            response.setSuccess(false);
-	            response.setData(null);
-	            response.setMessage("Old slot not found or already booked");
-	            response.setStatus(HttpStatus.BAD_REQUEST.value());
-	            return response;
-	        }
+			if (!slotUpdated) {
+				Response response = new Response();
+				response.setSuccess(false);
+				response.setData(null);
+				response.setMessage("Old slot not found or already booked");
+				response.setStatus(HttpStatus.BAD_REQUEST.value());
+				return response;
 
-	        doctorSlot.setAvailableSlots(slots);
-	        slotRepository.save(doctorSlot);
+			}
 
-	        Response response = new Response();
-	        response.setSuccess(true);
-	        response.setData(doctorSlot);
-	        response.setMessage("Slot updated successfully");
-	        response.setStatus(HttpStatus.OK.value());
-	        return response;
+			doctorSlot.setAvailableSlots(slots);
+			slotRepository.save(doctorSlot);
+			Response response = new Response();
+			response.setSuccess(true);
+			response.setData(doctorSlot);
+			response.setMessage("Slot updated successfully");
+			response.setStatus(HttpStatus.OK.value());
+			return response;
 
-	    } catch (Exception e) {
-	        Response response = new Response();
-	        response.setSuccess(false);
-	        response.setData(null);
-	        response.setMessage("An error occurred: " + e.getMessage());
-	        response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-	        return response;
-	    }
+		} catch (Exception e) {
+			Response response = new Response();
+			response.setSuccess(false);
+			response.setData(null);
+			response.setMessage("An error occurred: " + e.getMessage());
+			response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+			return response;
+
+		}
+	}
+
+	public Response deleteDoctorSlotbyDate(String doctorId, String date) {
+		DoctorSlot doctorSlot = slotRepository.findByDoctorIdAndDate(doctorId, date);
+
+		if (doctorSlot == null) {
+			Response response = new Response();
+			response.setSuccess(false);
+			response.setData(null);
+			response.setMessage("No slots found for doctor on this date");
+			response.setStatus(HttpStatus.NOT_FOUND.value());
+			return response;
+		}
+
+		slotRepository.delete(doctorSlot);
+		Response response = new Response();
+		response.setSuccess(true);
+		response.setData(null);
+		response.setMessage("All slots deleted successfully for date " + date);
+		response.setStatus(HttpStatus.OK.value());
+		return response;
+
 	}
 
 	@Override
@@ -1608,30 +1628,29 @@ public class DoctorServiceImpl implements DoctorService {
 
 		return response;
 	}
+
 	@Override
-	public Response deleteDoctorSlotByDate(String doctorId, String date) {
-	    DoctorSlot doctorSlot = slotRepository.findByDoctorIdAndDate(doctorId, date);
-
-	    Response response = new Response();
-
-	    if (doctorSlot == null) {
-	        response.setSuccess(false);
-	        response.setData(null);
-	        response.setMessage("No slots found for doctor on this date");
-	        response.setStatus(HttpStatus.NOT_FOUND.value());
-	        return response;
-	    }
-
-	    slotRepository.delete(doctorSlot);
-	    response.setSuccess(true);
-	    response.setData(null);
-	    response.setMessage("All slots deleted successfully for date " + date);
-	    response.setStatus(HttpStatus.OK.value());
-	    return response;
+	public Response saveDoctorSlot(String hospitalId, String branchId, String doctorId, DoctorSlotDTO dto) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
+	@Override
+	public Response deleteDoctorSlot(String doctorId, String date, String slotToDelete) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
+	@Override
+	public Response getDoctorSlots(String hospitalId, String branchId, String doctorId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
-
+	@Override
+	public Response deleteDoctorSlotByDate(String doctorId, String date) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 }
