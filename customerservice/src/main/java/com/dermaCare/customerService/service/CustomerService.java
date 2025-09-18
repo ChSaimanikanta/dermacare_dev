@@ -108,4 +108,7 @@ public interface CustomerService {
 	public Response getBranchesInfoBySubServiceId(String clinicId,String subServiceId,String latitude,String longtitude) throws JsonProcessingException;
 	
 	public Response getReports(String customerId);
+
+	Response getDoctorsByHospitalBranchAndSubService(String hospitalId, String branchId, String subServiceId)
+			throws JsonProcessingException;
 }

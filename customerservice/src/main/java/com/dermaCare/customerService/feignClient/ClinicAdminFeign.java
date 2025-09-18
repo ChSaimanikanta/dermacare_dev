@@ -20,6 +20,11 @@ public interface ClinicAdminFeign {
 	@GetMapping("/clinic-admin/doctors/hospital/{hospitalId}/subServiceId/{subServiceId}")
 	public ResponseEntity<Response> getDoctorsBySubServiceId(@PathVariable String hospitalId, @PathVariable String subServiceId);
 	
+
+	@GetMapping("/clinic-admin/doctors/{hospitalId}/{branchId}/{subServiceId}")
+	public ResponseEntity<Response> getDoctorsByHospitalBranchAndSubService(@PathVariable String hospitalId,
+			@PathVariable String branchId, @PathVariable String subServiceId);
+
 	@GetMapping("/clinic-admin/doctor/{id}")
 	public ResponseEntity<Response> getDoctorById(@PathVariable String id);
 	
