@@ -24,6 +24,7 @@ public class BookingRequset {
 	private String age;
 	private String gender;
 	private String mobileNumber;
+	private String customerId;
 	private String consultationExpiration;
 	private String customerDeviceId;
 	private String problem;
@@ -47,7 +48,7 @@ public class BookingRequset {
 	private String paymentType;
 	private List<String> attachments;
 	private String consentFormPdf;
-	private List<String> prescriptionPdf;
+	private String doctorRefCode;
 	private String bookedAt;
 
 }

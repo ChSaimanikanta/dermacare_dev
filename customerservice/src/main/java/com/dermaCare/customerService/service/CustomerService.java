@@ -73,7 +73,7 @@ public interface CustomerService {
     
     public ResponseEntity<Response> saveFavouriteDoctors(FavouriteDoctorsDTO favouriteDoctorsDTO);
     
-    public Response getDoctorsSlots(String hospitalId,String doctorId);
+    public Response getDoctorsSlots(String hid,String hospitalId,String doctorId);
     
     public Response getAllSavedFavouriteDoctors();
    
@@ -106,7 +106,6 @@ public interface CustomerService {
 	public ResponseEntity<?> getInProgressAppointments( String mnumber);
 	
 	public Response getBranchesInfoBySubServiceId(String clinicId,String subServiceId,String latitude,String longtitude) throws JsonProcessingException;
-
-	public Response getDoctorsByHospitalBranchAndSubService(String hospitalId, String branchId, String subServiceId)
-			throws JsonProcessingException;
+	
+	public Response getReports(String customerId);
 }

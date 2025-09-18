@@ -24,7 +24,7 @@ public class BranchDTO {
 	private String longitude;
 	private String virtualClinicTour;
 	private double branchOverallRating;
-	private int distance;
+	private double distance;
 	private String kms;
 
 }

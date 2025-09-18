@@ -30,9 +30,11 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import com.dermacare.bookingService.dto.BookingRequset;
 import com.dermacare.bookingService.dto.BookingResponse;
+import com.dermacare.bookingService.dto.DoctorSaveDetailsDTO;
 import com.dermacare.bookingService.dto.NotificationDTO;
 import com.dermacare.bookingService.entity.Booking;
 import com.dermacare.bookingService.entity.ReportsList;
+import com.dermacare.bookingService.feign.DoctorFeign;
 import com.dermacare.bookingService.feign.NotificationFeign;
 import com.dermacare.bookingService.producer.KafkaProducer;
 import com.dermacare.bookingService.repository.BookingServiceRepository;
@@ -54,6 +56,9 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 	
 	@Autowired
 	private NotificationFeign notificationFeign;
+	
+	@Autowired
+	private DoctorFeign doctorFeign;
 
 	@Override
 	public ResponseEntity<?> addService(BookingRequset request) {
@@ -127,7 +132,7 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 	    String formattedTime = istTime.format(formatter);
 		entity.setBookedAt(formattedTime);
 		entity.setFreeFollowUpsLeft(request.getFreeFollowUps());
-		entity.setPrescriptionPdf(new ObjectMapper().convertValue(request.getPrescriptionPdf(),new TypeReference<List<byte[]>>(){}));
+		//entity.setPrescriptionPdf(new ObjectMapper().convertValue(request.getPrescriptionPdf(),new TypeReference<List<byte[]>>(){}));
 		if(request.getConsultationType() != null){
 		if(request.getConsultationType().equalsIgnoreCase("video consultation") || request.getConsultationType().equalsIgnoreCase("online consultation") ) {
 			entity.setChannelId(randomNumber());
@@ -150,12 +155,22 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 	}
 	
 	
-	private static BookingResponse toResponse(Booking entity) {
+	private BookingResponse toResponse(Booking entity) {		
 		BookingResponse response = new ObjectMapper().convertValue(entity,BookingResponse.class );
-		response.setPrescriptionPdf(new ObjectMapper().convertValue(entity.getPrescriptionPdf(),new TypeReference<List<String>>(){}));
+		DoctorSaveDetailsDTO dto = getPrescriptionpdf(response.getBookingId());
+		response.setPrescriptionPdf(dto.getPrescriptionPdf());
 		response.setBookingId(String.valueOf(entity.getBookingId()));
-		return response;
-	}
+		return response; }
+	
+	
+	private DoctorSaveDetailsDTO getPrescriptionpdf(String bid) {
+		try {
+		Response res =  doctorFeign.getDoctorSaveDetailsByBookingId(bid).getBody();
+		return new ObjectMapper().convertValue(res.getData(),DoctorSaveDetailsDTO.class);
+	}catch(Exception e) {
+		System.out.println(e.getMessage());
+		return null;
+	}}
 	
 	
 	  private static String generatePatientId() {	       
@@ -172,7 +187,7 @@ public class BookingService_ServiceImpl implements BookingService_Service {
     }
 
 	private List<BookingResponse> toResponses(List<Booking> bookings) {
-		return bookings.stream().map(BookingService_ServiceImpl::toResponse).toList();
+		return  new ObjectMapper().convertValue(bookings,new TypeReference<List<BookingResponse>>(){});
 	}
 	
 	
@@ -497,7 +512,7 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 		if (bookingResponse.getStatus() != null) entity.setStatus(bookingResponse.getStatus());
 		if (bookingResponse.getNotes() != null) entity.setNotes(bookingResponse.getNotes());
 		if (bookingResponse.getReports() != null)
-		    entity.setReports(new ObjectMapper().convertValue(bookingResponse.getReports(), ReportsList.class));
+		    entity.setReports(new ObjectMapper().convertValue(bookingResponse.getReports(),new TypeReference<List<ReportsList>>(){}));
 		if (bookingResponse.getSubServiceId() != null) entity.setSubServiceId(bookingResponse.getSubServiceId());
 		if (bookingResponse.getSubServiceName() != null) entity.setSubServiceName(bookingResponse.getSubServiceName());
 		if (bookingResponse.getReasonForCancel() != null) entity.setReasonForCancel(bookingResponse.getReasonForCancel());

@@ -19,8 +19,6 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-
 import com.dermaCare.customerService.dto.BookingRequset;
 import com.dermaCare.customerService.dto.BookingResponse;
 import com.dermaCare.customerService.dto.BranchDTO;
@@ -658,10 +656,22 @@ public Response getAllSavedFavouriteDoctors(){
 	}}
 	
 
-public Response getDoctorsSlots(String hospitalId,String doctorId) {
+public Response getDoctorsSlots(String hid,String branchId,String doctorId) {
 	Response response = new Response();
     	try {
-    	ResponseEntity<Response> res = clinicAdminFeign.getDoctorSlot( hospitalId,doctorId);
+    	ResponseEntity<Response> res = clinicAdminFeign.getDoctorSlot(hid,branchId,doctorId);
+		return res.getBody();
+	}catch(FeignException e) {
+		response.setStatus(e.status());
+		response.setMessage(ExtractFeignMessage.clearMessage(e));
+		response.setSuccess(false);
+		return response;
+	}}
+
+public Response getReports(String customerId) {
+	Response response = new Response();
+    	try {
+    	ResponseEntity<Response> res = clinicAdminFeign.getReportsBycustomerId(customerId);
 		return res.getBody();
 	}catch(FeignException e) {
 		response.setStatus(e.status());
@@ -1004,37 +1014,6 @@ public Response getDoctorsandHospitalDetails(String hospitalId, String subServic
 	return response;
 }
 
-@Override
-public Response getDoctorsByHospitalBranchAndSubService( String hospitalId,
-		String branchId,  String subServiceId)throws JsonProcessingException {
-	Response response = new Response();
-	try {
-		Response hospitalResponse = adminFeign.getClinicById(hospitalId);
-		if(hospitalResponse.getData()!= null ) {
-		ResponseEntity<Response> doctorsResponse = clinicAdminFeign.getDoctorsByHospitalBranchAndSubService(hospitalId, branchId, subServiceId);
-		 Object obj = doctorsResponse.getBody().getData();
-		List<DoctorsDTO> doctors =  new ObjectMapper().convertValue(obj, new TypeReference<List<DoctorsDTO>>() {});
-		if(doctors!= null && !doctors.isEmpty()) {
-			ClinicDTO hospital = new ObjectMapper().convertValue(hospitalResponse.getData(), ClinicDTO.class);
-			ClinicAndDoctorsResponse combinedData = new ClinicAndDoctorsResponse(hospital, doctors);
-			response.setSuccess(true);
-			response.setData(combinedData);
-			response.setMessage("Hospital and doctors fetched successfully");
-			response.setStatus(200);
-		}else {		
-			response.setData( doctorsResponse.getBody());;
-			response.setStatus( doctorsResponse.getBody().getStatus());
-		}}else{        	
-			response.setData(hospitalResponse);;
-			response.setStatus(hospitalResponse.getStatus());
-		}}catch (FeignException e) {
-		response.setSuccess(false);
-		response.setMessage(ExtractFeignMessage.clearMessage(e));
-		response.setStatus(500);
-	}
-	return response;
-}
-
 
 // GETHOSPITALANDDOCTORINFORMSTION
 
@@ -1207,9 +1186,9 @@ public Response getBranchesInfoBySubServiceId(String clinicId,String subServiceI
 		    	 hospitalAndSubServiceInfo.setCity(clinicDto.getCity());}
 		    //System.out.println(response.getData());
 		     List<BranchDTO> branchDto = new ObjectMapper().convertValue(response.getData(),new TypeReference<List<BranchDTO>>() {});	
-		     List<BranchDTO> branchDtoWithKms = branchDto.stream().map(n->{int d = (int)haversine(Double.valueOf(latitude),Double.valueOf(longtitude),Double.valueOf(n.getLatitude()),Double.valueOf(n.getLongitude()));
-		     n.setDistance(d); n.setKms(String.valueOf(d)+" km");return n;}).toList();
-		     List<BranchDTO> branchDtoWithKmsAsndng = branchDtoWithKms.stream().sorted(Comparator.comparingInt(BranchDTO::getDistance)).toList();
+		     List<BranchDTO> branchDtoWithKms = branchDto.stream().map(n->{double d = haversine(Double.valueOf(latitude),Double.valueOf(longtitude),Double.valueOf(n.getLatitude()),Double.valueOf(n.getLongitude()));
+		     n.setDistance(d); n.setKms(String.format("%.1f", d)+" km");return n;}).toList();
+		     List<BranchDTO> branchDtoWithKmsAsndng = branchDtoWithKms.stream().sorted(Comparator.comparingDouble(BranchDTO::getDistance)).toList();
 			 hospitalAndSubServiceInfo.setBranches(branchDtoWithKmsAsndng);
 			 }else {
 				 responseObj.setMessage("Hospital Not Found ");
