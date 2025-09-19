@@ -1125,7 +1125,7 @@ public class DoctorServiceImpl implements DoctorService {
 			}
 
 			// Fetch doctors by hospitalId, branchId, and subServiceId
-			List<Doctors> doctors = doctorsRepository.findByHospitalIdAndBranchIdAndSubServicesSubServiceId(hospitalId,
+			List<Doctors> doctors = doctorsRepository.findByHospitalIdAndBranchesBranchIdAndSubServicesSubServiceId(hospitalId,
 					branchId, subServiceId);
 
 			List<DoctorsDTO> doctorDTOs = doctors.stream().map(DoctorMapper::mapDoctorEntityToDoctorDTO)
