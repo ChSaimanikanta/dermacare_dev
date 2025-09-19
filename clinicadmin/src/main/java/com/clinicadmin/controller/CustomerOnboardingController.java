@@ -24,48 +24,71 @@ public class CustomerOnboardingController {
 
 	@Autowired
 	private CustomerOnboardingService customerOnboardingService;
-
 	// ✅ Create / Onboard Customer
-	@PostMapping("/customers/onboard")
-	public ResponseEntity<Response> onboardCustomer(@RequestBody CustomerOnbordingDTO dto) {
-		Response response = customerOnboardingService.onboardCustomer(dto);
-		return ResponseEntity.status(response.getStatus()).body(response);
-	}
+    @PostMapping("/customers/onboard")
+    public ResponseEntity<Response> onboardCustomer(@RequestBody CustomerOnbordingDTO dto) {
+        Response response = customerOnboardingService.onboardCustomer(dto);
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
 
-	// ✅ Get All Customers
-	@GetMapping("/customers/getAllCustomers")
-	public ResponseEntity<Response> getAllCustomers() {
-		Response response = customerOnboardingService.getAllCustomers();
-		return ResponseEntity.status(response.getStatus()).body(response);
-	}
+    // ✅ Get All Customers
+    @GetMapping("/customers/getAllCustomers")
+    public ResponseEntity<Response> getAllCustomers() {
+        Response response = customerOnboardingService.getAllCustomers();
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
 
-	// ✅ Get Customer By ID
-	@GetMapping("/customers/{id}")
-	public ResponseEntity<Response> getCustomerById(@PathVariable String id) {
-		Response response = customerOnboardingService.getCustomerById(id);
-		return ResponseEntity.status(response.getStatus()).body(response);
-	}
+    // ✅ Get Customers by HospitalId
+    @GetMapping("/customers/hospital/{hospitalId}")
+    public ResponseEntity<Response> getCustomersByHospitalId(@PathVariable String hospitalId) {
+        Response response = customerOnboardingService.getCustomersByHospitalId(hospitalId);
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
 
-	// ✅ Update Customer
-	@PutMapping("/customers/{id}")
-	public ResponseEntity<Response> updateCustomer(@PathVariable String id, @RequestBody CustomerOnbordingDTO dto) {
-		Response response = customerOnboardingService.updateCustomer(id, dto);
-		return ResponseEntity.status(response.getStatus()).body(response);
-	}
+    // ✅ Get Customers by BranchId
+    @GetMapping("/customers/branch/{branchId}")
+    public ResponseEntity<Response> getCustomersByBranchId(@PathVariable String branchId) {
+        Response response = customerOnboardingService.getCustomersByBranchId(branchId);
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
 
-	// ✅ Delete Customer
-	@DeleteMapping("/customers/{id}")
-	public ResponseEntity<Response> deleteCustomer(@PathVariable String id) {
-		Response response = customerOnboardingService.deleteCustomer(id);
-		return ResponseEntity.status(response.getStatus()).body(response);
-	}
+    // ✅ Get Customers by HospitalId & BranchId
+    @GetMapping("/customers/hospital/{hospitalId}/branch/{branchId}")
+    public ResponseEntity<Response> getCustomersByHospitalIdAndBranchId(@PathVariable String hospitalId,
+                                                                        @PathVariable String branchId) {
+        Response response = customerOnboardingService.getCustomersByHospitalIdAndBranchId(hospitalId, branchId);
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
 
-	// ✅ Login with PathVariable
-	@PostMapping("/customers/login")
-	public ResponseEntity<Response> login(@RequestBody CustomerLoginDTO dto) {
-		Response response = customerOnboardingService.login(dto);
-		return ResponseEntity.status(response.getStatus()).body(response);
-	}
+    // ✅ Get Customer By ID
+    @GetMapping("/customers/{customerId}")
+    public ResponseEntity<Response> getCustomerById(@PathVariable String customerId) {
+        Response response = customerOnboardingService.getCustomerById(customerId);
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
+
+    // ✅ Update Customer
+    @PutMapping("/customers/{customerId}")
+    public ResponseEntity<Response> updateCustomer(@PathVariable String customerId,
+                                                   @RequestBody CustomerOnbordingDTO dto) {
+        Response response = customerOnboardingService.updateCustomer(customerId, dto);
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
+
+    // ✅ Delete Customer
+    @DeleteMapping("/customers/{customerId}")
+    public ResponseEntity<Response> deleteCustomer(@PathVariable String customerId) {
+        Response response = customerOnboardingService.deleteCustomer(customerId);
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
+
+    // ✅ Login
+    @PostMapping("/customers/login")
+    public ResponseEntity<Response> login(@RequestBody CustomerLoginDTO dto) {
+        Response response = customerOnboardingService.login(dto);
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
+
 
 //	// ✅ Reset Password with PathVariable
 //	@PostMapping("/customers/reset-password/{username}/{oldPassword}/{newPassword}")
