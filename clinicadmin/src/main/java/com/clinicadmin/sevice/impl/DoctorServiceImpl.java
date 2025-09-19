@@ -1524,7 +1524,7 @@ public class DoctorServiceImpl implements DoctorService {
 //	    return response;
 //	}
 	@Override
-	public Response getRecommendedClinicsAndDoctors(List<String> keyPointsFromUser) {
+	public Response getRecommendedClinicsAndOneDoctors(List<String> keyPointsFromUser) {
 		Logger log = LoggerFactory.getLogger(getClass());
 
 		ResponseEntity<Response> responseEntity = adminServiceClient.getHospitalUsingRecommendentaion();
@@ -1744,5 +1744,127 @@ public class DoctorServiceImpl implements DoctorService {
 
 		return response;
 	}
+//-----------------------best one doctor using key word-------------------------------------------
+	@Override
+	public Response getRecommendedClinicsAndDoctors(List<String> keyPointsFromUser) {
+	    Logger log = LoggerFactory.getLogger(getClass());
 
+	    ResponseEntity<Response> responseEntity = adminServiceClient.getHospitalUsingRecommendentaion();
+	    Response responseBody = responseEntity.getBody();
+
+	    ClinicWithDoctorsDTO bestClinic = null;
+	    DoctorsDTO bestDoctor = null;
+	    int bestScore = 0;
+
+	    if (responseBody != null && responseBody.isSuccess()) {
+	        Object rawData = responseBody.getData();
+	        List<ClinicWithDoctorsDTO> clinics = new ObjectMapper().convertValue(
+	                rawData,
+	                new TypeReference<List<ClinicWithDoctorsDTO>>() {}
+	        );
+
+	        for (ClinicWithDoctorsDTO clinic : clinics) {
+	            if (clinic.getHospitalId() == null) continue;
+
+	            List<Doctors> doctorEntities = doctorsRepository.findByHospitalId(clinic.getHospitalId());
+
+	            for (Doctors doctor : doctorEntities) {
+	                DoctorsDTO dto = DoctorMapper.mapDoctorEntityToDoctorDTO(doctor);
+	                int score = calculateDoctorScore(dto, keyPointsFromUser);
+
+	                log.info("Doctor: {} | Score: {}", dto.getDoctorName(), score);
+
+	                if (score > bestScore) {
+	                    bestScore = score;
+	                    bestDoctor = dto;
+	                    bestClinic = clinic;
+	                }
+	            }
+	        }
+	    }
+
+	    if (bestDoctor != null && bestClinic != null) {
+	        bestClinic.setDoctors(List.of(bestDoctor));
+	        return Response.builder()
+	                .success(true)
+	                .status(HttpStatus.OK.value())
+	                .data(bestClinic)
+	                .message("Best doctor recommendation based on keywords, ratings, experience, and qualifications")
+	                .build();
+	    }
+
+	    return Response.builder()
+	            .success(false)
+	            .status(HttpStatus.NOT_FOUND.value())
+	            .message("No matching doctor found")
+	            .build();
+	}
+	private int calculateDoctorScore(DoctorsDTO doctor, List<String> keyPoints) {
+	    int score = 0;
+
+	    // 1️⃣ Keyword match score
+	    if (keyPoints != null && !keyPoints.isEmpty()) {
+	        for (String key : keyPoints) {
+	            String lowerKey = key.toLowerCase();
+
+	            if (doctor.getSubServices() != null) {
+	                for (DoctorSubServiceDTO sub : doctor.getSubServices()) {
+	                    if (sub != null && sub.getSubServiceName() != null
+	                            && sub.getSubServiceName().toLowerCase().contains(lowerKey)) {
+	                        score += 5; // weight for subService match
+	                    }
+	                }
+	            }
+
+	            if (doctor.getService() != null) {
+	                for (DoctorServicesDTO service : doctor.getService()) {
+	                    if (service != null && service.getServiceName() != null
+	                            && service.getServiceName().toLowerCase().contains(lowerKey)) {
+	                        score += 4; // weight for service match
+	                    }
+	                }
+	            }
+
+	            if (doctor.getCategory() != null) {
+	                for (DoctorCategoryDTO category : doctor.getCategory()) {
+	                    if (category != null && category.getCategoryName() != null
+	                            && category.getCategoryName().toLowerCase().contains(lowerKey)) {
+	                        score += 3; // weight for category match
+	                    }
+	                }
+	            }
+
+	            if (doctor.getSpecialization() != null
+	                    && doctor.getSpecialization().toLowerCase().contains(lowerKey)) {
+	                score += 6; // specialization match gets higher weight
+	            }
+	        }
+	    }
+
+	    // 2️⃣ Rating (scale 0–5 → multiply by weight)
+	    score += (int) (doctor.getDoctorAverageRating() * 10);
+
+	    // 3️⃣ Experience (convert years string to int if possible)
+	    try {
+	        int years = Integer.parseInt(doctor.getExperience().replaceAll("[^0-9]", ""));
+	        score += years * 2; // each year of experience adds 2 points
+	    } catch (Exception e) {
+	        // ignore if parsing fails
+	    }
+
+	    // 4️⃣ Qualification priority
+	    if (doctor.getQualification() != null) {
+	        String q = doctor.getQualification().toLowerCase();
+	        if (q.contains("dm")) score += 30;
+	        else if (q.contains("md")) score += 20;
+	        else if (q.contains("ms")) score += 15;
+	        else if (q.contains("mbbs")) score += 10;
+	    }
+
+	    
+
+	    return score;
+	}
+	
+	
 }
