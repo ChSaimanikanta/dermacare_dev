@@ -237,6 +237,7 @@ public class DoctorSaveDetailsServiceImpl implements DoctorSaveDetailsService {
                 .doctorName(dto.getDoctorName())
                 .clinicId(dto.getClinicId())
                 .clinicName(dto.getClinicName())
+                .customerId(dto.getCustomerId())
                 .bookingId(dto.getBookingId())
                 .symptoms(dto.getSymptoms() != null ?
                         SymptomDetails.builder()
@@ -357,6 +358,7 @@ public class DoctorSaveDetailsServiceImpl implements DoctorSaveDetailsService {
                 .doctorName(entity.getDoctorName())
                 .clinicId(entity.getClinicId())
                 .clinicName(entity.getClinicName())
+                .customerId(entity.getCustomerId())
                 .bookingId(entity.getBookingId())
                 .symptoms(entity.getSymptoms() != null ?
                         SymptomDetailsDTO.builder()

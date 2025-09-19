@@ -1,7 +1,5 @@
 package com.dermaCare.customerService.service;
 
-import org.springframework.http.HttpStatus;
-import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -9,16 +7,18 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+
 import com.dermaCare.customerService.dto.BookingRequset;
 import com.dermaCare.customerService.dto.BookingResponse;
 import com.dermaCare.customerService.dto.BranchDTO;
@@ -58,6 +58,7 @@ import com.dermaCare.customerService.util.ResponseStructure;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import feign.FeignException;
 
 
@@ -1267,5 +1268,40 @@ try {
 	res.setSuccess(false);
 	return ResponseEntity.status(e.status()).body(res);		
 }}
+
+
+
+@Override
+public Response getDoctorsByHospitalBranchAndSubService( String hospitalId,
+		String branchId,  String subServiceId)throws JsonProcessingException {
+	Response response = new Response();
+	try {
+		Response hospitalResponse = adminFeign.getClinicById(hospitalId);
+		if(hospitalResponse.getData()!= null ) {
+		ResponseEntity<Response> doctorsResponse = clinicAdminFeign.getDoctorsByHospitalBranchAndSubService(hospitalId, branchId, subServiceId);
+		 Object obj = doctorsResponse.getBody().getData();
+		List<DoctorsDTO> doctors =  new ObjectMapper().convertValue(obj, new TypeReference<List<DoctorsDTO>>() {});
+		if(doctors!= null && !doctors.isEmpty()) {
+			ClinicDTO hospital = new ObjectMapper().convertValue(hospitalResponse.getData(), ClinicDTO.class);
+			ClinicAndDoctorsResponse combinedData = new ClinicAndDoctorsResponse(hospital, doctors);
+			response.setSuccess(true);
+			response.setData(combinedData);
+			response.setMessage("Hospital and doctors fetched successfully");
+			response.setStatus(200);
+		}else {		
+			response.setData( doctorsResponse.getBody());;
+			response.setStatus( doctorsResponse.getBody().getStatus());
+		}}else{        	
+			response.setData(hospitalResponse);;
+			response.setStatus(hospitalResponse.getStatus());
+		}}catch (FeignException e) {
+		response.setSuccess(false);
+		response.setMessage(ExtractFeignMessage.clearMessage(e));
+		response.setStatus(500);
+	}
+	return response;
+}
+
+
 
 }

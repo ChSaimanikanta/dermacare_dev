@@ -1,7 +1,9 @@
 package com.dermaCare.customerService.service;
 
 import java.util.List;
+
 import org.springframework.http.ResponseEntity;
+
 import com.dermaCare.customerService.dto.BookingRequset;
 import com.dermaCare.customerService.dto.BookingResponse;
 import com.dermaCare.customerService.dto.ConsultationDTO;
@@ -15,10 +17,6 @@ import com.dermaCare.customerService.util.ResBody;
 import com.dermaCare.customerService.util.Response;
 import com.dermaCare.customerService.util.ResponseStructure;
 import com.fasterxml.jackson.core.JsonProcessingException;
-
-import jakarta.servlet.http.HttpSession;
-
-import com.dermaCare.customerService.dto.ResponseDTO;
 
 
 public interface CustomerService {
@@ -111,4 +109,7 @@ public interface CustomerService {
 	public Response getReports(String customerId);
 	
 	public ResponseEntity<?> customerLogin(CustomerLoginDTO dto);
+
+	public Response getDoctorsByHospitalBranchAndSubService( String hospitalId,
+			String branchId,  String subServiceId)throws JsonProcessingException;
 }
