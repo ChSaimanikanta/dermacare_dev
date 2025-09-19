@@ -64,12 +64,20 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Service
 public class DoctorServiceImpl implements DoctorService {
+@Autowired
+	private  DoctorsRepository doctorsRepository;
 
-	private final DoctorsRepository doctorsRepository;
-	private final DoctorLoginCredentialsRepository credentialsRepository;
-	private final PasswordEncoder passwordEncoder;
-	private final DoctorSlotRepository slotRepository;
-	private final ServiceFeignClient serviceFeignClient;
+	@Autowired
+	private  DoctorLoginCredentialsRepository credentialsRepository;
+	
+	@Autowired
+	private  PasswordEncoder passwordEncoder;
+	
+	@Autowired
+	private  DoctorSlotRepository slotRepository;
+	
+	@Autowired
+	private  ServiceFeignClient serviceFeignClient;
 
 	@Autowired
 	AdminServiceClient adminServiceClient;
@@ -272,7 +280,7 @@ public class DoctorServiceImpl implements DoctorService {
 		} catch (Exception e) {
 			response.setSuccess(false);
 			response.setMessage("An error occurred while fetching doctors for hospitalId: " + hospitalId);
-			response.setStatus(500); // Internal server error
+			response.setStatus(500); 
 		}
 		return response;
 	}
