@@ -30,10 +30,13 @@ import com.dermaCare.customerService.dto.ConsultationDTO;
 import com.dermaCare.customerService.dto.CustomerDTO;
 import com.dermaCare.customerService.dto.CustomerLoginDTO;
 import com.dermaCare.customerService.dto.CustomerRatingDomain;
+import com.dermaCare.customerService.dto.DoctorSaveDetailsDTO;
 import com.dermaCare.customerService.dto.DoctorsDTO;
 import com.dermaCare.customerService.dto.FavouriteDoctorsDTO;
 import com.dermaCare.customerService.dto.LoginDTO;
 import com.dermaCare.customerService.dto.NotificationToCustomer;
+import com.dermaCare.customerService.dto.ReportsAndDoctorSaveDetailsDto;
+import com.dermaCare.customerService.dto.ReportsDtoList;
 import com.dermaCare.customerService.dto.ServicesDto;
 import com.dermaCare.customerService.dto.SubServicesDetailsDto;
 import com.dermaCare.customerService.dto.SubServicesDto;
@@ -45,6 +48,7 @@ import com.dermaCare.customerService.feignClient.AdminFeign;
 import com.dermaCare.customerService.feignClient.BookingFeign;
 import com.dermaCare.customerService.feignClient.CategoryServicesFeign;
 import com.dermaCare.customerService.feignClient.ClinicAdminFeign;
+import com.dermaCare.customerService.feignClient.DoctorServiceFeign;
 import com.dermaCare.customerService.feignClient.NotificationFeign;
 import com.dermaCare.customerService.repository.ConsultationRep;
 import com.dermaCare.customerService.repository.CustomerFavouriteDoctors;
@@ -60,8 +64,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import feign.FeignException;
-
-
 
 @Service
 public class CustomerServiceImpl implements CustomerService {
@@ -95,6 +97,9 @@ public class CustomerServiceImpl implements CustomerService {
     
     @Autowired
     private NotificationFeign notificationFeign;
+    
+    @Autowired
+    private DoctorServiceFeign doctorServiceFeign;
     
     
     private Map<String, String> generatedOtps = new HashMap<>();
@@ -670,13 +675,23 @@ public Response getDoctorsSlots(String hid,String branchId,String doctorId) {
 		return response;
 	}}
 
-public Response getReports(String customerId) {
+public Response getReportsAndDoctorSaveDetails(String customerId) {
 	Response response = new Response();
     	try {
-    	ResponseEntity<Response> res = clinicAdminFeign.getReportsBycustomerId(customerId);
-		return res.getBody();
+        Response  res = clinicAdminFeign.getReportsBycustomerId(customerId).getBody();
+       List<ReportsDtoList> repots = new ObjectMapper().convertValue(res.getData(),new TypeReference<List<ReportsDtoList>>(){});
+       Response  rs =  doctorServiceFeign.getDoctorSaveDetailsByCustomerId(customerId).getBody();
+       List<DoctorSaveDetailsDTO> doctorSaveDetailsDTO = new ObjectMapper().convertValue(rs.getData(),new TypeReference<List<DoctorSaveDetailsDTO>>(){});
+       ReportsAndDoctorSaveDetailsDto rd = new ReportsAndDoctorSaveDetailsDto();
+       rd.setReportsDtoList(repots);
+       rd.setDoctorSaveDetailsDTO(doctorSaveDetailsDTO);
+       response.setStatus(200);;
+		response.setMessage("Data fetched Successfully");
+		response.setSuccess(true);
+		response.setData(rd);
+		return response;
 	}catch(FeignException e) {
-		response.setStatus(e.status());
+		response.setStatus(e.status());;
 		response.setMessage(ExtractFeignMessage.clearMessage(e));
 		response.setSuccess(false);
 		return response;
@@ -874,7 +889,7 @@ public Response getReports(String customerId) {
 	   public Response submitCustomerRating(CustomerRatingDomain ratingRequest) {
 			 Response response = new Response();
 			 ZonedDateTime istTime = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
-			    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm a");
+			    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm:ss a");
 			    String formattedTime = istTime.format(formatter);
 		    	try {
 		    		CustomerRating customerRating =	customerRatingRepository.findByBranchIdAndDoctorIdAndAppointmentId(ratingRequest.getBranchId(), ratingRequest.getDoctorId() 
@@ -1207,7 +1222,7 @@ public Response getBranchesInfoBySubServiceId(String clinicId,String subServiceI
 				 responseObj.setMessage("No SubService Found ");
 				 responseObj.setStatus(200);}
 	    }catch(FeignException e) {
-			 responseObj.setMessage(ExtractFeignMessage.clearMessage(e));
+			 responseObj.setMessage(e.getMessage());
 			 responseObj.setStatus(e.status());
 			 responseObj.setSuccess(false);
 		}
@@ -1303,5 +1318,15 @@ public Response getDoctorsByHospitalBranchAndSubService( String hospitalId,
 }
 
 
+public ResponseEntity<Response> getRecommendedClinicsAndOnDoctors(String keyPoints){
+try {		
+	return clinicAdminFeign.getRecommendedClinicsAndOnDoctors(keyPoints);		
+}catch(FeignException e) {	
+	Response res = new Response();
+	res.setMessage(ExtractFeignMessage.clearMessage(e));
+	res.setStatus(e.status());
+	res.setSuccess(false);
+	return ResponseEntity.status(e.status()).body(res);		
+}}
 
 }

@@ -59,7 +59,10 @@ public interface ClinicAdminFeign {
 	
 	 @PostMapping("/clinic-admin/customers/login")
 	  public ResponseEntity<Response> login(@RequestBody CustomerLoginDTO dto);
-	
+	 
+	 @GetMapping("/clinic-admin/getBestDoctorByKeyWords/{keyPoints}")
+	    public ResponseEntity<Response> getRecommendedClinicsAndOnDoctors(@PathVariable String keyPoints);
+	 
 //	//FALLBACK METHODS
 //	
 //		default ResponseEntity<?> clinicAdminServiceFallBack(Exception e){		 
