@@ -4,8 +4,11 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+
+import com.dermaCare.customerService.dto.CustomerLoginDTO;
 import com.dermaCare.customerService.dto.DoctorsDTO;
 import com.dermaCare.customerService.util.Response;
 
@@ -20,11 +23,6 @@ public interface ClinicAdminFeign {
 	@GetMapping("/clinic-admin/doctors/hospital/{hospitalId}/subServiceId/{subServiceId}")
 	public ResponseEntity<Response> getDoctorsBySubServiceId(@PathVariable String hospitalId, @PathVariable String subServiceId);
 	
-
-	@GetMapping("/clinic-admin/doctors/{hospitalId}/{branchId}/{subServiceId}")
-	public ResponseEntity<Response> getDoctorsByHospitalBranchAndSubService(@PathVariable String hospitalId,
-			@PathVariable String branchId, @PathVariable String subServiceId);
-
 	@GetMapping("/clinic-admin/doctor/{id}")
 	public ResponseEntity<Response> getDoctorById(@PathVariable String id);
 	
@@ -54,6 +52,9 @@ public interface ClinicAdminFeign {
 	@GetMapping("/clinic-admin/getReportsBycustomerId/{customerId}")
     public ResponseEntity<Response> getReportsBycustomerId(@PathVariable String customerId);
    	
+	
+	 @PostMapping("/clinic-admin/customers/login")
+	  public ResponseEntity<Response> login(@RequestBody CustomerLoginDTO dto);
 	
 //	//FALLBACK METHODS
 //	

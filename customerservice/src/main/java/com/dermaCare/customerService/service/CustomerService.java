@@ -6,6 +6,7 @@ import com.dermaCare.customerService.dto.BookingRequset;
 import com.dermaCare.customerService.dto.BookingResponse;
 import com.dermaCare.customerService.dto.ConsultationDTO;
 import com.dermaCare.customerService.dto.CustomerDTO;
+import com.dermaCare.customerService.dto.CustomerLoginDTO;
 import com.dermaCare.customerService.dto.CustomerRatingDomain;
 import com.dermaCare.customerService.dto.FavouriteDoctorsDTO;
 import com.dermaCare.customerService.dto.LoginDTO;
@@ -108,7 +109,6 @@ public interface CustomerService {
 	public Response getBranchesInfoBySubServiceId(String clinicId,String subServiceId,String latitude,String longtitude) throws JsonProcessingException;
 	
 	public Response getReports(String customerId);
-
-	Response getDoctorsByHospitalBranchAndSubService(String hospitalId, String branchId, String subServiceId)
-			throws JsonProcessingException;
+	
+	public ResponseEntity<?> customerLogin(CustomerLoginDTO dto);
 }

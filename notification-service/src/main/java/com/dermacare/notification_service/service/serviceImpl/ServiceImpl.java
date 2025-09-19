@@ -519,10 +519,10 @@ public class ServiceImpl implements ServiceInterface{
 
 		    		            //System.out.println("Booking: " + bookingResponse);
 		    		            }catch(Exception e) {
-		    		            	  e.printStackTrace();
+		    		            	 System.out.println(e.getMessage());
 		    		            }}
 		                    // System.out.println(isAfternoon);
-		                    if (bookingResponse.getCustomerDeviceId() != null) {
+		                    if (bookingResponse != null && bookingResponse.getCustomerDeviceId() != null) {
 		appNotification.sendPushNotification(
 				bookingResponse.getCustomerDeviceId(),
 	            "🌞 Good morning!",
@@ -587,10 +587,10 @@ public class ServiceImpl implements ServiceInterface{
 
 	        	          //  System.out.println("Booking: " + bookingResponse);
 	        	            }catch(Exception e) {
-	        	            	  e.printStackTrace();
+	        	            	 System.out.println(e.getMessage());
 	        	            }}
 	                    // System.out.println(isAfternoon);
-	                    if (bookingResponse.getCustomerDeviceId() != null) {
+	                    if (bookingResponse != null && bookingResponse.getCustomerDeviceId() != null) {
 	                    //System.out.println(bookingResponse.getCustomerDeviceId());	
 	                  //  System.out.println("not invoke");
 	                        appNotification.sendPushNotification(
@@ -666,10 +666,10 @@ public class ServiceImpl implements ServiceInterface{
 
 		    		            //System.out.println("Booking: " + bookingResponse);
 		    		            }catch(Exception e) {
-		    		            	  e.printStackTrace();
+		    		            	 System.out.println(e.getMessage());
 		    		            }}
 		                    //System.out.println(isAfternoon);
-		                    if (bookingResponse.getCustomerDeviceId() != null) {
+		                    if (bookingResponse != null && bookingResponse.getCustomerDeviceId() != null) {
 		                   // System.out.println(bookingResponse.getCustomerDeviceId());	
 		                   // System.out.println("not invoke");
 			 
@@ -683,7 +683,7 @@ public class ServiceImpl implements ServiceInterface{
 		             }}}}}}catch (Exception e) {e.printStackTrace();}}
 
 
-	@Scheduled(cron = "0 30 20 * * ?")
+	@Scheduled(cron = "0 01 20 * * ?")
 	public void remindNightMedicines() {
 		      try {
 		        // Fetch doctor details
@@ -734,13 +734,14 @@ public class ServiceImpl implements ServiceInterface{
 
 		    		            //System.out.println("Booking: " + bookingResponse);
 		    		            }catch(Exception e) {
-		    		            	  e.printStackTrace();
+		    		            	 System.out.println(e.getMessage());
 		    		            }}
 		                   // System.out.println(isAfternoon);
-		                    if (bookingResponse.getCustomerDeviceId() != null) {
+			                
+		                    if(bookingResponse != null && bookingResponse.getCustomerDeviceId() != null) {
 		                   // System.out.println(bookingResponse.getCustomerDeviceId());	
 		                   // System.out.println("not invoke");
-			 	appNotification.sendPushNotification(
+			 	        appNotification.sendPushNotification(
 			 			bookingResponse.getCustomerDeviceId(),
 			             "🌃 Good evening!",
 			            "Time to take your prescribed "+m.getName()+","+m.getDose()+" with water.",

@@ -18,6 +18,7 @@ import com.dermaCare.customerService.dto.BookingRequset;
 import com.dermaCare.customerService.dto.BookingResponse;
 import com.dermaCare.customerService.dto.ConsultationDTO;
 import com.dermaCare.customerService.dto.CustomerDTO;
+import com.dermaCare.customerService.dto.CustomerLoginDTO;
 import com.dermaCare.customerService.dto.CustomerRatingDomain;
 import com.dermaCare.customerService.dto.FavouriteDoctorsDTO;
 import com.dermaCare.customerService.dto.LoginDTO;
@@ -380,19 +381,6 @@ public ResponseEntity<Response> getRatingAverageRating(@PathVariable String bran
 	   
    }
    
-
-   @GetMapping("/getDoctorsAndClinicDetailsByBranchId/{hospitalId}/{branchId}/{subServiceId}")
-   public ResponseEntity<Object> getDoctorsByHospitalBranchAndSubService(@PathVariable String hospitalId,@PathVariable String branchId,
-                                                                 @PathVariable String subServiceId)throws JsonProcessingException{
-	  Response response= customerService.getDoctorsByHospitalBranchAndSubService(hospitalId, branchId, subServiceId);
-	  if(response != null) {
-			 return ResponseEntity.status(response.getStatus()).body(response.getData());}
-			 else {
-				 return null;
-			 }
-	   
-   }
-   
    //DOCTORANDHOSPITALDETAILSBYSUBSERVICEID
    
    @GetMapping("/getDoctorAndHospitalDetailsBySubServiceId/{subServiceId}")
@@ -480,5 +468,10 @@ public ResponseEntity<Response> getRatingAverageRating(@PathVariable String bran
 			 @PathVariable String mobileNumber){
 	   return customerService.getInProgressAppointments(mobileNumber);
  }
+   
+   @PostMapping("/customerHospitalLogin")
+   public ResponseEntity<?> customerLogin(@RequestBody CustomerLoginDTO dto){
+	   return customerService.customerLogin(dto);
+   }
  
 }

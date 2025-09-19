@@ -118,7 +118,8 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 			}catch (Exception e) {
 				throw new RuntimeException("Unable to book service");
 			}
-		response = ResponseStructure.buildResponse(toResponse(entity), "Service Booked Sucessfully",
+		BookingResponse bRes = new ObjectMapper().convertValue(res, BookingResponse.class);
+		response = ResponseStructure.buildResponse(bRes,"Service Booked Sucessfully",
 				HttpStatus.CREATED, HttpStatus.CREATED.value());}
 		return ResponseEntity.status(response.getStatusCode()).body(response);
 	}
@@ -158,7 +159,8 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 	private BookingResponse toResponse(Booking entity) {		
 		BookingResponse response = new ObjectMapper().convertValue(entity,BookingResponse.class );
 		DoctorSaveDetailsDTO dto = getPrescriptionpdf(response.getBookingId());
-		response.setPrescriptionPdf(dto.getPrescriptionPdf());
+		if(dto != null ) {
+		response.setPrescriptionPdf(dto.getPrescriptionPdf());}
 		response.setBookingId(String.valueOf(entity.getBookingId()));
 		return response; }
 	
