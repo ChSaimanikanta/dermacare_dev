@@ -27,6 +27,8 @@ public interface ClinicAdminFeign {
 	 // ---------------------- Sub-Service APIs ----------------------
 	@GetMapping("/clinic-admin/subService/getAllSubServies")
     public ResponseEntity<ResponseStructure<List<SubServicesDto>>> getAllSubServices();
+	
+	
 	// ---------------- Doctor CRUD ---------------- //
     @PostMapping("/clinic-admin/addDoctor")
     ResponseEntity<Response> addDoctor(@RequestBody DoctorsDTO dto);
