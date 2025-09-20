@@ -191,6 +191,15 @@ public class DoctorController {
 		Response response = doctorService.getDoctorsByClinicId(hospitalId);
 		return ResponseEntity.status(response.getStatus()).body(response);
 	}
+	@GetMapping("/getDoctorsByHospitalIdAndBranchId/{hospitalId}/{branchId}")
+	 public ResponseEntity<Response> getDoctorsByHospitalIdAndBranchId(
+	         @PathVariable String hospitalId,
+	         @PathVariable String branchId) {
+
+	     Response response = doctorService.getDoctorsByHospitalIdAndBranchId(hospitalId, branchId);
+	     return ResponseEntity.status(response.getStatus()).body(response);
+	 }
+	
 	
 	
 	
@@ -412,13 +421,6 @@ public class DoctorController {
 		        Response response = doctorService.getRecommendedClinicsAndDoctors(keyPointList);
 		        return ResponseEntity.status(response.getStatus()).body(response);
 		    }
-		 @GetMapping("/getDoctorsByHospitalIdAndBranchId/{hospitalId}/{branchId}")
-		 public ResponseEntity<Response> getDoctorsByHospitalIdAndBranchId(
-		         @PathVariable String hospitalId,
-		         @PathVariable String branchId) {
-
-		     Response response = doctorService.getDoctorsByHospitalIdAndBranchId(hospitalId, branchId);
-		     return ResponseEntity.status(response.getStatus()).body(response);
-		 }
+		 
 
 }
