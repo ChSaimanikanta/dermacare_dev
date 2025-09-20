@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ReportsAndDoctorSaveDetailsDto {
 	
-	private List<ReportsDtoList> reportsDtoList;
 	private List<DoctorSaveDetailsDTO> doctorSaveDetailsDTO;
+	private List<ReportsDtoList> reportsDtoList;
 
 }

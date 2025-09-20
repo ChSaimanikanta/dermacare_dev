@@ -9,7 +9,7 @@ import com.dermaCare.customerService.util.Response;
 @FeignClient(name = "doctor-service")
 public interface DoctorServiceFeign {
 	
-	 @GetMapping("/doctors/getDoctorSaveDetailsByCustomerId/{customerId}")
+	 @GetMapping("/api/doctors/getDoctorSaveDetailsByCustomerId/{customerId}")
 	 public ResponseEntity<Response> getDoctorSaveDetailsByCustomerId(@PathVariable String customerId);
 	
 

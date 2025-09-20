@@ -62,6 +62,8 @@ import com.dermaCare.customerService.util.ResponseStructure;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import feign.FeignException;
 
@@ -679,18 +681,25 @@ public Response getReportsAndDoctorSaveDetails(String customerId) {
 	Response response = new Response();
     	try {
         Response  res = clinicAdminFeign.getReportsBycustomerId(customerId).getBody();
+       // System.out.println(res);
        List<ReportsDtoList> repots = new ObjectMapper().convertValue(res.getData(),new TypeReference<List<ReportsDtoList>>(){});
        Response  rs =  doctorServiceFeign.getDoctorSaveDetailsByCustomerId(customerId).getBody();
-       List<DoctorSaveDetailsDTO> doctorSaveDetailsDTO = new ObjectMapper().convertValue(rs.getData(),new TypeReference<List<DoctorSaveDetailsDTO>>(){});
+       //System.out.println(rs);
+       ObjectMapper mapper = new ObjectMapper();
+       mapper.registerModule(new JavaTimeModule());
+       mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+       List<DoctorSaveDetailsDTO> doctorSaveDetailsDTO = mapper.convertValue(rs.getData(),new TypeReference<List<DoctorSaveDetailsDTO>>(){});
        ReportsAndDoctorSaveDetailsDto rd = new ReportsAndDoctorSaveDetailsDto();
-       rd.setReportsDtoList(repots);
-       rd.setDoctorSaveDetailsDTO(doctorSaveDetailsDTO);
+       if(repots != null && !repots.isEmpty() ) {
+       rd.setReportsDtoList(repots);}
+       if(doctorSaveDetailsDTO != null  && !doctorSaveDetailsDTO.isEmpty()) {
+       rd.setDoctorSaveDetailsDTO(doctorSaveDetailsDTO);}
        response.setStatus(200);;
 		response.setMessage("Data fetched Successfully");
 		response.setSuccess(true);
 		response.setData(rd);
 		return response;
-	}catch(FeignException e) {
+	    }catch(FeignException e) {
 		response.setStatus(e.status());;
 		response.setMessage(ExtractFeignMessage.clearMessage(e));
 		response.setSuccess(false);

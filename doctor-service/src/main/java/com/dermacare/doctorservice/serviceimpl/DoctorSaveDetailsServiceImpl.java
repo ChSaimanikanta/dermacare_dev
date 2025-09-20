@@ -592,6 +592,7 @@ public class DoctorSaveDetailsServiceImpl implements DoctorSaveDetailsService {
         	 return new Response(false, null,e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value());
         }
     }
+    
     @Override
     public Response getDoctorDetailsByCustomerId(String customerId) {
     	try {
@@ -600,7 +601,7 @@ public class DoctorSaveDetailsServiceImpl implements DoctorSaveDetailsService {
         	ObjectMapper mapper = new ObjectMapper();
 	        mapper.registerModule(new JavaTimeModule());
 	        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        return new Response(true,mapper.convertValue(optional,new TypeReference< DoctorSaveDetailsDTO>(){}), "prescription details found", HttpStatus.OK.value());
+        return new Response(true,mapper.convertValue(optional,new TypeReference<List<DoctorSaveDetailsDTO>>(){}), "prescription details found", HttpStatus.OK.value());
         }else {
         return new Response(false, null, "prescription details Not found", HttpStatus.NOT_FOUND.value());
         }}catch(Exception e) {
