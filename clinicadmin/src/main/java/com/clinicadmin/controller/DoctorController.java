@@ -294,14 +294,14 @@ public class DoctorController {
 		}
 
 		@PutMapping("/updateDoctorSlotWhileBooking/{doctorId}/{date}/{time}")
-		public Boolean updateDoctorSlotWhileBooking(@PathVariable String doctorId, @PathVariable String date,
+		public boolean updateDoctorSlotWhileBooking(@PathVariable String doctorId, @PathVariable String date,
 				@PathVariable String time) {
 			return doctorService.updateSlot(doctorId, date, time);
 		}
 		
 		
 		@PutMapping("/makingFalseDoctorSlot/{doctorId}/{date}/{time}")
-		public Boolean makingFalseDoctorSlot(@PathVariable String doctorId, @PathVariable String date,
+		public boolean makingFalseDoctorSlot(@PathVariable String doctorId, @PathVariable String date,
 				@PathVariable String time) {
 			return doctorService.makingFalseDoctorSlot(doctorId, date, time);
 		}
