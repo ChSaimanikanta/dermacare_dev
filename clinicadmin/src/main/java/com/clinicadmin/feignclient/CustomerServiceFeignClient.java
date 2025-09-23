@@ -19,4 +19,7 @@ public interface CustomerServiceFeignClient {
 
 	@GetMapping("/api/customer/getRatingInfo/{branchlId}/{doctorId}")
 	public ResponseEntity<Response> getRatingInfo(@PathVariable String branchlId, @PathVariable String doctorId);
+	
+	@GetMapping("/getRatingInfoByDoctorId/{doctorId}")
+	public ResponseEntity<Response> getRatingInfoByDoctorId(@PathVariable String doctorId);
 }
