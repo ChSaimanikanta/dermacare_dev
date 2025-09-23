@@ -375,6 +375,16 @@ public ResponseEntity<Response> getRatingAverageRating(@PathVariable String bran
 		}
 }
 
+@GetMapping("/getAverageRatingByDoctorId/{doctorId}")
+public ResponseEntity<Response> getAverageRatingByDoctorId( @PathVariable String doctorId) {
+	 Response response = customerService.getAverageRatingByDoctorId(doctorId);
+	 if(response != null && response.getStatus() != 0) {
+		 return ResponseEntity.status(response.getStatus()).body(response);
+	 }else {
+			return null;
+		}
+}
+
   
    //DOCTORSINFO
    

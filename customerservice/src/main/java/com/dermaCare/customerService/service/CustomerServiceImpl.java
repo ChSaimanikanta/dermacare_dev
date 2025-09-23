@@ -1039,6 +1039,27 @@ public Response getReportsAndDoctorSaveDetails(String customerId) {
 			}
 		}
 	   
+	   @Override
+	   public Response getAverageRatingByDoctorId( String doctorId) {
+			Response response = new Response();
+			try {
+		ResponseEntity<Response> ratings = clinicAdminFeign.getAverageRatingsByDoctorId(doctorId);
+				if (!ratings.hasBody()) {
+					response.setStatus(200);
+					response.setMessage("Rating Not Found");
+					response.setSuccess(true);
+					return response;}
+				else {
+					return ratings.getBody();}
+			  }catch (FeignException e) {
+				response.setStatus(e.status());
+				response.setMessage(ExtractFeignMessage.clearMessage(e));
+				response.setSuccess(false);
+				return response;
+			}
+		}
+	   
+
 
     //GETDOCTORSBYSUBSERVICEID
 

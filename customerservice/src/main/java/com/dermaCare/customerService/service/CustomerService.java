@@ -117,4 +117,6 @@ public interface CustomerService {
 
 	Response getRatingForServiceBydoctorId(String doctorId);
 
+	Response getAverageRatingByDoctorId(String doctorId);
+
 }
