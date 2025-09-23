@@ -993,6 +993,7 @@ public Response getReportsAndDoctorSaveDetails(String customerId) {
 			try {
 			    List<CustomerRatingDomain> listDto = new ArrayList<>();
 				List<CustomerRating> ratings = customerRatingRepository.findByDoctorId(doctorId);
+				System.out.println(ratings); 
 				if (ratings.isEmpty()) {
 					response.setStatus(200);
 					response.setMessage("Rating Not Found");

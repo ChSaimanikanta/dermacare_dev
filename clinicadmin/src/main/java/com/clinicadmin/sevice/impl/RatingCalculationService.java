@@ -131,10 +131,12 @@ public class RatingCalculationService {
 	}
 
 
+    
     public Response calculateAverageRatingByDoctorId(String doctorId) {
         Response response = new Response();
 
         try {
+            // Call Feign client to get ratings from customer service
             ResponseEntity<Response> responseEntity =
                     customerServiceFeignClient.getRatingInfoByDoctorId(doctorId);
 
@@ -142,7 +144,7 @@ public class RatingCalculationService {
             List<CustomerRatingDomain> allRatings = new ArrayList<>();
             ObjectMapper mapper = new ObjectMapper();
 
-            // Convert to List
+            // Convert response into a List<CustomerRatingDomain>
             if (ratings instanceof List) {
                 allRatings = mapper.convertValue(ratings, new TypeReference<List<CustomerRatingDomain>>() {});
             } else if (ratings != null) {
@@ -150,43 +152,28 @@ public class RatingCalculationService {
                 allRatings.add(single);
             }
 
-            // Check if data exists at all
-            if (allRatings.isEmpty()) {
-                response.setSuccess(true);
-                response.setStatus(200);
-                response.setMessage("No ratings found");
-                return response;
-            }
-
-            // Validate hospitalId and doctorId separately
-//            boolean hospitalExists = allRatings.stream()
-//                    .anyMatch(r -> r.getBranchId().equals(branchId));
-            boolean doctorExists = allRatings.stream()
-                    .anyMatch(r -> r.getDoctorId().equals(doctorId));
-
-            if (doctorExists) {
-                response.setSuccess(false);
-                response.setStatus(404);
-                response.setMessage(" doctorId.");
-                return response;
-            }
+            // Check if there are ratings for this doctor
             List<CustomerRatingDomain> matchedRatings = allRatings.stream()
-                    .filter(r ->r.getDoctorId().equals(doctorId))
+                    .filter(r -> r.getDoctorId().equals(doctorId))
                     .toList();
 
             if (matchedRatings.isEmpty()) {
-                response.setSuccess(true);
-                response.setStatus(200);
-                response.setMessage("No matching ratings found for the given  doctorId.");
+                response.setSuccess(false);
+                response.setStatus(404);
+                response.setMessage("Invalid or no ratings found for doctorId: " + doctorId);
                 return response;
             }
 
+            // Compute averages
             double totalDoctorRating = matchedRatings.stream()
-                    .mapToDouble(CustomerRatingDomain::getDoctorRating).sum();
-            double totalHospitalRating = matchedRatings.stream()
-                    .mapToDouble(CustomerRatingDomain::getBranchRating).sum();
+                    .mapToDouble(CustomerRatingDomain::getDoctorRating)
+                    .sum();
+            double totalBranchRating = matchedRatings.stream()
+                    .mapToDouble(CustomerRatingDomain::getBranchRating)
+                    .sum();
+
             double avgDoctorRating = totalDoctorRating / matchedRatings.size();
-            double avgHospitalRating = totalHospitalRating / matchedRatings.size();
+            double avgBranchRating = totalBranchRating / matchedRatings.size();
 
             long total = matchedRatings.size();
 
@@ -202,15 +189,16 @@ public class RatingCalculationService {
             categoryStats.add(new RatingCategoryStats("Average", average, (average * 100.0) / total));
             categoryStats.add(new RatingCategoryStats("Below Average", belowAverage, (belowAverage * 100.0) / total));
 
-            // Set data in DTO
+            // Prepare DTO
             RatingsDTO data = new RatingsDTO();
             data.setDoctorId(doctorId);
             data.setOverallDoctorRating(avgDoctorRating);
-            data.setOverallBranchRating(avgHospitalRating);
+            data.setOverallBranchRating(avgBranchRating);
             data.setCount(total);
             data.setComments(matchedRatings);
-            data.setRatingCategoryStats(categoryStats); // Include categorized stats
+            data.setRatingCategoryStats(categoryStats);
 
+            // Build response
             response.setSuccess(true);
             response.setData(data);
             response.setMessage("Ratings fetched successfully.");
@@ -222,8 +210,9 @@ public class RatingCalculationService {
             response.setMessage(ExtractFeignMessage.clearMessage(e));
             response.setStatus(e.status());
             return response;
-		}
-	}
+        }
+    }
+
 
 
 }
