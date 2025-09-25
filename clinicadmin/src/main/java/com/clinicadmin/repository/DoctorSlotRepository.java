@@ -10,7 +10,9 @@ import com.clinicadmin.entity.DoctorSlot;
 public interface DoctorSlotRepository extends MongoRepository<DoctorSlot, String> {
 //	DoctorSlot findByDoctorId(String doctorId);
 	 
-	 DoctorSlot findByDoctorIdAndDate(String doctorId, String date);
+	DoctorSlot findByDoctorIdAndDate(String doctorId, String date);  // keep old one for existing code
+
+	List<DoctorSlot> findAllByDoctorIdAndDate(String doctorId, String date);  // new one for conflict checking
 
 	List<DoctorSlot> findByHospitalIdAndDoctorId(String hospitalId, String doctorId);
 
