@@ -16,5 +16,4 @@ public class PatientImages {
 	private String beforeImage;
 	private String afterImage;
 	
-
 }
