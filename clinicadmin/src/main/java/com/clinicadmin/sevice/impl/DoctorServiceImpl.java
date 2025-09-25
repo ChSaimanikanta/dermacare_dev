@@ -844,7 +844,7 @@ public class DoctorServiceImpl implements DoctorService {
 			slotRepository.save(doctorSlot);
 
 			DoctorSlotDTO dto = new DoctorSlotDTO(doctorSlot.getDoctorId(), doctorSlot.getHospitalId(),
-					doctorSlot.getBranchId(), doctorSlot.getDate(), updatedSlots);
+					doctorSlot.getBranchId(),doctorSlot.getBranchName(), doctorSlot.getDate(), updatedSlots);
 			response.setSuccess(true);
 			response.setData(dto);
 			response.setMessage("Slot deleted successfully");
@@ -1048,62 +1048,76 @@ public class DoctorServiceImpl implements DoctorService {
 	            return response;
 	        }
 
-	        // Fetch ALL slots of doctor on the same date (any branch)
+	        // ✅ Fetch ALL slots of doctor on the same date (across all branches)
 	        List<DoctorSlot> doctorSlotsOnDate = slotRepository.findAllByDoctorIdAndDate(doctorId, dto.getDate());
 
-	        // Collect all already existing slots for the doctor (any branch)
-	        Set<String> alreadyBookedSlots = doctorSlotsOnDate.stream()
-	                .flatMap(slot -> slot.getAvailableSlots().stream())
-	                .map(DoctorAvailableSlotDTO::getSlot)
-	                .collect(Collectors.toSet());
-
-	        // Prepare availability for incoming slots
+	        // ✅ Prepare slots with availability info
 	        List<DoctorAvailableSlotDTO> slotsWithAvailability = dto.getAvailableSlots().stream()
 	                .map(incomingSlot -> {
-	                    if (alreadyBookedSlots.contains(incomingSlot.getSlot())) {
+	                    // Check if slot already exists in another branch
+	                    Optional<DoctorSlot> conflictingSlot = doctorSlotsOnDate.stream()
+	                            .filter(slot -> slot.getAvailableSlots().stream()
+	                                    .anyMatch(s -> s.getSlot().equals(incomingSlot.getSlot())))
+	                            .findFirst();
+
+	                    if (conflictingSlot.isPresent()) {
+	                        String existingBranchId = conflictingSlot.get().getBranchId();
+	                        String existingBranchName = conflictingSlot.get().getBranchName(); // ✅ Already stored in DB
+
 	                        incomingSlot.setAvailable(false);
-	                        incomingSlot.setReason("Already exists in another branch");
+	                        incomingSlot.setReason("Already exists in " 
+	                                + existingBranchName +" Branch");
 	                    } else {
 	                        incomingSlot.setAvailable(true);
 	                        incomingSlot.setReason(null);
 	                    }
+
 	                    return incomingSlot;
 	                }).toList();
 
-	        // Check if there are any available slots to save in this branch
+	        // ✅ Filter only slots that are available to save in this branch
 	        List<DoctorAvailableSlotDTO> slotsToSave = slotsWithAvailability.stream()
 	                .filter(DoctorAvailableSlotDTO::isAvailable)
 	                .toList();
 
-	        DoctorSlot savedSlot;
+	        DoctorSlot savedSlot = null;
+
 	        if (!slotsToSave.isEmpty()) {
-	            // Check if doctor already has slots in this branch for same date
+	            // Check if doctor already has slots in this branch for the same date
 	            DoctorSlot existingSlot = slotRepository.findByDoctorIdAndBranchIdAndDate(doctorId, branchId, dto.getDate());
 	            if (existingSlot != null) {
 	                List<DoctorAvailableSlotDTO> currentSlots = existingSlot.getAvailableSlots();
+
+	                // Add only new unique slots
 	                List<DoctorAvailableSlotDTO> newUniqueSlots = slotsToSave.stream()
 	                        .filter(incoming -> currentSlots.stream()
 	                                .noneMatch(existing -> existing.getSlot().equals(incoming.getSlot())))
 	                        .toList();
+
 	                currentSlots.addAll(newUniqueSlots);
 	                existingSlot.setAvailableSlots(currentSlots);
 	                savedSlot = slotRepository.save(existingSlot);
 	            } else {
 	                DoctorSlot newSlot = DoctorSlotMapper.doctorSlotDTOtoEntity(dto);
+
+	                // ✅ Fetch branch details for saving (only once)
+	                ResponseEntity<Response> branchResponse = adminServiceClient.getBranchById(branchId);
+	                Branch branchDetails = objectMapper.convertValue(branchResponse.getBody().getData(), Branch.class);
+
 	                newSlot.setDoctorId(doctorId);
 	                newSlot.setHospitalId(hospitalId);
 	                newSlot.setBranchId(branchId);
+	                if (branchDetails != null) {
+	                    newSlot.setBranchName(branchDetails.getBranchName()); // ✅ Store branch name in DB
+	                }
 	                newSlot.setAvailableSlots(slotsToSave);
 	                savedSlot = slotRepository.save(newSlot);
 	            }
-	        } else {
-	            savedSlot = null; // no slots saved in this branch
 	        }
 
-	        // Return all slots with availability info
 	        response.setSuccess(true);
 	        response.setData(slotsWithAvailability);
-	        response.setMessage("Slots processed successfully. Unavailable slots are flagged.");
+	        response.setMessage("Slots processed successfully. Unavailable slots are flagged with branch info.");
 	        response.setStatus(HttpStatus.OK.value());
 
 	    } catch (IllegalArgumentException e) {
@@ -1120,7 +1134,6 @@ public class DoctorServiceImpl implements DoctorService {
 	    return response;
 	}
 
-	
 //		-------------------------Get Slots by Doctors -------------------------------------------
 	@Override
 	public Response getDoctorSlots(String hospitalId, String branchId, String doctorId) {
@@ -1791,56 +1804,114 @@ public class DoctorServiceImpl implements DoctorService {
 		return response;
 	}
 
-	// ------------------------------Universal
-	// Login---------------------------------------------------
+//	// ------------------------------Universal
+//	// Login---------------------------------------------------
+//	@Override
+//	public Response loginUsingRoles(DoctorLoginDTO dto) {
+//		Response response = new Response();
+//		Optional<DoctorLoginCredentials> credentials = credentialsRepository.findByUsername(dto.getUserName());
+//
+//		if (!credentials.isPresent()) {
+//			response.setSuccess(false);
+//			response.setMessage("Invalid UserName");
+//			response.setStatus(409);
+//			return response;
+//		}
+//
+//		DoctorLoginCredentials cr = credentials.get();
+//
+//		// Fix: dto.getPassword() should come first
+//		if (!passwordEncoder.matches(dto.getPassword(), cr.getPassword())) {
+//			response.setSuccess(false);
+//			response.setMessage("Invalid password");
+//			response.setStatus(409);
+//			return response;
+//		}
+//
+//		// Here you compared role with password by mistake
+//		// Fix: compare role with dto.getRole()
+//		if (!cr.getRole().toUpperCase().equals(dto.getRole().toUpperCase())) {
+//			response.setSuccess(false);
+//			response.setMessage("Invalid Role");
+//			response.setStatus(409);
+//			return response;
+//		}
+//		DoctorLoginDTO resDto = new DoctorLoginDTO();
+//		resDto.setUserName(cr.getUsername());
+//		resDto.setRole(cr.getRole());
+//		resDto.setDeviceId(dto.getDeviceId());
+//		resDto.setStaffId(cr.getStaffId());
+//		resDto.setStaffName(cr.getStaffName());
+//		resDto.setHospitalId(cr.getHospitalId());
+//		resDto.setHospitalName(cr.getHospitalName());
+//		resDto.setBranchId(cr.getBranchId());
+//		resDto.setPermissions(cr.getPermissions());
+//
+//		response.setSuccess(true);
+//		response.setMessage("Login Successfully");
+//		response.setData(resDto);
+//		response.setStatus(200);
+//
+//		return response;
+//	}
 	@Override
 	public Response loginUsingRoles(DoctorLoginDTO dto) {
-		Response response = new Response();
-		Optional<DoctorLoginCredentials> credentials = credentialsRepository.findByUsername(dto.getUserName());
+	    Response response = new Response();
+	    try {
+	        Optional<DoctorLoginCredentials> credentials = credentialsRepository.findByUsername(dto.getUserName());
 
-		if (!credentials.isPresent()) {
-			response.setSuccess(false);
-			response.setMessage("Invalid UserName");
-			response.setStatus(409);
-			return response;
-		}
+	        if (credentials.isEmpty()) {
+	            response.setSuccess(false);
+	            response.setMessage("Invalid UserName");
+	            response.setStatus(409);
+	            return response;
+	        }
 
-		DoctorLoginCredentials cr = credentials.get();
+	        DoctorLoginCredentials cr = credentials.get();
 
-		// Fix: dto.getPassword() should come first
-		if (!passwordEncoder.matches(dto.getPassword(), cr.getPassword())) {
-			response.setSuccess(false);
-			response.setMessage("Invalid password");
-			response.setStatus(409);
-			return response;
-		}
+	        // Password check
+	        if (passwordEncoder == null || !passwordEncoder.matches(dto.getPassword(), cr.getPassword())) {
+	            response.setSuccess(false);
+	            response.setMessage("Invalid password");
+	            response.setStatus(409);
+	            return response;
+	        }
 
-		// Here you compared role with password by mistake
-		// Fix: compare role with dto.getRole()
-		if (!cr.getRole().toUpperCase().equals(dto.getRole().toUpperCase())) {
-			response.setSuccess(false);
-			response.setMessage("Invalid Role");
-			response.setStatus(409);
-			return response;
-		}
-		DoctorLoginDTO resDto = new DoctorLoginDTO();
-		resDto.setUserName(cr.getUsername());
-		resDto.setRole(cr.getRole());
-		resDto.setDeviceId(dto.getDeviceId());
-		resDto.setStaffId(cr.getStaffId());
-		resDto.setStaffName(cr.getStaffName());
-		resDto.setHospitalId(cr.getHospitalId());
-		resDto.setHospitalName(cr.getHospitalName());
-		resDto.setBranchId(cr.getBranchId());
-		resDto.setPermissions(cr.getPermissions());
+	        // Role check (null-safe)
+	        if (dto.getRole() == null || !cr.getRole().equalsIgnoreCase(dto.getRole())) {
+	            response.setSuccess(false);
+	            response.setMessage("Invalid Role");
+	            response.setStatus(409);
+	            return response;
+	        }
 
-		response.setSuccess(true);
-		response.setMessage("Login Successfully");
-		response.setData(resDto);
-		response.setStatus(200);
+	        // Prepare response DTO
+	        DoctorLoginDTO resDto = new DoctorLoginDTO();
+	        resDto.setUserName(cr.getUsername());
+	        resDto.setRole(cr.getRole());
+	        resDto.setDeviceId(dto.getDeviceId());
+	        resDto.setStaffId(cr.getStaffId());
+	        resDto.setStaffName(cr.getStaffName());
+	        resDto.setHospitalId(cr.getHospitalId());
+	        resDto.setHospitalName(cr.getHospitalName());
+	        resDto.setBranchId(cr.getBranchId());
 
-		return response;
+	        // ⚠️ Ensure permissions is safe for serialization
+	        resDto.setPermissions(cr.getPermissions());
+
+	        response.setSuccess(true);
+	        response.setMessage("Login Successfully");
+	        response.setData(resDto);
+	        response.setStatus(200);
+
+	    } catch (Exception e) {
+	        response.setSuccess(false);
+	        response.setMessage("Login error: " + e.getMessage());
+	        response.setStatus(500);
+	    }
+	    return response;
 	}
+
 //-----------------------best one doctor using key word-------------------------------------------
 	@Override
 	public Response getRecommendedClinicsAndDoctors(List<String> keyPointsFromUser) {

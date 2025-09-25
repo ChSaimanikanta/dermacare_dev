@@ -1,13 +1,9 @@
 package com.clinicadmin.utils;
-
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-
 import com.clinicadmin.dto.WardBoyDTO;
 import com.clinicadmin.entity.WardBoy;
-
 public class WardBoyMapper {
-
 	private static String encodeIfNotBase64(String input) {
 		if (input == null || input.isBlank())
 			return input;

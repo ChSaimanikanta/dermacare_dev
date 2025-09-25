@@ -1,4 +1,4 @@
-package com.clinicadmin.dto;
+package com.AdminService.dto;
 
 import java.util.List;
 
