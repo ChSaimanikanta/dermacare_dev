@@ -103,7 +103,7 @@ public class DoctorServiceImpl implements DoctorService {
 	}
 	@Override
 	public Response addDoctor(DoctorsDTO dto) {
-	    Response response = new Response();
+	    Response response = new Response(); 
 	    try {
 	        dto.trimAllDoctorFields();
 
@@ -149,16 +149,16 @@ public class DoctorServiceImpl implements DoctorService {
 	                    dto.getHospitalId(), dto.getBranchId());
 	        } catch (FeignException fe) {
 	            response.setSuccess(false);
-	            response.setMessage("Branch not found for clinicId: " 
-	                                + dto.getHospitalId() + " and branchId: " + dto.getBranchId());
+	            response.setMessage("Branch not found for clinicId: "
+	                    + dto.getHospitalId() + " and branchId: " + dto.getBranchId());
 	            response.setStatus(HttpStatus.NOT_FOUND.value());
 	            return response;
 	        }
 
 	        if (branchRes.getBody() == null || !branchRes.getBody().isSuccess()) {
 	            response.setSuccess(false);
-	            response.setMessage("Branch not found for clinicId: " 
-	                                + dto.getHospitalId() + " and branchId: " + dto.getBranchId());
+	            response.setMessage("Branch not found for clinicId: "
+	                    + dto.getHospitalId() + " and branchId: " + dto.getBranchId());
 	            response.setStatus(HttpStatus.NOT_FOUND.value());
 	            return response;
 	        }
@@ -187,7 +187,9 @@ public class DoctorServiceImpl implements DoctorService {
 	        Doctors doctor = DoctorMapper.mapDoctorDTOtoDoctorEntity(dto);
 	        doctor.setDoctorId(doctorId);
 	        doctor.setHospitalName(clinicDTO.getName());
-	        doctor.setBranchId(branchDTO.getBranchId());
+
+	        // ⚡ Strict branch assignment: Only use the branch provided in payload
+	        doctor.setBranchId(dto.getBranchId());
 
 	        // -------------------- Save doctor --------------------
 	        Doctors savedDoctor = doctorsRepository.save(doctor);
@@ -202,7 +204,7 @@ public class DoctorServiceImpl implements DoctorService {
 	                .staffName(savedDoctor.getDoctorName())
 	                .hospitalId(savedDoctor.getHospitalId())
 	                .hospitalName(savedDoctor.getHospitalName())
-	                .branchId(branchDTO.getBranchId())
+	                .branchId(savedDoctor.getBranchId())
 	                .username(username)
 	                .password(encodedPassword)
 	                .role(dto.getRole())
@@ -230,6 +232,7 @@ public class DoctorServiceImpl implements DoctorService {
 
 	    return response;
 	}
+
 
 @Override
 	public Response getAllDoctors() {
@@ -1870,24 +1873,32 @@ public class DoctorServiceImpl implements DoctorService {
 	public Response getDoctorsByHospitalIdAndBranchId(String hospitalId, String branchId) {
 	    Response response = new Response();
 	    try {
-	        List<Doctors> doctorList = doctorsRepository
-	            .findByHospitalIdAndBranchIdIncludingBranches(hospitalId, branchId);
+	        // ✅ Fetch doctors assigned to this branch in their branches list
+	        List<Doctors> doctorList =
+	                doctorsRepository.findByHospitalIdAndBranchIdIncludingBranches(hospitalId, branchId);
+
+	        // Filter out doctors that are not actually assigned to the branch
+	        doctorList = doctorList.stream()
+	                .filter(doc -> doc.getBranches() != null &&
+	                               doc.getBranches().stream()
+	                                  .anyMatch(b -> branchId.equals(b.getBranchId())))
+	                .toList();
 
 	        if (!doctorList.isEmpty()) {
 	            List<DoctorsDTO> dtos = doctorList.stream()
 	                    .map(DoctorMapper::mapDoctorEntityToDoctorDTO)
-	                    .collect(Collectors.toList());
+	                    .toList();
 
 	            response.setSuccess(true);
 	            response.setData(dtos);
-	            response.setMessage("Doctors fetched successfully for hospitalId: " 
-	                                 + hospitalId + " and branchId: " + branchId);
+	            response.setMessage("Doctors fetched successfully for hospitalId: "
+	                    + hospitalId + " and branchId: " + branchId);
 	            response.setStatus(HttpStatus.OK.value());
 	        } else {
 	            response.setSuccess(true);
 	            response.setData(Collections.emptyList());
 	            response.setMessage("No doctors found for hospitalId: "
-	                                 + hospitalId + " and branchId: " + branchId);
+	                    + hospitalId + " and branchId: " + branchId);
 	            response.setStatus(HttpStatus.OK.value());
 	        }
 	    } catch (Exception e) {
@@ -1897,6 +1908,7 @@ public class DoctorServiceImpl implements DoctorService {
 	    }
 	    return response;
 	}
+
 
 	
 

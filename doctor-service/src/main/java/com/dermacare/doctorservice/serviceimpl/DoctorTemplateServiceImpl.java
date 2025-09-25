@@ -583,8 +583,4 @@ public class DoctorTemplateServiceImpl implements DoctorTemplateService {
     }
 
 
-
-
-
-
 }
