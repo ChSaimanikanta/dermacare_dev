@@ -1,9 +1,6 @@
 package com.AdminService.feign;
-<<<<<<< HEAD
-=======
-
->>>>>>> b76dd9e7e69f16f8d39e474a21b6f98d7cf95f11
 import java.util.List;
+
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -12,20 +9,17 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import com.AdminService.dto.DoctorsDTO;
-import com.AdminService.dto.DoctorAvailableSlotDTO;
+
 import com.AdminService.dto.DoctorSlotDTO;
+import com.AdminService.dto.DoctorsDTO;
 import com.AdminService.dto.LabTestDTO;
 import com.AdminService.dto.ProbableDiagnosisDTO;
 import com.AdminService.dto.SubServicesDto;
 import com.AdminService.dto.TreatmentDTO;
 import com.AdminService.util.Response;
 import com.AdminService.util.ResponseStructure;
-<<<<<<< HEAD
-=======
 
->>>>>>> b76dd9e7e69f16f8d39e474a21b6f98d7cf95f11
-@FeignClient(name = "clinicadmin")
+@FeignClient(value = "clinicadmin")
 public interface ClinicAdminFeign {
 
     // ---------------------- Sub-Service APIs ----------------------

@@ -82,7 +82,6 @@ public class AdminServiceImpl implements AdminService {
 	private CustomerFeign customerFeign;
 
 	@Autowired
-
 	private  ClinicAdminFeign clinicAdminFeign;
 
 	@Autowired
