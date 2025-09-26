@@ -1,6 +1,6 @@
  package com.AdminService.service;
 
-import java.util.ArrayList;
+ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
@@ -1710,7 +1710,7 @@ public class AdminServiceImpl implements AdminService {
                 return response;
             }
 
-            // 1) Check clinic credentials
+            // 1) Clinic login
             ClinicCredentials clinicCredentials =
                     clinicCredentialsRepository.findByUserNameAndPassword(userName, password);
 
@@ -1719,67 +1719,61 @@ public class AdminServiceImpl implements AdminService {
 
                 // Default branch for this clinic
                 Branch defaultBranch = branchRepository.findFirstByClinicId(clinicCredentials.getUserName());
-                String clinicDefaultBranchId = defaultBranch != null ? defaultBranch.getBranchId() : null;
 
                 response.setSuccess(true);
                 response.setMessage("Clinic login successful");
                 response.setStatus(200);
-                response.setHospitalName(
-                        clinicEntity != null ? clinicEntity.getName() : clinicCredentials.getHospitalName());
-                response.setHospitalId(clinicCredentials.getUserName());
-                response.setBranchId(clinicDefaultBranchId);
 
-            
+                // ✅ Hospital and branch name
+                response.setHospitalId(clinicCredentials.getUserName());
+                response.setHospitalName(clinicEntity != null ? clinicEntity.getName() : clinicCredentials.getHospitalName());
+                response.setBranchId(defaultBranch != null ? defaultBranch.getBranchId() : null);
+                response.setBranchName(defaultBranch != null ? defaultBranch.getBranchName() : null);
+
+                // ✅ Role
                 String role = (clinicEntity != null && clinicEntity.getRole() != null)
                         ? clinicEntity.getRole()
                         : "admin";
                 response.setRole(role);
 
-                
-                Map<String, List<String>>permissions =
+                // ✅ Permissions
+                Map<String, List<String>> permissions =
                         (clinicEntity != null && clinicEntity.getPermissions() != null)
-                                ? clinicEntity.getPermissions()              // already role → modules → actions
-                                : PermissionsUtil.getAdminPermissions();     // default admin
+                                ? clinicEntity.getPermissions()
+                                : PermissionsUtil.getAdminPermissions();
                 response.setPermissions(permissions);
 
-                return response; // 🔴 missing in your code
+                return response;
             }
 
-            // 2) Check branch credentials
+            // 2) Branch login
             BranchCredentials branchCredentials =
                     branchCredentialsRepository.findByUserNameAndPassword(userName, password);
 
             if (branchCredentials != null) {
-                String branchId = branchCredentials.getBranchId(); 
-             // Fetch branch to get clinicId safely
+                String branchId = branchCredentials.getBranchId();
+
                 Optional<Branch> branchOpt = branchRepository.findByBranchId(branchId);
-                Branch branch = branchOpt.orElse(null);
+                Branch branchEntity = branchOpt.orElse(null);
 
                 String clinicId;
-                if (branch != null && branch.getClinicId() != null) {
-                    clinicId = branch.getClinicId();  // safest
+                if (branchEntity != null && branchEntity.getClinicId() != null) {
+                    clinicId = branchEntity.getClinicId();
                 } else {
-                    // fallback if branch is not found but we know clinicId is first 4 chars (e.g. 0002xx)
                     clinicId = branchId.length() >= 4 ? branchId.substring(0, 4) : branchId;
                 }
 
-                Optional<Branch> branchEntityOpt = branchRepository.findByBranchId(branchId);
-                Branch branchEntity = branchEntityOpt.orElse(null);
+                Clinic clinicEntity = clinicRep.findByHospitalId(clinicId);
 
                 response.setSuccess(true);
                 response.setMessage("Branch login successful");
                 response.setStatus(200);
-                response.setHospitalName(branchCredentials.getBranchName());
+
+                // ✅ Hospital and branch name
                 response.setHospitalId(clinicId);
+                response.setHospitalName(clinicEntity != null ? clinicEntity.getName() : "Unknown Clinic");
                 response.setBranchId(branchId);
-      
-                if (branchEntity != null) {
-                    response.setRole(branchEntity.getRole());
-                    response.setPermissions(branchEntity.getPermissions());
-                } else {
-                    response.setRole("admin"); 
-                    response.setPermissions(PermissionsUtil.getAdminPermissions());
-                }
+                response.setBranchName(branchEntity != null ? branchEntity.getBranchName() : branchCredentials.getBranchName());
 
                 // ✅ Role
                 String role = (branchEntity != null && branchEntity.getRole() != null)
@@ -1797,7 +1791,7 @@ public class AdminServiceImpl implements AdminService {
                 return response;
             }
 
-            // 3) Neither matched
+            // 3) Invalid credentials
             response.setSuccess(false);
             response.setMessage("Invalid username or password");
             response.setStatus(401);
@@ -1810,6 +1804,7 @@ public class AdminServiceImpl implements AdminService {
             return response;
         }
     }
+
 
     @Override
 
