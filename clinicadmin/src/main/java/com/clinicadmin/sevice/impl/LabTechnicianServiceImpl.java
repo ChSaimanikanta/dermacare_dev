@@ -50,6 +50,10 @@ public class LabTechnicianServiceImpl implements LabTechnicianService {
 			return ResponseStructure.buildResponse(null, "Lab Technician with this contact number already exists",
 					HttpStatus.CONFLICT, HttpStatus.CONFLICT.value());
 		}
+		if (credentialsRepository.existsByUsername(dto.getContactNumber())) {
+			return ResponseStructure.buildResponse(null, "Login credentials already exist for this mobile number",
+					HttpStatus.CONFLICT, HttpStatus.CONFLICT.value());
+		}
 
 		ResponseEntity<Response> res = adminServiceClient.getBranchById(dto.getBranchId());
 		Branch br = objectMapper.convertValue(res.getBody().getData(), Branch.class);
