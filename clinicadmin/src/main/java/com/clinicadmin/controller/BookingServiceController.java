@@ -16,7 +16,7 @@ import com.clinicadmin.service.BookingService;
 
 @RestController
 @RequestMapping("/clinic-admin")
-@CrossOrigin(origins = { "http://localhost:3000", "http://localhost:3001" })
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001" })
 public class BookingServiceController {
 
 	@Autowired
