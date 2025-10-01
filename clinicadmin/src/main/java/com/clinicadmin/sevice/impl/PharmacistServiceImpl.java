@@ -359,11 +359,7 @@ public class PharmacistServiceImpl implements PharmacistService {
 	}
 	
 
-
-
-
-	// ---------------- PRESCRIPTION APIs ----------------
-
+// ---------------- PRESCRIPTION APIs ----------------
 	@Override
 	public ResponseEntity<Response> createPrescription(DoctorPrescriptionDTO dto) {
 	    try {
@@ -507,5 +503,4 @@ public class PharmacistServiceImpl implements PharmacistService {
 	        }
 	    }
 	}
-
 }
