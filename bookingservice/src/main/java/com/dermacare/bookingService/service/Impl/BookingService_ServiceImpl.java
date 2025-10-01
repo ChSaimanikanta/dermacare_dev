@@ -1172,7 +1172,7 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 			        entity.setBookedAt(dto.getBookedAt());
 			    }
 
-				if(dto.getFollowupStatus().equalsIgnoreCase("no-followup")) {
+				if(dto.getFollowupStatus() != null && dto.getFollowupStatus().equalsIgnoreCase("no-followup")) {
 			        entity.setStatus("Completed");
 			    }
 
