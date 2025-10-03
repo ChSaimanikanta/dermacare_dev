@@ -89,6 +89,7 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
                     existingMed.setDateOfManufacturing(incomingMed.getDateOfManufacturing());               
                     existingMed.setDateOfExpriy(incomingMed.getDateOfExpriy());               
                     existingMed.setManufacturingLicenseNumber(incomingMed.getManufacturingLicenseNumber());               
+                    existingMed.setStock(incomingMed.getStock());               
 
                     updatedExistingMedicine = true;
                 } else {
@@ -112,7 +113,8 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
                             incomingMed.getBatchNumber(),
                             incomingMed.getDateOfManufacturing(),
                             incomingMed.getDateOfExpriy(),
-                            incomingMed.getManufacturingLicenseNumber()
+                            incomingMed.getManufacturingLicenseNumber(),
+                            incomingMed.getStock()
                     ));
                     addedNewMedicine = true;
                 }
@@ -146,7 +148,8 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
                             m.getBatchNumber(),
                             m.getDateOfManufacturing(),
                             m.getDateOfExpriy(),
-                            m.getManufacturingLicenseNumber()
+                            m.getManufacturingLicenseNumber(),
+                            m.getStock()
                     ))
                     .collect(Collectors.toList())
             );
@@ -199,7 +202,8 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
                                 m.getBatchNumber(),
                                 m.getDateOfManufacturing(),
                                 m.getDateOfExpriy(),
-                                m.getManufacturingLicenseNumber()
+                                m.getManufacturingLicenseNumber(),
+                                m.getStock()
                         ))
                         .collect(Collectors.toList());
 
@@ -245,7 +249,8 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
                                 m.getBatchNumber(),
                                 m.getDateOfManufacturing(),
                                 m.getDateOfExpriy(),
-                                m.getManufacturingLicenseNumber()
+                                m.getManufacturingLicenseNumber(),
+                                m.getStock()
                         ))
                         .collect(Collectors.toList());
 
@@ -289,7 +294,8 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
                         m.getBatchNumber(),
                         m.getDateOfManufacturing(),
                         m.getDateOfExpriy(),
-                        m.getManufacturingLicenseNumber()
+                        m.getManufacturingLicenseNumber(),
+                        m.getStock()
                 )).collect(Collectors.toList());
 
                 return new Response(true, dtos, "Medicine found", HttpStatus.OK.value());
@@ -392,7 +398,8 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
                     m.getBatchNumber(),
                     m.getDateOfManufacturing(),
                     m.getDateOfExpriy(),
-                    m.getManufacturingLicenseNumber()
+                    m.getManufacturingLicenseNumber(),
+                    m.getStock()
             );
 
             return new Response(true, List.of(dto), "Medicine found", HttpStatus.OK.value());
@@ -433,7 +440,8 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
                                 m.getBatchNumber(),
                                 m.getDateOfManufacturing(),
                                 m.getDateOfExpriy(),
-                                m.getManufacturingLicenseNumber()
+                                m.getManufacturingLicenseNumber(),
+                                m.getStock()
                         ))
                         .collect(Collectors.toList());
 
@@ -496,6 +504,7 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
                             existingMed.setDateOfManufacturing(medDto.getDateOfManufacturing());
                             existingMed.setDateOfExpriy(medDto.getDateOfExpriy());
                             existingMed.setManufacturingLicenseNumber(medDto.getManufacturingLicenseNumber());
+                            existingMed.setStock(medDto.getStock());
 
                             updatedMedicines.add(existingMed);
                         } else {
@@ -519,7 +528,8 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
                                     medDto.getBatchNumber(),
                                     medDto.getDateOfManufacturing(),
                                     medDto.getDateOfExpriy(),
-                                    medDto.getManufacturingLicenseNumber()
+                                    medDto.getManufacturingLicenseNumber(), 
+                                    medDto.getStock() 
                             ));
                         }
                     } else {
@@ -543,7 +553,8 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
                                 medDto.getBatchNumber(),
                                 medDto.getDateOfManufacturing(),
                                 medDto.getDateOfExpriy(),
-                                medDto.getManufacturingLicenseNumber()
+                                medDto.getManufacturingLicenseNumber(),
+                                medDto.getStock()
                         ));
                     }
                 }
@@ -576,7 +587,8 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
                             m.getBatchNumber(),
                             m.getDateOfManufacturing(),
                             m.getDateOfExpriy(),
-                            m.getManufacturingLicenseNumber()
+                            m.getManufacturingLicenseNumber(),
+                            m.getStock()
                     ))
                     .collect(Collectors.toList())
             );
@@ -635,6 +647,8 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
             if (dto.getDateOfExpriy() != null) medicine.setDateOfExpriy(dto.getDateOfExpriy());
             if (dto.getManufacturingLicenseNumber() != null)
                 medicine.setManufacturingLicenseNumber(dto.getManufacturingLicenseNumber());
+            if (dto.getStock() != null)
+                medicine.setStock(dto.getStock());
 
             // save prescription
             repository.save(prescription);
@@ -659,7 +673,8 @@ public class DoctorPrescriptionServiceImpl implements DoctorPrescriptionService 
                     medicine.getBatchNumber(),
                     medicine.getDateOfManufacturing(),
                     medicine.getDateOfExpriy(),
-                    medicine.getManufacturingLicenseNumber()
+                    medicine.getManufacturingLicenseNumber(),
+                    medicine.getStock()
             );
 
             return new Response(true, updatedDto, "Medicine updated successfully", HttpStatus.OK.value());

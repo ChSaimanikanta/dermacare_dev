@@ -115,7 +115,7 @@ public class PharmacistController {
         return pharmacistService.deletePrescription(id);
     }
 
-    @DeleteMapping("/deleteMedicines/{medicineId}")
+    @DeleteMapping("/deleteMedicine/{medicineId}")
     public ResponseEntity<Response> deleteMedicine(@PathVariable String medicineId) {
         return pharmacistService.deleteMedicine(medicineId);
     }
