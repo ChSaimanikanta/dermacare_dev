@@ -2928,7 +2928,7 @@ public class AdminServiceImpl implements AdminService {
 			return ResponseEntity.status(response.getBody().getStatusCode()).body(response.getBody());}
 
 		catch (FeignException e) {
-			return buildErrorResponse(ExtractFeignMessage.clearMessage(e),e.status()));
+			return buildErrorResponse(ExtractFeignMessage.clearMessage(e),e.status());
 		}
 
 	}
