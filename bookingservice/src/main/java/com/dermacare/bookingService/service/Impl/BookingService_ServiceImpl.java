@@ -15,6 +15,8 @@ import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +27,7 @@ import com.dermacare.bookingService.dto.BookingResponse;
 import com.dermacare.bookingService.dto.DatesDTO;
 import com.dermacare.bookingService.dto.DoctorSaveDetailsDTO;
 import com.dermacare.bookingService.dto.NotificationDTO;
+import com.dermacare.bookingService.dto.RelationInfoDTO;
 import com.dermacare.bookingService.dto.TreatmentDetailsDTO;
 import com.dermacare.bookingService.dto.TtdAppointments;
 import com.dermacare.bookingService.entity.Booking;
@@ -136,16 +139,13 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 			entity.setChannelId(null) ;
 		}}
 		if(request.getRelation() != null) {
-		List<Booking> existingBooking = repository.findByRelationIgnoreCaseAndMobileNumber(request.getRelation(),request.getMobileNumber());
+		List<Booking> existingBooking = repository.findByRelationIgnoreCaseAndCustomerIdAndNameIgnoreCase(request.getRelation(),request.getCustomerId(),request.getName());
 		if(existingBooking != null && !existingBooking.isEmpty()) {
 		for(Booking b : existingBooking) {
 		if(b != null) {
 			entity.setPatientId(b.getPatientId());
-		}}}
-		else {
+		}}}else {
 			entity.setPatientId(generatePatientId());}
-		}else{
-			entity.setPatientId(generatePatientId());	
 		}
 		return entity;		
 	}
@@ -1225,5 +1225,29 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 							HttpStatus.INTERNAL_SERVER_ERROR);
 				}}
 			
-	
-}
+		
+//		@Override
+//		public List<BookingResponse> getRelationsByCustomerId(String customerId) {
+//			try {
+//			List<Booking> bookings = repository.findByCustomerId(customerId);
+//			 Map<Object,Object> data = bookings.stream().
+//			map(n->{
+//				Map<String,RelationInfoDTO> relations = new LinkedHashMap<>();
+//				RelationInfoDTO dto = new RelationInfoDTO();
+//				dto.setAddress(n.getPatientAddress());
+//				dto.setAge(n.getAge());
+//				dto.setFullname(n.getName());
+//				dto.setMobileNumber(n.getMobileNumber());
+//				dto.setRelation(n.getRelation());
+//				Set<RelationInfoDTO> st = new LinkedHashSet<>();
+//				st.add(dto);
+//				relations.put(n.getRelation(),dto);
+//				return relations;
+//			}).collect(Collectors.toMap(n->n.keySet(),n->n.values()));
+//			
+//		}catch(Exception e) {
+//			
+//		}
+//	
+//}
+		}
