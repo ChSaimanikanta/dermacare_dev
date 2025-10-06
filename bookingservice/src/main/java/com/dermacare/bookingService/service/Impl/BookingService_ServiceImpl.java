@@ -481,6 +481,20 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 		return toResponses(reversedBookings);
 	}
 	
+	
+	@Override
+	public List<BookingResponse> bookingByCustomerId(String customerId) {
+		List<Booking> bookings = repository.findByCustomerId(customerId);
+		List<Booking> reversedBookings = new ArrayList<>();
+		for(int i = bookings.size()-1; i >= 0; i--) {
+			reversedBookings.add(bookings.get(i));
+		}
+		if (bookings == null  || bookings.isEmpty()) {
+			return null;
+		}
+		return toResponses(reversedBookings);
+	}
+	
 
 	@Override
 	public List<BookingResponse> bookingByClinicId(String clinicId) {
@@ -686,6 +700,32 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 			ResponseStructure<List<BookingResponse>> res = new ResponseStructure<List<BookingResponse>>();
 			   try{
 				List<Booking> booked=repository.findByMobileNumber(number);
+				List<BookingResponse> response=new ArrayList<>();
+				if(booked!=null && !booked.isEmpty()){
+					for(Booking b:booked){
+						if(b.getStatus().equalsIgnoreCase("In-Progress")){
+							response.add(toResponse(b));}}
+					if(response!=null && !response.isEmpty()){
+						res.setStatusCode(200);
+						res.setHttpStatus(HttpStatus.OK);
+						res.setData(response);
+						res.setMessage("In-Progress appointments found");
+					}else{
+						res.setStatusCode(200);
+						res.setHttpStatus(HttpStatus.OK);
+						res.setData(response);
+						res.setMessage("In-Progress appointments not found");}}}
+			catch(Exception e){
+				res.setStatusCode(500);
+				res.setMessage(e.getMessage());}
+			return ResponseEntity.status(res.getStatusCode()).body(res);
+		}
+		
+		
+		public ResponseEntity<?> getInProgressAppointmentsByCustomerId(String customerId){
+			ResponseStructure<List<BookingResponse>> res = new ResponseStructure<List<BookingResponse>>();
+			   try{
+				List<Booking> booked=repository.findByCustomerId(customerId);
 				List<BookingResponse> response=new ArrayList<>();
 				if(booked!=null && !booked.isEmpty()){
 					for(Booking b:booked){
@@ -1226,28 +1266,40 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 				}}
 			
 		
-//		@Override
-//		public List<BookingResponse> getRelationsByCustomerId(String customerId) {
-//			try {
-//			List<Booking> bookings = repository.findByCustomerId(customerId);
-//			 Map<Object,Object> data = bookings.stream().
-//			map(n->{
-//				Map<String,RelationInfoDTO> relations = new LinkedHashMap<>();
-//				RelationInfoDTO dto = new RelationInfoDTO();
-//				dto.setAddress(n.getPatientAddress());
-//				dto.setAge(n.getAge());
-//				dto.setFullname(n.getName());
-//				dto.setMobileNumber(n.getMobileNumber());
-//				dto.setRelation(n.getRelation());
-//				Set<RelationInfoDTO> st = new LinkedHashSet<>();
-//				st.add(dto);
-//				relations.put(n.getRelation(),dto);
-//				return relations;
-//			}).collect(Collectors.toMap(n->n.keySet(),n->n.values()));
-//			
-//		}catch(Exception e) {
-//			
-//		}
-//	
-//}
+		public ResponseEntity<?> getRelationsByCustomerId(String customerId) {
+		    ResponseStructure<Map<String, Object>> res = new ResponseStructure<>();
+		    try {
+		        List<Booking> bookings = repository.findByCustomerId(customerId);
+
+		        // Convert the list of bookings into a map: relation -> relationInfoDTO
+		        Map<String, Object> data = bookings.stream()
+		                .collect(Collectors.toMap(
+		                        Booking::getRelation, // key = relation (e.g., father/mother)
+		                        n -> {
+		                            RelationInfoDTO dto = new RelationInfoDTO();
+		                            dto.setAddress(n.getPatientAddress());
+		                            dto.setAge(n.getAge());
+		                            dto.setFullname(n.getName());
+		                            dto.setMobileNumber(n.getMobileNumber());
+		                            dto.setRelation(n.getRelation());
+		                            dto.setGender(n.getGender());
+		                            return dto;
+		                        },
+		                        (existing, replacement) -> existing, // in case of duplicate relation
+		                        LinkedHashMap::new // preserve insertion order
+		                ));
+
+		        res.setStatusCode(200);
+		        res.setHttpStatus(HttpStatus.OK);
+		        res.setData(data);
+		        res.setMessage("Relations found successfully");
+		    } catch (Exception e) {
+		        res.setStatusCode(500);
+		        res.setHttpStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+		        res.setMessage("Error: " + e.getMessage());
+		    }
+
+		    return ResponseEntity.status(res.getStatusCode()).body(res);
 		}
+
+}
