@@ -3,10 +3,12 @@ package com.clinicadmin.sevice.impl;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -1395,17 +1397,42 @@ public class DoctorServiceImpl implements DoctorService {
 	        String openingTime, String closingTime) {
 	    Response response = new Response();
 	    try {
-	        // ✅ Normalize input times
+	        // ✅ Decode times safely
 	        openingTime = normalizeTime(URLDecoder.decode(openingTime, StandardCharsets.UTF_8));
 	        closingTime = normalizeTime(URLDecoder.decode(closingTime, StandardCharsets.UTF_8));
 
-	        // ✅ Generate all possible slots
-	        List<DoctorAvailableSlotDTO> generatedSlots = generateSlots(openingTime, closingTime, intervalMinutes);
+	        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm a");
+	        LocalDate slotDate = LocalDate.parse(date); // yyyy-MM-dd
+	        LocalDate currentDate = LocalDate.now();
+	        LocalTime currentTime = LocalTime.now();
 
-	        // ✅ Fetch all existing slots of the doctor on the same date (all branches)
+	        LocalTime openTime = LocalTime.parse(openingTime, formatter);
+	        LocalTime closeTime = LocalTime.parse(closingTime, formatter);
+
+	        // ✅ Step 1: Block past dates
+	        if (slotDate.isBefore(currentDate)) {
+	            response.setSuccess(false);
+	            response.setMessage("Cannot generate slots for a past date: " + date);
+	            response.setStatus(400);
+	            return response;
+	        }
+
+	        // ✅ Step 2: Adjust opening time if date = today and current time has passed
+	        if (slotDate.equals(currentDate) && currentTime.isAfter(openTime)) {
+	            System.out.println("Adjusting opening time from " + openTime + " to current time: " + currentTime);
+	            openTime = currentTime.truncatedTo(ChronoUnit.MINUTES);
+	        }
+
+	        // ✅ Step 3: Generate slots between adjusted times
+	        List<DoctorAvailableSlotDTO> generatedSlots = generateSlots(
+	                openTime.format(formatter),
+	                closeTime.format(formatter),
+	                intervalMinutes
+	        );
+
+	        // ✅ Step 4: Fetch existing slots from DB
 	        List<DoctorSlot> doctorSlotsOnDate = slotRepository.findAllByDoctorIdAndDate(doctorId, date);
 
-	        // Flatten all existing slots from DB for faster comparison
 	        List<DoctorAvailableSlotDTO> existingSlots = doctorSlotsOnDate.stream()
 	                .flatMap(ds -> ds.getAvailableSlots().stream().map(s -> {
 	                    DoctorAvailableSlotDTO dto = new DoctorAvailableSlotDTO();
@@ -1415,12 +1442,12 @@ public class DoctorServiceImpl implements DoctorService {
 	                    return dto;
 	                })).toList();
 
-	        // ✅ Compare generated slots with DB slots using overlap logic
+	        // ✅ Step 5: Compare and detect conflicts
 	        generatedSlots.forEach(slot -> {
 	            DoctorAvailableSlotDTO conflictSlot = existingSlots.stream()
-	                .filter(existing -> isOverlapping(slot.getSlot(), intervalMinutes, List.of(existing), 30)) // assuming 30-minute slots
-	                .findFirst()
-	                .orElse(null);
+	                    .filter(existing -> isOverlapping(slot.getSlot(), intervalMinutes, List.of(existing), 30))
+	                    .findFirst()
+	                    .orElse(null);
 
 	            if (conflictSlot != null) {
 	                slot.setAvailable(false);
@@ -1431,18 +1458,13 @@ public class DoctorServiceImpl implements DoctorService {
 	            }
 	        });
 
-
-	        // ✅ Log final slot states
-	        System.out.println("Final generated slots:");
-	        generatedSlots.forEach(s -> System.out
-	                .println(s.getSlot() + " | Available: " + s.isAvailable() + " | Reason: " + s.getReason()));
-
-	        // ✅ Add summary to response message
+	        // ✅ Step 6: Build final response
 	        long unavailableCount = generatedSlots.stream().filter(s -> !s.isAvailable()).count();
+
 	        response.setSuccess(true);
 	        response.setData(generatedSlots);
-	        response.setMessage("Slots generated successfully. " + unavailableCount
-	                + " slot(s) are unavailable due to branch conflicts.");
+	        response.setMessage("Slots generated successfully for " + date + ". "
+	                + unavailableCount + " slot(s) unavailable due to conflicts.");
 	        response.setStatus(200);
 
 	    } catch (Exception e) {
