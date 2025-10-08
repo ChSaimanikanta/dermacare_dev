@@ -1739,29 +1739,39 @@ public class DoctorServiceImpl implements DoctorService {
 	            .appendPattern("h:mm a")
 	            .toFormatter(Locale.ENGLISH);
 
-	    LocalTime start = LocalTime.parse(openingTime, formatter);
-	    LocalTime end = LocalTime.parse(closingTime, formatter);
+	    LocalTime start;
+	    LocalTime end;
+
+	    try {
+	        start = LocalTime.parse(openingTime.trim().toUpperCase(), formatter);
+	        end = LocalTime.parse(closingTime.trim().toUpperCase(), formatter);
+	    } catch (DateTimeParseException e) {
+	        throw new RuntimeException("Failed to parse time: " + e.getParsedString(), e);
+	    }
 
 	    List<DoctorAvailableSlotDTO> slots = new ArrayList<>();
 	    LocalDate today = ZonedDateTime.now(zoneId).toLocalDate();
-	    LocalDate slotDate = LocalDate.parse(date);
 	    LocalTime now = ZonedDateTime.now(zoneId).toLocalTime();
+	    LocalDate slotDate = LocalDate.parse(date);
+
+	    // ❌ If selected date is before today — no slots at all
+	    if (slotDate.isBefore(today)) {
+	        return slots;
+	    }
 
 	    while (!start.isAfter(end.minusMinutes(intervalMinutes))) {
+
+	        // ⏰ Skip past slots for today's date
+	        if (slotDate.equals(today) && start.isBefore(now)) {
+	            start = start.plusMinutes(intervalMinutes);
+	            continue;
+	        }
+
 	        DoctorAvailableSlotDTO slot = new DoctorAvailableSlotDTO();
 	        slot.setSlot(start.format(formatter));
 	        slot.setSlotbooked(false);
 	        slot.setAvailable(true);
 	        slot.setReason(null);
-
-	        // ⏰ Past date/time handling
-	        if (slotDate.isBefore(today)) {
-	            slot.setAvailable(false);
-	            slot.setReason("Date already passed");
-	        } else if (slotDate.equals(today) && start.isBefore(now)) {
-	            slot.setAvailable(false);
-	            slot.setReason("Time already passed");
-	        }
 
 	        slots.add(slot);
 	        start = start.plusMinutes(intervalMinutes);
