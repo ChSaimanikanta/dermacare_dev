@@ -154,7 +154,7 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 		if(b != null) {
 			entity.setPatientId(b.getPatientId());
 		}}}else {
-			entity.setPatientId(generatePatientId());}
+			entity.setPatientId(generatePatientId(request));}
 		}
 		return entity;		
 	}
@@ -179,10 +179,10 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 	}}
 	
 	
-	  private static String generatePatientId() {	       
+	  private static String generatePatientId(BookingRequset request) {	       
 	        String uuid = UUID.randomUUID().toString();
 	        String randomPart = uuid.replaceAll("-", "").substring(0, 6).toUpperCase();
-	        return "PT_" + randomPart;
+	        return request.getBranchId()+"_"+"PT_" + randomPart;
 	    }
 	
 	
