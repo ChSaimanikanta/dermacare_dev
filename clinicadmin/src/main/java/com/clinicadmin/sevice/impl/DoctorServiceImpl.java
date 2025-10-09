@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -31,9 +32,11 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.clinicadmin.dto.BookingResponse;
 import com.clinicadmin.dto.Branch;
 import com.clinicadmin.dto.ChangeDoctorPasswordDTO;
 import com.clinicadmin.dto.ClinicDTO;
@@ -50,12 +53,14 @@ import com.clinicadmin.dto.DoctorSubServiceDTO;
 import com.clinicadmin.dto.DoctorsDTO;
 import com.clinicadmin.dto.ResBody;
 import com.clinicadmin.dto.Response;
+import com.clinicadmin.dto.TempBlockingSlot;
 import com.clinicadmin.entity.ConsultationType;
 import com.clinicadmin.entity.DoctorCounter;
 import com.clinicadmin.entity.DoctorLoginCredentials;
 import com.clinicadmin.entity.DoctorSlot;
 import com.clinicadmin.entity.Doctors;
 import com.clinicadmin.feignclient.AdminServiceClient;
+import com.clinicadmin.feignclient.BookingFeign;
 import com.clinicadmin.feignclient.NotificationFeign;
 import com.clinicadmin.feignclient.ServiceFeignClient;
 import com.clinicadmin.repository.DoctorLoginCredentialsRepository;
@@ -101,6 +106,13 @@ public class DoctorServiceImpl implements DoctorService {
 
 	@Autowired
 	private MongoOperations mongoOperations;
+	
+	@Autowired
+	private  BookingFeign bookingFeign;
+	
+	private List<TempBlockingSlot> slots = new LinkedList<>();
+	
+	BookingResponse bkng = new BookingResponse();
 
 	public DoctorServiceImpl(DoctorsRepository doctorsRepository,
 			DoctorLoginCredentialsRepository credentialsRepository, PasswordEncoder passwordEncoder,
@@ -2781,5 +2793,63 @@ public class DoctorServiceImpl implements DoctorService {
 		}
 		return response;
 	}
+	
+	
+	public boolean blockingSlot(TempBlockingSlot tempBlockingSlot) {
+		boolean res = false;
+		try {
+			DoctorSlot doctorSlots = slotRepository.findByDoctorIdAndDate(tempBlockingSlot.getDoctorId(), tempBlockingSlot.getServiceDate());
+			if(doctorSlots.getDoctorId() != null) {
+			for (DoctorAvailableSlotDTO slot : doctorSlots.getAvailableSlots()) {
+				if (slot.getSlot().equalsIgnoreCase(tempBlockingSlot.getServicetime())) {
+					slot.setSlotbooked(true);
+					slotRepository.save(doctorSlots);
+					slots.add(tempBlockingSlot);
+					res = true;
+					break;
+				}else {
+					res = false;
+				}
+			}}else {
+				res = false;}
+		} catch (NullPointerException e) {
+			System.out.println(e.getMessage());
+			res = false;
+		}
+	return res;
+	}
+	
+	
+
+	@Scheduled(fixedRate = 120 * 1000)
+	public void checkingSlots(){
+			//System.out.println(System.currentTimeMillis());
+			//System.out.println(slots);			
+		try {
+			//System.out.println("invoked");
+			slots.stream().map(n->{
+				long millis = System.currentTimeMillis();
+				//System.out.println(millis);
+			long res =  Math.abs(millis - n.getTimeInMillis());
+			//System.out.println(res);
+			if(res >= 120000) {
+				try {
+				bkng =	bookingFeign.blockingSlot(n);
+				}catch(Exception e) {}
+				//System.out.println(bkng);
+				if(bkng == null) {
+					DoctorSlot doctorSlots = slotRepository.findByDoctorIdAndDate(n.getDoctorId(),n.getServiceDate());
+					//System.out.println(doctorSlots);
+					for (DoctorAvailableSlotDTO slot : doctorSlots.getAvailableSlots()) {
+						if (slot.getSlot().equalsIgnoreCase(n.getServicetime())) {
+							slot.setSlotbooked(false);
+							slotRepository.save(doctorSlots);
+							slots.remove(n);
+				}else{}}
+				}else{
+				slots.remove(n);	
+				}} return n;}).toList();
+			
+		}catch(Exception e) {System.out.println(e.getMessage());}}
 
 }
