@@ -1204,7 +1204,7 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 					               }}
 		
 		
-		public ResponseEntity<?> retrieveOneWeekAppointments(String cinicId,String branchId){						
+    public ResponseEntity<?> retrieveOneWeekAppointments(String cinicId,String branchId){						
 		ResponseStructure<List<BookingResponse>> res = new ResponseStructure<>();
 	    List<BookingResponse> finalList = new ArrayList<>();
 	   Response response = new Response();
@@ -1243,8 +1243,8 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 	                        for (DatesDTO d : details.getDates()) {
 	                        	//System.out.println(d);
 	                            LocalDate treatmentDate = LocalDate.parse(d.getDate());
-	                           // System.out.println(treatmentDate);
-	                            if (!treatmentDate.isBefore(today) && !treatmentDate.isAfter(sixthDate)) {
+	                            LocalDate serviceDate = LocalDate.parse(booking.getServiceDate()); 
+	                            if(!treatmentDate.isBefore(today) && !treatmentDate.isAfter(sixthDate) && !treatmentDate.isBefore(serviceDate)) {
 	                            	Booking bkng = new Booking(booking);		                            	
 	                            	bkng.setFollowupDate(treatmentDate.toString());
 	                            	//System.out.println(bkng);

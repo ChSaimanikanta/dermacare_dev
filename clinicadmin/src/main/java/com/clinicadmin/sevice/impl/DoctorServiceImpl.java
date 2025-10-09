@@ -1047,36 +1047,74 @@ public class DoctorServiceImpl implements DoctorService {
 	}
 
 	public boolean updateSlot(String doctorId, String date, String time) {
-		try {
-			DoctorSlot doctorSlots = slotRepository.findByDoctorIdAndDate(doctorId, date);
-			for (DoctorAvailableSlotDTO slot : doctorSlots.getAvailableSlots()) {
-				if (slot.getSlot().equalsIgnoreCase(time)) {
-					slot.setSlotbooked(true);
-					slotRepository.save(doctorSlots);
-					return true;
-				}
-			}
-			return false;
-		} catch (NullPointerException e) {
-			return false;
-		}
+	    if (doctorId == null || date == null || time == null) {
+	        return false;
+	    }
+	    try {
+	        // Fetch doctor slots from repository
+	        DoctorSlot doctorSlots = slotRepository.findByDoctorIdAndDate(doctorId, date);
+
+	        if (doctorSlots == null || doctorSlots.getAvailableSlots() == null || doctorSlots.getAvailableSlots().isEmpty()) {	           
+	            return false;
+	        }
+	        // Find the slot that matches the time
+	        Optional<DoctorAvailableSlotDTO> matchingSlotOpt = doctorSlots.getAvailableSlots()
+	                .stream()
+	                .filter(slot -> time.equalsIgnoreCase(slot.getSlot()))
+	                .findFirst();
+	        if (matchingSlotOpt.isPresent()) {
+	            DoctorAvailableSlotDTO matchingSlot = matchingSlotOpt.get();
+	            
+	            // Check if slot already booked
+	            if (matchingSlot.isSlotbooked()) {                
+	                return false;
+	            }
+	            // Mark the slot as booked
+	            matchingSlot.setSlotbooked(true);
+	            slotRepository.save(doctorSlots);	          
+	            return true;
+	        } else {	          
+	            return false;
+	        }
+	    } catch (Exception e) {
+	        return false;
+	    }
 	}
 
+
 	public boolean makingFalseDoctorSlot(String doctorId, String date, String time) {
-		try {
-			DoctorSlot doctorSlots = slotRepository.findByDoctorIdAndDate(doctorId, date);
-			for (DoctorAvailableSlotDTO slot : doctorSlots.getAvailableSlots()) {
-				if (slot.getSlot().equalsIgnoreCase(time)) {
-					slot.setSlotbooked(false);
-					slotRepository.save(doctorSlots);
-					return true;
-				}
-			}
-			return false;
-		} catch (NullPointerException e) {
-			return false;
-		}
+	    if (doctorId == null || date == null || time == null) {
+	        return false;
+	    }
+
+	    try {
+	        DoctorSlot doctorSlots = slotRepository.findByDoctorIdAndDate(doctorId, date);
+
+	        if (doctorSlots == null || doctorSlots.getAvailableSlots() == null || doctorSlots.getAvailableSlots().isEmpty()) {
+	            return false;
+	        }
+
+	        Optional<DoctorAvailableSlotDTO> matchingSlot = doctorSlots.getAvailableSlots()
+	                .stream()
+	                .filter(slot -> time.equalsIgnoreCase(slot.getSlot()))
+	                .findFirst();
+
+	        if (matchingSlot.isPresent()) {
+	            DoctorAvailableSlotDTO slot = matchingSlot.get();
+	            if (slot.isSlotbooked()) {
+	                slot.setSlotbooked(false);
+	                slotRepository.save(doctorSlots);
+	            }
+	            return true;
+	        }
+
+	        return false;
+
+	    } catch (Exception e) {
+	        return false;
+	    }
 	}
+
 	// ---------------------------------------------Slots using
 	// branchId----------------------------------------------
 
