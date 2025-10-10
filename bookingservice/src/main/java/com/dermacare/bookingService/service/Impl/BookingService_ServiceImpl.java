@@ -141,6 +141,7 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 		}else {
 			entity.setChannelId(null) ;
 		}}
+		if(request.getBookingFor().equalsIgnoreCase("Someone")){
 		if(request.getRelation() != null && request.getPatientId() == null) {
 		List<Booking> existingBooking = repository.findByRelationIgnoreCaseAndCustomerIdAndNameIgnoreCase(request.getRelation(),request.getCustomerId(),request.getName());
 		if(existingBooking != null && !existingBooking.isEmpty()) {
@@ -149,6 +150,12 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 			entity.setPatientId(b.getPatientId());
 		}}}else {
 			entity.setPatientId(generatePatientId(request));}
+		}}else {
+			if(request.getPatientId() == null) {
+				entity.setPatientId(generatePatientId(request));
+			}else {
+				entity.setPatientId(request.getPatientId());	
+			}
 		}
 		return entity;		
 	}
