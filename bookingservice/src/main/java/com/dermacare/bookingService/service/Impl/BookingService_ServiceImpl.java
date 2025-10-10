@@ -141,7 +141,7 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 		}else {
 			entity.setChannelId(null) ;
 		}}
-		if(request.getRelation() != null) {
+		if(request.getRelation() != null && request.getPatientId() == null) {
 		List<Booking> existingBooking = repository.findByRelationIgnoreCaseAndCustomerIdAndNameIgnoreCase(request.getRelation(),request.getCustomerId(),request.getName());
 		if(existingBooking != null && !existingBooking.isEmpty()) {
 		for(Booking b : existingBooking) {
