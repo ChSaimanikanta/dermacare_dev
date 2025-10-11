@@ -70,7 +70,6 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 	    if (request.getVisitType().equalsIgnoreCase("follow-up")) {
 	        Booking b = repository.findByMobileNumberAndPatientIdAndBookingId(
 	                request.getMobileNumber(), request.getPatientId(), request.getBookingId());
-
 	        if (b != null) {
 	            if (b.getStatus().equalsIgnoreCase("In-Progress")) {
 	                DateTimeFormatter date = DateTimeFormatter.ofPattern("yyyy-MM-dd");
@@ -1128,162 +1127,162 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 
 		
 		
-		@Scheduled(cron = "0 02 00 * * ?")
-		////@Scheduled(fixedRate = 20000)
-		private void changingStatusFromInprogressToCompletedForSittings() {
-			 try {
-		        List<Booking> bookings = repository.findAll();
-			        for (Booking b : bookings) {
-			            if (b.getStatus().equalsIgnoreCase("In-Progress")) {
-			            	Response res = doctorFeign.getDoctorSaveDetailsByBookingId(b.getBookingId()).getBody();
-			            	//System.out.println(b.getBookingId());
-			            	DoctorSaveDetailsDTO dto = new ObjectMapper().convertValue(res.getData(),DoctorSaveDetailsDTO.class);
-			            	//System.out.println(dto);
-			            	if(dto != null) {
-			            	if(dto.getTreatments() != null) {
-			            	for(Map.Entry<String,TreatmentDetailsDTO> mp : dto.getTreatments().getGeneratedData().entrySet()){
-			            	TreatmentDetailsDTO treatments = mp.getValue();
-			            	//System.out.println(treatments);
-			            	if(treatments != null) {
-			            	 List<DatesDTO> dates =	treatments.getDates();
-			            	 //System.out.println(dates.size());
-			            	 int lastIndex = dates.size()-1;
-			            	 DatesDTO datesDTO = dates.get(lastIndex);
-			            	// System.out.println("last index"+datesDTO );
-			            	 String date = datesDTO.getDate();
-			            	 //System.out.println(date);
-			                DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-			                LocalDate lastSitting = LocalDate.parse(date, inputFormatter);
-		                    //System.out.println(lastSitting);	                    
-			                LocalDate todayDate = LocalDate.now(); 
-		                  // System.out.println(todayDate);
-		                   // System.out.println(gap);	               
-			                int expirationDays = Integer.parseInt(Character.toString(b.getConsultationExpiration().charAt(0)) + 
-			            			Character.toString(b.getConsultationExpiration().charAt(1)));
-		                    //System.out.println(expirationDays);
-			                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-			                LocalDate serviceDate = LocalDate.parse(b.getServiceDate(),formatter);
-			                LocalDate plusedTime = serviceDate.plusDays(expirationDays);
-			                if(!lastSitting.isBefore(plusedTime)) {  /// if it is before plustime they its status should be in inprogress
-			                	  if(!lastSitting.isBefore(serviceDate) && lastSitting.isBefore(todayDate)) {
-			                		b.setStatus("Completed");
-			                		//System.out.println("status changed");
-			                		  repository.save(b);
-			                		  try {
-			                		  NotificationDTO n = notificationFeign.getNotificationByBookingId(b.getBookingId());
-					                    n.getData().setStatus("Completed");
-					                    notificationFeign.updateNotification(n);
-			                		  }catch(Exception e) {
-			                			  System.out.println(e.getMessage());
-			                		  }
-			                	}}else{
-			                		if(todayDate.isAfter(plusedTime)) {
-				                		b.setStatus("Completed");
-				                		//System.out.println("status changed");
-				                		  repository.save(b);
-				                		  try {
-					                		  NotificationDTO n = notificationFeign.getNotificationByBookingId(b.getBookingId());
-							                    n.getData().setStatus("Completed");
-							                    notificationFeign.updateNotification(n);
-					                		  }catch(Exception e) {
-					                			  System.out.println(e.getMessage());
-					                		  }}}}}}else{
-				                	DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-						            LocalDate followUpDate = LocalDate.parse(dto.getFollowUp().getNextFollowUpDate(), inputFormatter);
-					                    //System.out.println(followUpDate);
-						             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-						             LocalDate serviceDate = LocalDate.parse(b.getServiceDate(),formatter);
-						             LocalDate todayDate = LocalDate.now();
-						             if(!followUpDate.isBefore(serviceDate) && followUpDate.isBefore(todayDate)) {
-						                	b.setStatus("Completed");
-						                	//System.out.println("status changed");
-					                		  repository.save(b);
-					                		  NotificationDTO n = notificationFeign.getNotificationByBookingId(b.getBookingId());
-							                    n.getData().setStatus("Completed");
-							                    notificationFeign.updateNotification(n);
-						               }}}}}}catch (Exception e) {
-						            	   System.out.println(e.getMessage());
-						               }}
-		
-		
-		
-		
-		@Scheduled(cron = "0 30 00 * * ?")
-		private void SecondTimeChangingStatusFromInprogressToCompletedForSittings() {
-		    try {
-		        List<Booking> bookings = repository.findAll();
-		        for (Booking b : bookings) {
-		            if (b.getStatus().equalsIgnoreCase("In-Progress")) {
-		            	Response res = doctorFeign.getDoctorSaveDetailsByBookingId(b.getBookingId()).getBody();
-		            	//System.out.println(b.getBookingId());
-		            	DoctorSaveDetailsDTO dto = new ObjectMapper().convertValue(res.getData(),DoctorSaveDetailsDTO.class);
-		            	//System.out.println(dto);
-		            	if(dto != null) {
-		            	if(dto.getTreatments() != null) {
-		            	for(Map.Entry<String,TreatmentDetailsDTO> mp : dto.getTreatments().getGeneratedData().entrySet()){
-		            	TreatmentDetailsDTO treatments = mp.getValue();
-		            	//System.out.println(treatments);
-		            	if(treatments != null) {
-		            	 List<DatesDTO> dates =	treatments.getDates();
-		            	 //System.out.println(dates.size());
-		            	 int lastIndex = dates.size()-1;
-		            	 DatesDTO datesDTO = dates.get(lastIndex);
-		            	// System.out.println("last index"+datesDTO );
-		            	 String date = datesDTO.getDate();
-		            	 //System.out.println(date);
-		                DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-		                LocalDate lastSitting = LocalDate.parse(date, inputFormatter);
-	                    //System.out.println(lastSitting);	                    
-		                LocalDate todayDate = LocalDate.now(); 
-	                  // System.out.println(todayDate);
-	                   // System.out.println(gap);	               
-		                int expirationDays = Integer.parseInt(Character.toString(b.getConsultationExpiration().charAt(0)) + 
-		            			Character.toString(b.getConsultationExpiration().charAt(1)));
-	                    //System.out.println(expirationDays);
-		                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-		                LocalDate serviceDate = LocalDate.parse(b.getServiceDate(),formatter);
-		                LocalDate plusedTime = serviceDate.plusDays(expirationDays);
-		                if(!lastSitting.isBefore(plusedTime)) {  /// if it is before plustime they its status should be in inprogress
-		                	  if(!lastSitting.isBefore(serviceDate) && lastSitting.isBefore(todayDate)) {
-		                		b.setStatus("Completed");
-		                		//System.out.println("status changed");
-		                		  repository.save(b);
-		                		  try {
-		                		  NotificationDTO n = notificationFeign.getNotificationByBookingId(b.getBookingId());
-				                    n.getData().setStatus("Completed");
-				                    notificationFeign.updateNotification(n);
-		                		  }catch(Exception e) {
-		                			  System.out.println(e.getMessage());
-		                		  }
-		                	}}else{
-		                		if(todayDate.isAfter(plusedTime)) {
-			                		b.setStatus("Completed");
-			                		//System.out.println("status changed");
-			                		  repository.save(b);
-			                		  try {
-				                		  NotificationDTO n = notificationFeign.getNotificationByBookingId(b.getBookingId());
-						                    n.getData().setStatus("Completed");
-						                    notificationFeign.updateNotification(n);
-				                		  }catch(Exception e) {
-				                			  System.out.println(e.getMessage());
-				                		  }}}}}}else{
-			                	DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-					            LocalDate followUpDate = LocalDate.parse(dto.getFollowUp().getNextFollowUpDate(), inputFormatter);
-				                    //System.out.println(followUpDate);
-					             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-					             LocalDate serviceDate = LocalDate.parse(b.getServiceDate(),formatter);
-					             LocalDate todayDate = LocalDate.now();
-					             if(!followUpDate.isBefore(serviceDate) && followUpDate.isBefore(todayDate)) {
-					                	b.setStatus("Completed");
-					                	//System.out.println("status changed");
-				                		  repository.save(b);
-				                		  NotificationDTO n = notificationFeign.getNotificationByBookingId(b.getBookingId());
-						                    n.getData().setStatus("Completed");
-						                    notificationFeign.updateNotification(n);
-					               }}}}}}catch (Exception e) {
-					            	   System.out.println(e.getMessage());
-					               }}
-		
+//		@Scheduled(cron = "0 02 00 * * ?")
+//		////@Scheduled(fixedRate = 20000)
+//		private void changingStatusFromInprogressToCompletedForSittings() {
+//			 try {
+//		        List<Booking> bookings = repository.findAll();
+//			        for (Booking b : bookings) {
+//			            if (b.getStatus().equalsIgnoreCase("In-Progress")) {
+//			            	Response res = doctorFeign.getDoctorSaveDetailsByBookingId(b.getBookingId()).getBody();
+//			            	//System.out.println(b.getBookingId());
+//			            	DoctorSaveDetailsDTO dto = new ObjectMapper().convertValue(res.getData(),DoctorSaveDetailsDTO.class);
+//			            	//System.out.println(dto);
+//			            	if(dto != null) {
+//			            	if(dto.getTreatments() != null) {
+//			            	for(Map.Entry<String,TreatmentDetailsDTO> mp : dto.getTreatments().getGeneratedData().entrySet()){
+//			            	TreatmentDetailsDTO treatments = mp.getValue();
+//			            	//System.out.println(treatments);
+//			            	if(treatments != null) {
+//			            	 List<DatesDTO> dates =	treatments.getDates();
+//			            	 //System.out.println(dates.size());
+//			            	 int lastIndex = dates.size()-1;
+//			            	 DatesDTO datesDTO = dates.get(lastIndex);
+//			            	// System.out.println("last index"+datesDTO );
+//			            	 String date = datesDTO.getDate();
+//			            	 //System.out.println(date);
+//			                DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+//			                LocalDate lastSitting = LocalDate.parse(date, inputFormatter);
+//		                    //System.out.println(lastSitting);	                    
+//			                LocalDate todayDate = LocalDate.now(); 
+//		                  // System.out.println(todayDate);
+//		                   // System.out.println(gap);	               
+//			                int expirationDays = Integer.parseInt(Character.toString(b.getConsultationExpiration().charAt(0)) + 
+//			            			Character.toString(b.getConsultationExpiration().charAt(1)));
+//		                    //System.out.println(expirationDays);
+//			                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+//			                LocalDate serviceDate = LocalDate.parse(b.getServiceDate(),formatter);
+//			                LocalDate plusedTime = serviceDate.plusDays(expirationDays);
+//			                if(!lastSitting.isBefore(plusedTime)) {  /// if it is before plustime they its status should be in inprogress
+//			                	  if(!lastSitting.isBefore(serviceDate) && lastSitting.isBefore(todayDate)) {
+//			                		b.setStatus("Completed");
+//			                		//System.out.println("status changed");
+//			                		  repository.save(b);
+//			                		  try {
+//			                		  NotificationDTO n = notificationFeign.getNotificationByBookingId(b.getBookingId());
+//					                    n.getData().setStatus("Completed");
+//					                    notificationFeign.updateNotification(n);
+//			                		  }catch(Exception e) {
+//			                			  System.out.println(e.getMessage());
+//			                		  }
+//			                	}}else{
+//			                		if(todayDate.isAfter(plusedTime)) {
+//				                		b.setStatus("Completed");
+//				                		//System.out.println("status changed");
+//				                		  repository.save(b);
+//				                		  try {
+//					                		  NotificationDTO n = notificationFeign.getNotificationByBookingId(b.getBookingId());
+//							                    n.getData().setStatus("Completed");
+//							                    notificationFeign.updateNotification(n);
+//					                		  }catch(Exception e) {
+//					                			  System.out.println(e.getMessage());
+//					                		  }}}}}}else{
+//				                	DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+//						            LocalDate followUpDate = LocalDate.parse(dto.getFollowUp().getNextFollowUpDate(), inputFormatter);
+//					                    //System.out.println(followUpDate);
+//						             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+//						             LocalDate serviceDate = LocalDate.parse(b.getServiceDate(),formatter);
+//						             LocalDate todayDate = LocalDate.now();
+//						             if(!followUpDate.isBefore(serviceDate) && followUpDate.isBefore(todayDate)) {
+//						                	b.setStatus("Completed");
+//						                	//System.out.println("status changed");
+//					                		  repository.save(b);
+//					                		  NotificationDTO n = notificationFeign.getNotificationByBookingId(b.getBookingId());
+//							                    n.getData().setStatus("Completed");
+//							                    notificationFeign.updateNotification(n);
+//						               }}}}}}catch (Exception e) {
+//						            	   System.out.println(e.getMessage());
+//						               }}
+//		
+//		
+//		
+//		
+//		@Scheduled(cron = "0 30 00 * * ?")
+//		private void SecondTimeChangingStatusFromInprogressToCompletedForSittings() {
+//		    try {
+//		        List<Booking> bookings = repository.findAll();
+//		        for (Booking b : bookings) {
+//		            if (b.getStatus().equalsIgnoreCase("In-Progress")) {
+//		            	Response res = doctorFeign.getDoctorSaveDetailsByBookingId(b.getBookingId()).getBody();
+//		            	//System.out.println(b.getBookingId());
+//		            	DoctorSaveDetailsDTO dto = new ObjectMapper().convertValue(res.getData(),DoctorSaveDetailsDTO.class);
+//		            	//System.out.println(dto);
+//		            	if(dto != null) {
+//		            	if(dto.getTreatments() != null) {
+//		            	for(Map.Entry<String,TreatmentDetailsDTO> mp : dto.getTreatments().getGeneratedData().entrySet()){
+//		            	TreatmentDetailsDTO treatments = mp.getValue();
+//		            	//System.out.println(treatments);
+//		            	if(treatments != null) {
+//		            	 List<DatesDTO> dates =	treatments.getDates();
+//		            	 //System.out.println(dates.size());
+//		            	 int lastIndex = dates.size()-1;
+//		            	 DatesDTO datesDTO = dates.get(lastIndex);
+//		            	// System.out.println("last index"+datesDTO );
+//		            	 String date = datesDTO.getDate();
+//		            	 //System.out.println(date);
+//		                DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+//		                LocalDate lastSitting = LocalDate.parse(date, inputFormatter);
+//	                    //System.out.println(lastSitting);	                    
+//		                LocalDate todayDate = LocalDate.now(); 
+//	                  // System.out.println(todayDate);
+//	                   // System.out.println(gap);	               
+//		                int expirationDays = Integer.parseInt(Character.toString(b.getConsultationExpiration().charAt(0)) + 
+//		            			Character.toString(b.getConsultationExpiration().charAt(1)));
+//	                    //System.out.println(expirationDays);
+//		                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+//		                LocalDate serviceDate = LocalDate.parse(b.getServiceDate(),formatter);
+//		                LocalDate plusedTime = serviceDate.plusDays(expirationDays);
+//		                if(!lastSitting.isBefore(plusedTime)) {  /// if it is before plustime they its status should be in inprogress
+//		                	  if(!lastSitting.isBefore(serviceDate) && lastSitting.isBefore(todayDate)) {
+//		                		b.setStatus("Completed");
+//		                		//System.out.println("status changed");
+//		                		  repository.save(b);
+//		                		  try {
+//		                		  NotificationDTO n = notificationFeign.getNotificationByBookingId(b.getBookingId());
+//				                    n.getData().setStatus("Completed");
+//				                    notificationFeign.updateNotification(n);
+//		                		  }catch(Exception e) {
+//		                			  System.out.println(e.getMessage());
+//		                		  }
+//		                	}}else{
+//		                		if(todayDate.isAfter(plusedTime)) {
+//			                		b.setStatus("Completed");
+//			                		//System.out.println("status changed");
+//			                		  repository.save(b);
+//			                		  try {
+//				                		  NotificationDTO n = notificationFeign.getNotificationByBookingId(b.getBookingId());
+//						                    n.getData().setStatus("Completed");
+//						                    notificationFeign.updateNotification(n);
+//				                		  }catch(Exception e) {
+//				                			  System.out.println(e.getMessage());
+//				                		  }}}}}}else{
+//			                	DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+//					            LocalDate followUpDate = LocalDate.parse(dto.getFollowUp().getNextFollowUpDate(), inputFormatter);
+//				                    //System.out.println(followUpDate);
+//					             DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+//					             LocalDate serviceDate = LocalDate.parse(b.getServiceDate(),formatter);
+//					             LocalDate todayDate = LocalDate.now();
+//					             if(!followUpDate.isBefore(serviceDate) && followUpDate.isBefore(todayDate)) {
+//					                	b.setStatus("Completed");
+//					                	//System.out.println("status changed");
+//				                		  repository.save(b);
+//				                		  NotificationDTO n = notificationFeign.getNotificationByBookingId(b.getBookingId());
+//						                    n.getData().setStatus("Completed");
+//						                    notificationFeign.updateNotification(n);
+//					               }}}}}}catch (Exception e) {
+//					            	   System.out.println(e.getMessage());
+//					               }}
+//		
 		
     public ResponseEntity<?> retrieveOneWeekAppointments(String cinicId,String branchId){						
 		ResponseStructure<List<BookingResponse>> res = new ResponseStructure<>();
