@@ -64,67 +64,95 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 
 	@Override
 	public ResponseEntity<?> addService(BookingRequset request) {
-		ResponseStructure<BookingResponse> response = new ResponseStructure<BookingResponse>();
-		Booking entity = toEntity(request);
-		if(request.getVisitType().equalsIgnoreCase("follow-up")){
-		if(repository.findByMobileNumberAndPatientIdAndBookingId(request.getMobileNumber(),request.getPatientId(),request.getBookingId()) != null){
-		Booking b = repository.findByMobileNumberAndPatientIdAndBookingId(request.getMobileNumber(),request.getPatientId(),request.getBookingId());
-			if(b.getStatus().equalsIgnoreCase("In-Progress")){
-			DateTimeFormatter date = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-			LocalDate previousServiceDate = LocalDate.parse(b.getServiceDate(), date);
-			LocalDate plusDays = previousServiceDate.plusDays(Integer.parseInt(Character.toString(b.getConsultationExpiration().charAt(0)) + 
-			Character.toString(b.getConsultationExpiration().charAt(1))));
-			//System.out.println(plusDays);
-			LocalDate currentAppoitnmentServiceDate = LocalDate.parse(request.getServiceDate(), date);
-			//System.out.println(currentAppoitnmentServiceDate);
-			boolean isEligible = false;
-			if(!currentAppoitnmentServiceDate.isBefore(previousServiceDate) && !currentAppoitnmentServiceDate.isAfter(plusDays) && b.getFreeFollowUpsLeft() <= b.getFreeFollowUps()){
-				isEligible = true;}	
-			if(isEligible){
-				b.setStatus("Confirmed");
-				b.setServicetime(request.getServicetime());
-				b.setServiceDate(request.getServiceDate());
-				b.setVisitType(request.getVisitType());
-				Booking ety = repository.save(b);
-				ety.setReports(null);
-				ety.setNotes(null);
-				ety.setAttachments(null);
-				ety.setConsentFormPdf(null);
-				ety.setPrescriptionPdf(null);
-				try {
-					kafkaProducer.publishBooking(ety);
-					}catch (Exception e) {
-						throw new RuntimeException("Unable to book service");}
-				BookingResponse res = new ObjectMapper().convertValue(ety, BookingResponse.class);
-				response = ResponseStructure.buildResponse(res, "Service Booked Sucessfully",
-				HttpStatus.OK, HttpStatus.OK.value());			
-			}else{
-			response = ResponseStructure.buildResponse(null, "Unable to proceed with booking. Please check the service date and your available free follow-ups.",
-			HttpStatus.PAYMENT_REQUIRED, HttpStatus.PAYMENT_REQUIRED.value());}	
-		}else {
-			response = ResponseStructure.buildResponse(null, "No In Progress Appointments Found With Priovided AppointmentId.",
-					HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value());}	
-		}else {
-			response = ResponseStructure.buildResponse(null, "No Appointment Found.",
-					HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value());}	
-		}else{	
-		entity.setStatus("Confirmed");
-		Booking res = repository.save(entity);
-		res.setReports(null);
-		res.setNotes(null);
-		res.setAttachments(null);
-		res.setConsentFormPdf(null);
-		res.setPrescriptionPdf(null);
-		try {
-			kafkaProducer.publishBooking(res);
-			}catch (Exception e) {
-				throw new RuntimeException("Unable to book service");
-			}
-		BookingResponse bRes = new ObjectMapper().convertValue(res, BookingResponse.class);
-		response = ResponseStructure.buildResponse(bRes,"Service Booked Sucessfully",
-				HttpStatus.CREATED, HttpStatus.CREATED.value());}
-		return ResponseEntity.status(response.getStatusCode()).body(response);
+	    ResponseStructure<BookingResponse> response = new ResponseStructure<>();
+	    Booking entity = toEntity(request);
+
+	    if (request.getVisitType().equalsIgnoreCase("follow-up")) {
+	        Booking b = repository.findByMobileNumberAndPatientIdAndBookingId(
+	                request.getMobileNumber(), request.getPatientId(), request.getBookingId());
+
+	        if (b != null) {
+	            if (b.getStatus().equalsIgnoreCase("In-Progress")) {
+	                DateTimeFormatter date = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+	                LocalDate previousServiceDate = LocalDate.parse(b.getServiceDate(), date);
+
+	                // ✅ Safer expiration parsing
+	                int days = Integer.parseInt(b.getConsultationExpiration().split(" ")[0]);
+	                LocalDate plusDays = previousServiceDate.plusDays(days);
+
+	                LocalDate currentAppointmentServiceDate = LocalDate.parse(request.getServiceDate(), date);
+
+	                boolean isEligible = false;
+	                if (!currentAppointmentServiceDate.isBefore(previousServiceDate)
+	                        && !currentAppointmentServiceDate.isAfter(plusDays)
+	                        && b.getFreeFollowUpsLeft() > 0) {
+	                    isEligible = true;
+	                }
+
+	                if (isEligible) {
+	                    b.setStatus("Confirmed");
+	                    b.setServicetime(request.getServicetime());
+	                    b.setServiceDate(request.getServiceDate());
+	                    b.setVisitType(request.getVisitType());
+
+	                    // Decrement free follow-ups left
+	                    b.setFreeFollowUpsLeft(b.getFreeFollowUpsLeft() - 1);
+
+	                    Booking ety = repository.save(b);
+	                    ety.setReports(null);
+	                    ety.setNotes(null);
+	                    ety.setAttachments(null);
+	                    ety.setConsentFormPdf(null);
+	                    ety.setPrescriptionPdf(null);
+
+	                    try {
+	                        kafkaProducer.publishBooking(ety);
+	                    } catch (Exception e) {
+	                        throw new RuntimeException("Unable to book service");
+	                    }
+
+	                    BookingResponse res = new ObjectMapper().convertValue(ety, BookingResponse.class);
+	                    response = ResponseStructure.buildResponse(res, "Service Booked Successfully",
+	                            HttpStatus.OK, HttpStatus.OK.value());
+
+	                } else {
+	                    response = ResponseStructure.buildResponse(null,
+	                            "Unable to proceed with booking. Please check the service date and your available free follow-ups.",
+	                            HttpStatus.PAYMENT_REQUIRED, HttpStatus.PAYMENT_REQUIRED.value());
+	                }
+	            } else {
+	                response = ResponseStructure.buildResponse(null,
+	                        "No In Progress Appointments Found With Provided AppointmentId.",
+	                        HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value());
+	            }
+	        } else {
+	            response = ResponseStructure.buildResponse(null,
+	                    "No Appointment Found.",
+	                    HttpStatus.NOT_FOUND, HttpStatus.NOT_FOUND.value());
+	        }
+	    } else {
+	        entity.setStatus("Confirmed");
+	        Booking res = repository.save(entity);
+	        res.setReports(null);
+	        res.setNotes(null);
+	        res.setAttachments(null);
+	        res.setConsentFormPdf(null);
+	        res.setPrescriptionPdf(null);
+
+	        try {
+	            kafkaProducer.publishBooking(res);
+	        } catch (Exception e) {
+	            throw new RuntimeException("Unable to book service");
+	        }
+
+	        BookingResponse bRes = new ObjectMapper().convertValue(res, BookingResponse.class);
+	        response = ResponseStructure.buildResponse(bRes, "Service Booked Successfully",
+	                HttpStatus.CREATED, HttpStatus.CREATED.value());
+	    }
+
+	    return ResponseEntity.status(response.getStatusCode()).body(response);
 	}
+
 		
 	
 	private Booking toEntity(BookingRequset request) {
@@ -293,7 +321,9 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 
 	        if (existingBookings != null && !existingBookings.isEmpty()) {
 	            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-	            LocalDate currentDate = LocalDate.now();
+	            
+	            // ✅ Force IST time zone
+	            LocalDate currentDate = LocalDate.now(ZoneId.of("Asia/Kolkata"));
 
 	            for (Booking booking : existingBookings) {
 	                try {
@@ -338,87 +368,77 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 	    return ResponseEntity.status(res.getStatusCode()).body(res);
 	}
 
-	public ResponseEntity<?> filterDoctorAppointmentsByDoctorId(String hospitalId,String doctorId,String number) {
-		ResponseStructure<List<BookingResponse>> res = new ResponseStructure<List<BookingResponse>>();
-		List<BookingResponse> resnse = new ArrayList<>();
-		try {
-			List<Booking> existingBooking = repository.findByClinicIdAndDoctorId(hospitalId, doctorId);
-			DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-			String currentDate = LocalDate.now().format(dateFormatter);	
-			if(existingBooking != null && !existingBooking.isEmpty()) {
-			for(Booking b : existingBooking) {
-			switch(number) {
-			case "1" :if(b.getConsultationType().equalsIgnoreCase("Services & Treatments") || b.getConsultationType().equalsIgnoreCase("In-Clinic Consultation") || b.getConsultationType().equalsIgnoreCase("Online Consultation")){
-				if(b.getStatus().equalsIgnoreCase("Confirmed") && !b.getServiceDate().equals(currentDate)) {
-					resnse.add(toResponse(b));
-					if(resnse != null && !resnse.isEmpty()) {
-						res.setStatusCode(200);
-						res.setData(resnse);
-						res.setMessage("Appointments Are Found");}
-					}else{
-						res.setStatusCode(200);
-						res.setData(resnse);
-						res.setMessage("Appointments Are Not Found");	
-						}}else{
-							res.setStatusCode(200);
-							res.setData(resnse);
-							res.setMessage("Appointments Are Not Found");}
-			           break;
-			
-				case "2":if(b.getConsultationType().equalsIgnoreCase("Online Consultation")) {
-					if(b.getStatus().equalsIgnoreCase("Confirmed") && !b.getServiceDate().equals(currentDate)) {
-						resnse.add(toResponse(b));
-						res.setStatusCode(200);
-						res.setData(resnse);
-						res.setMessage("Appointments Are Found");
-						}else {
-							res.setStatusCode(200);
-							res.setData(resnse);
-							res.setMessage("Appointments Are Not Found");
-						}}else{
-							res.setStatusCode(200);
-							res.setData(resnse);
-							res.setMessage("Appointments Are Not Found");}
-				            break;
-				       
-				case "3":if(b.getStatus().equalsIgnoreCase("Completed")) {
-					resnse.add(toResponse(b));
-					res.setStatusCode(200);
-					res.setData(resnse);
-					res.setMessage("Appointments Are Found");
-				}else{
-					res.setStatusCode(200);
-					res.setData(resnse);
-					res.setMessage("Appointments Are Not Found");}
-				    break;
-				    	    
-				case "4":if(b.getStatus().equalsIgnoreCase("In-Progress")) {
-					resnse.add(toResponse(b));
-					res.setStatusCode(200);
-					res.setData(resnse);
-					res.setMessage("Appointments Are Found");
-				}else{
-					res.setStatusCode(200);
-					res.setData(resnse);
-					res.setMessage("Appointments Are Not Found");}
-				    break;   
-				    			
-			    default:
-				    resnse = null;
-				    res.setStatusCode(200);
-				    res.setData(resnse);
-				    res.setMessage("Appointments Are Not Found");}
-			    }}else{
-				    res.setStatusCode(200);
-			        res.setData(resnse);
-			        res.setMessage("Appointments Are Not Found");}
-				}catch(Exception e) {
-			      resnse = null;
-			      res.setStatusCode(500);
-			      res.setData(resnse);
-			      res.setMessage(e.getMessage());}
-	      return ResponseEntity.status(res.getStatusCode()).body(res);}
-							
+
+	public ResponseEntity<?> filterDoctorAppointmentsByDoctorId(String hospitalId, String doctorId, String number) {
+	    ResponseStructure<List<BookingResponse>> res = new ResponseStructure<>();
+	    List<BookingResponse> resnse = new ArrayList<>();
+	    try {
+	        List<Booking> existingBooking = repository.findByClinicIdAndDoctorId(hospitalId, doctorId);
+	        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+	        // ✅ Force IST timezone
+	        String currentDate = LocalDate.now(ZoneId.of("Asia/Kolkata")).format(dateFormatter);
+
+	        if (existingBooking != null && !existingBooking.isEmpty()) {
+	            for (Booking b : existingBooking) {
+	                switch (number) {
+	                    case "1":
+	                        if (b.getConsultationType().equalsIgnoreCase("Services & Treatments")
+	                                || b.getConsultationType().equalsIgnoreCase("In-Clinic Consultation")
+	                                || b.getConsultationType().equalsIgnoreCase("Online Consultation")) {
+	                            if (b.getStatus().equalsIgnoreCase("Confirmed") && !b.getServiceDate().equals(currentDate)) {
+	                                resnse.add(toResponse(b));
+	                            }
+	                        }
+	                        break;
+
+	                    case "2":
+	                        if (b.getConsultationType().equalsIgnoreCase("Online Consultation")) {
+	                            if (b.getStatus().equalsIgnoreCase("Confirmed") && !b.getServiceDate().equals(currentDate)) {
+	                                resnse.add(toResponse(b));
+	                            }
+	                        }
+	                        break;
+
+	                    case "3":
+	                        if (b.getStatus().equalsIgnoreCase("Completed")) {
+	                            resnse.add(toResponse(b));
+	                        }
+	                        break;
+
+	                    case "4":
+	                        if (b.getStatus().equalsIgnoreCase("In-Progress")) {
+	                            resnse.add(toResponse(b));
+	                        }
+	                        break;
+
+	                    default:
+	                        break;
+	                }
+	            }
+
+	            if (!resnse.isEmpty()) {
+	                res.setStatusCode(200);
+	                res.setData(resnse);
+	                res.setMessage("Appointments Are Found");
+	            } else {
+	                res.setStatusCode(200);
+	                res.setData(resnse);
+	                res.setMessage("Appointments Are Not Found");
+	            }
+	        } else {
+	            res.setStatusCode(200);
+	            res.setData(resnse);
+	            res.setMessage("Appointments Are Not Found");
+	        }
+	    } catch (Exception e) {
+	        resnse = null;
+	        res.setStatusCode(500);
+	        res.setData(resnse);
+	        res.setMessage(e.getMessage());
+	    }
+	    return ResponseEntity.status(res.getStatusCode()).body(res);
+	}
 
 		
 	public ResponseEntity<?> getCompletedApntsByDoctorId(String hospitalId,String doctorId) {
