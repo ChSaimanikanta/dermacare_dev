@@ -1303,7 +1303,6 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 	        //System.out.println(today);
 	        LocalDate sixthDate = today.plusDays(6);
 	       // System.out.println(sixthDate);
-
 	        for (Booking booking : booked) {
 	            if ("In-Progress".equalsIgnoreCase(booking.getStatus())){
 	            if(booking.getServiceDate().equals(today.toString())) {
@@ -1320,18 +1319,11 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 	                !saveDetails.getTreatments().getGeneratedData().isEmpty()) {
 	                for (TreatmentDetailsDTO details : saveDetails.getTreatments().getGeneratedData().values()) {
 	                	//System.out.println(details);
-	                    if (details.getDates() != null) {
-	                        for (DatesDTO d : details.getDates()) {
-	                        	//System.out.println(d);
-	                            LocalDate treatmentDate = LocalDate.parse(d.getDate());
-	                            LocalDate serviceDate = LocalDate.parse(booking.getServiceDate()); 
-	                            if(!treatmentDate.isBefore(today) && !treatmentDate.isAfter(sixthDate) && !treatmentDate.isBefore(serviceDate)) {
-	                            	Booking bkng = new Booking(booking);		                            	
-	                            	bkng.setFollowupDate(treatmentDate.toString());
-	                            	//System.out.println(bkng);
-	                            	bkng.setStatus("In-Progress");
-	                                finalList.add(toResponse(bkng));                         
-	                }}}}}else{
+	                    if (details != null) {
+	                    	booking.setSittings(details.getSittings());
+	                    	 finalList.add(toResponse(booking));
+	                    	 
+	                }}}else{
 	            	if(saveDetails.getFollowUp() != null &&
 	                    saveDetails.getFollowUp().getNextFollowUpDate() != null) {
 	                LocalDate followDate = LocalDate.parse(saveDetails.getFollowUp().getNextFollowUpDate());
@@ -1597,21 +1589,25 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 		    try {
 		        List<Booking> bookings = repository.findByCustomerId(customerId);
 
-		        // Group by relation → List of RelationInfoDTO
 		        Map<String, List<RelationInfoDTO>> data = bookings.stream()
 		                .collect(Collectors.groupingBy(
-		                        Booking::getRelation, // key = relation (father/mother/brother)
-		                        LinkedHashMap::new, // preserve order
-		                        Collectors.mapping(n -> {
-		                            RelationInfoDTO dto = new RelationInfoDTO();
-		                            dto.setAddress(n.getPatientAddress());
-		                            dto.setAge(n.getAge());
-		                            dto.setFullname(n.getName());
-		                            dto.setMobileNumber(n.getMobileNumber());
-		                            dto.setRelation(n.getRelation());
-		                            dto.setGender(n.getGender());
-		                            return dto;
-		                        }, Collectors.toList())
+		                        Booking::getRelation,
+		                        LinkedHashMap::new,
+		                        Collectors.collectingAndThen(
+		                                Collectors.mapping(n -> {
+		                                    RelationInfoDTO dto = new RelationInfoDTO();
+		                                    dto.setAddress(n.getPatientAddress());
+		                                    dto.setAge(n.getAge());
+		                                    dto.setFullname(n.getName());
+		                                    dto.setMobileNumber(n.getMobileNumber());
+		                                    dto.setRelation(n.getRelation());
+		                                    dto.setGender(n.getGender());
+		                                    dto.setCustomerId(n.getCustomerId());
+		                                    dto.setPatientId(n.getPatientId());
+		                                    return dto;
+		                                }, Collectors.toList()),
+		                                list -> list.stream().distinct().collect(Collectors.toList()) // remove duplicates
+		                        )
 		                ));
 		        res.setStatusCode(200);
 		        res.setHttpStatus(HttpStatus.OK);
