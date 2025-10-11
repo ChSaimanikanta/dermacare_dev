@@ -7,6 +7,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -16,18 +17,19 @@ import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+
 import com.dermacare.bookingService.dto.BookingInfoByInput;
 import com.dermacare.bookingService.dto.BookingRequset;
 import com.dermacare.bookingService.dto.BookingResponse;
 import com.dermacare.bookingService.dto.CustomerOnbordingDTO;
 import com.dermacare.bookingService.dto.DatesDTO;
 import com.dermacare.bookingService.dto.DoctorSaveDetailsDTO;
-import com.dermacare.bookingService.dto.NotificationDTO;
 import com.dermacare.bookingService.dto.RelationInfoDTO;
 import com.dermacare.bookingService.dto.TreatmentDetailsDTO;
 import com.dermacare.bookingService.entity.Booking;
@@ -896,8 +898,9 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 		public ResponseEntity<?> getInProgressAppointmentsByCustomerId(String customerId) {
 		    ResponseStructure<List<BookingResponse>> res = new ResponseStructure<>();
 		    List<BookingResponse> finalList = new ArrayList<>();
-		   Response response = new Response();
+		    Response response = new Response();
 		    DoctorSaveDetailsDTO saveDetails = new DoctorSaveDetailsDTO();
+
 		    try {
 		        List<Booking> booked = repository.findByCustomerId(customerId);
 		        if (booked == null || booked.isEmpty()) {
@@ -907,69 +910,116 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 		            res.setData(finalList);
 		            return ResponseEntity.ok(res);
 		        }
+
 		        LocalDate today = LocalDate.now();
-		        //System.out.println(today);
 		        LocalDate sixthDate = today.plusDays(6);
-		        //System.out.println(sixthDate);
+
+		        // ✅ To ensure no duplicate entries (bookingId + followupDate)
+		        Set<String> uniqueKeys = new HashSet<>();
 
 		        for (Booking booking : booked) {
-		            if ("In-Progress".equalsIgnoreCase(booking.getStatus())) {
-		            if(booking.getServiceDate().equals(today.toString())) {
-			           finalList.add(toResponse(booking));}
-                    try {
-		            response = doctorFeign.getDoctorSaveDetailsByBookingId(booking.getBookingId()).getBody();
-                    }catch(Exception e) {}
-		            saveDetails = new ObjectMapper().convertValue(response.getData(),DoctorSaveDetailsDTO.class );
-                   // System.out.println(saveDetails);
-		           if(saveDetails != null) {	       
-		            // 1️⃣ Check if treatments exist
-		            if(saveDetails.getTreatments() != null &&
+		            if (!"In-Progress".equalsIgnoreCase(booking.getStatus())) {
+		                continue;
+		            }
+
+		            // ✅ Add today's in-progress booking
+		            if (booking.getServiceDate().equals(today.toString())) {
+		                String key = booking.getBookingId() + "_" + booking.getServiceDate();
+		                if (uniqueKeys.add(key)) {
+		                    finalList.add(toResponse(booking));
+		                }
+		            }
+
+		            // ✅ Get doctor details safely
+		            try {
+		                response = doctorFeign.getDoctorSaveDetailsByBookingId(booking.getBookingId()).getBody();
+		            } catch (Exception e) {
+		                // ignore, continue safely
+		            }
+
+		            if (response != null && response.getData() != null) {
+		                saveDetails = new ObjectMapper().convertValue(response.getData(), DoctorSaveDetailsDTO.class);
+		            } else {
+		                continue;
+		            }
+
+		            // ✅ 1. Treatments follow-up
+		            if (saveDetails.getTreatments() != null &&
 		                saveDetails.getTreatments().getGeneratedData() != null &&
 		                !saveDetails.getTreatments().getGeneratedData().isEmpty()) {
 
 		                for (TreatmentDetailsDTO details : saveDetails.getTreatments().getGeneratedData().values()) {
-		                	//System.out.println(details);
 		                    if (details.getDates() != null) {
 		                        for (DatesDTO d : details.getDates()) {
-		                        	//System.out.println(d);
 		                            LocalDate treatmentDate = LocalDate.parse(d.getDate());
-		                           // System.out.println(treatmentDate);
-		                            LocalDate serviceDate = LocalDate.parse(booking.getServiceDate()); 
-		                            if (!treatmentDate.isBefore(today) && !treatmentDate.isAfter(sixthDate) && !treatmentDate.isBefore(serviceDate)) {
-		                            	Booking bkng = new Booking(booking);		                            	
-		                            	bkng.setFollowupDate(treatmentDate.toString());
-		                            	//System.out.println(bkng);
-		                            	bkng.setStatus("In-Progress");
-		                                finalList.add(toResponse(bkng));                         
-		                            }}}}
-		            }else if(saveDetails.getFollowUp() != null &&
+		                            LocalDate serviceDate = LocalDate.parse(booking.getServiceDate());
+		                            if (!treatmentDate.isBefore(today)
+		                                    && !treatmentDate.isAfter(sixthDate)
+		                                    && !treatmentDate.isBefore(serviceDate)) {
+
+		                                Booking bkng = new Booking(booking);
+		                                bkng.setFollowupDate(treatmentDate.toString());
+		                                bkng.setStatus("In-Progress");
+
+		                                String key = booking.getBookingId() + "_" + bkng.getFollowupDate();
+		                                if (uniqueKeys.add(key)) {
+		                                    finalList.add(toResponse(bkng));
+		                                }
+
+		                                break; // ✅ add only first valid date
+		                            }
+		                        }
+		                    }
+		                }
+
+		            // ✅ 2. Follow-up section
+		            } else if (saveDetails.getFollowUp() != null &&
 		                    saveDetails.getFollowUp().getNextFollowUpDate() != null) {
+
 		                LocalDate followDate = LocalDate.parse(saveDetails.getFollowUp().getNextFollowUpDate());
-		               // System.out.println("followDate"+ followDate);
 		                if (!followDate.isBefore(today) && !followDate.isAfter(sixthDate)) {
-		                	Booking bkng = new Booking(booking);		                            	
-                        	bkng.setFollowupDate(followDate.toString());
-                        	bkng.setStatus("In-Progress");
-                            finalList.add(toResponse(bkng));}
-		            }else{		           
-		            if( booking.getConsultationExpiration() != null) {
-		                String expStr = booking.getConsultationExpiration(); // e.g. "04 Days"
-		                int days = Integer.parseInt(expStr.replaceAll("\\D+", "")); // extract number
-		                //System.out.println(days);
+		                    Booking bkng = new Booking(booking);
+		                    bkng.setFollowupDate(followDate.toString());
+		                    bkng.setStatus("In-Progress");
+
+		                    String key = booking.getBookingId() + "_" + bkng.getFollowupDate();
+		                    if (uniqueKeys.add(key)) {
+		                        finalList.add(toResponse(bkng));
+		                    }
+		                }
+
+		            // ✅ 3. Consultation expiration fallback
+		            } else if (booking.getConsultationExpiration() != null) {
+		                String expStr = booking.getConsultationExpiration(); // e.g., "15 days"
+		                int days = Integer.parseInt(expStr.replaceAll("\\D+", ""));
 		                LocalDate expDate = today.plusDays(days);
+
 		                for (int i = 1; i <= 6; i++) {
 		                    LocalDate date = today.plusDays(i);
-		                    if (!date.isAfter(sixthDate) && date.isBefore(expDate) || date.equals(expDate) ) {
-		                    	Booking bkng = new Booking(booking);		                            	
-	                        	bkng.setFollowupDate(date.toString());
-	                        	bkng.setStatus("In-Progress");
-	                            finalList.add(toResponse(bkng));
-		                    }}}}}}}
+		                    if ((!date.isAfter(sixthDate)) && (date.isBefore(expDate) || date.equals(expDate))) {
+		                        Booking bkng = new Booking(booking);
+		                        bkng.setFollowupDate(date.toString());
+		                        bkng.setStatus("In-Progress");
+
+		                        String key = booking.getBookingId() + "_" + bkng.getFollowupDate();
+		                        if (uniqueKeys.add(key)) {
+		                            finalList.add(toResponse(bkng));
+		                        }
+
+		                        break; // ✅ stop after adding the first valid date
+		                    }
+		                }
+		            }
+		        }
+
 		        res.setStatusCode(200);
 		        res.setHttpStatus(HttpStatus.OK);
-		        res.setMessage(finalList.isEmpty() ? "No In-Progress or Today appointments Not found" : "In-Progress appointments found");
+		        res.setMessage(finalList.isEmpty()
+		                ? "No In-Progress or Today appointments found"
+		                : "In-Progress appointments found");
 		        res.setData(finalList);
-		    }catch(Exception e) {
+
+		    } catch (Exception e) {
 		        res.setStatusCode(500);
 		        res.setHttpStatus(HttpStatus.INTERNAL_SERVER_ERROR);
 		        res.setMessage("Error: " + e.getMessage());
@@ -977,7 +1027,7 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 
 		    return ResponseEntity.status(res.getStatusCode()).body(res);
 		}
-		
+
 	
 		public ResponseEntity<?> getInProgressAppointmentsByPatientId(String patientId) {
 		    ResponseStructure<List<BookingResponse>> res = new ResponseStructure<>();
