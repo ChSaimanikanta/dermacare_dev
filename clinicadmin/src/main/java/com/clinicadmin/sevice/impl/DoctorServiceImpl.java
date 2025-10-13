@@ -14,14 +14,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +34,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import com.clinicadmin.dto.BookingResponse;
 import com.clinicadmin.dto.Branch;
 import com.clinicadmin.dto.ChangeDoctorPasswordDTO;
@@ -73,7 +71,6 @@ import com.clinicadmin.utils.DoctorSlotMapper;
 import com.clinicadmin.utils.ExtractFeignMessage;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import feign.FeignException;
 import lombok.extern.slf4j.Slf4j;
 
@@ -110,7 +107,7 @@ public class DoctorServiceImpl implements DoctorService {
 	@Autowired
 	private  BookingFeign bookingFeign;
 	
-	private List<TempBlockingSlot> slots = new LinkedList<>();
+	private List<TempBlockingSlot> slots = new CopyOnWriteArrayList<>();
 	
 	BookingResponse bkng = new BookingResponse();
 
@@ -2862,15 +2859,14 @@ public class DoctorServiceImpl implements DoctorService {
 	            // Check if slot already booked
 	            if (matchingSlot.isSlotbooked()) {
 	                return false;
-	            }
+	            }else{
 	            // Mark slot as booked
 	            matchingSlot.setSlotbooked(true);
 	            slotRepository.save(doctorSlots);
-	            return true; // Successfully blocked
-	        } else {
-	            return false; // No matching slot found
-	        }
-	    } catch (Exception e) {
+	            return true;} // Successfully blocked
+	        }else{
+	            return false;} // No matching slot found
+	        }catch(Exception e) {
 	        // Log error for debugging (important for production)
 	        System.err.println("Error while blocking slot: " + e.getMessage());
 	        return false;
@@ -2879,38 +2875,46 @@ public class DoctorServiceImpl implements DoctorService {
 	        System.out.println("Slot blocking process completed for doctor: " + tempBlockingSlot.getDoctorId());
 	    }
 	}
+	
+	
+	@Scheduled(fixedRate = 30000)
+	public void checkingSlots() {
+	    try {
+	        // Always use Asia/Kolkata timezone
+	        ZoneId zone = ZoneId.of("Asia/Kolkata");
+	        ZonedDateTime currentTime = ZonedDateTime.now(zone);
+	        long currentMillis = currentTime.toInstant().toEpochMilli();
+	        for (TempBlockingSlot n : slots) {
+	            long diff = Math.abs(currentMillis - n.getTimeInMillis());
+	            if (diff >= 90000) {
+	                try {
+	                    bkng = bookingFeign.blockingSlot(n);
+	                } catch (Exception e) {
+	                    System.err.println("Feign error: " + e.getMessage());
+	                }
 
-		
+	                if (bkng == null) {
+	                    DoctorSlot doctorSlots = slotRepository.findByDoctorIdAndDateAndBranchId(
+	                            n.getDoctorId(), n.getServiceDate(), n.getBranchId()
+	                    );
+	                    if (doctorSlots != null) {
+	                        for (DoctorAvailableSlotDTO slot : doctorSlots.getAvailableSlots()) {
+	                            if (slot.getSlot().equalsIgnoreCase(n.getServicetime())) {
+	                                slot.setSlotbooked(false);
+	                            }
+	                        }
+	                        slotRepository.save(doctorSlots);
+	                    }
+	                }
+	                slots.remove(n); // ✅ Safe in CopyOnWriteArrayList
+	            }
+	        }
+	        // Optional: log current server time in IST
+	        System.out.println("Slot check run at: " +
+	                currentTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z")));
 
-	@Scheduled(fixedRate = 30 * 1000)
-	public void checkingSlots(){
-			//System.out.println(System.currentTimeMillis());
-			//System.out.println(slots);			
-		try {
-			//System.out.println("invoked");
-			slots.stream().map(n->{
-				long millis = System.currentTimeMillis();
-				//System.out.println(millis);
-			long res =  Math.abs(millis - n.getTimeInMillis());
-			//System.out.println(res);
-			if(res >= 120000) {
-				try {
-				bkng =	bookingFeign.blockingSlot(n);
-				}catch(Exception e) {}
-				//System.out.println(bkng);
-				if(bkng == null) {
-					DoctorSlot doctorSlots = slotRepository.findByDoctorIdAndDateAndBranchId(n.getDoctorId(),n.getServiceDate(),n.getBranchId());
-					//System.out.println(doctorSlots);
-					for (DoctorAvailableSlotDTO slot : doctorSlots.getAvailableSlots()) {
-						if (slot.getSlot().equalsIgnoreCase(n.getServicetime())) {
-							slot.setSlotbooked(false);
-							slotRepository.save(doctorSlots);
-							slots.remove(n);
-				}else{}}
-				}else{
-				slots.remove(n);	
-				}} return n;}).toList();
-			
-		}catch(Exception e) {System.out.println(e.getMessage());}}
-
+	    } catch (Exception e) {
+	        System.err.println("Error in checkingSlots: " + e.getMessage());
+	    }
+	}
 }

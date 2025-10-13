@@ -1009,26 +1009,16 @@ public class BookingService_ServiceImpl implements BookingService_Service {
                    // System.out.println(saveDetails);
 		           if(saveDetails != null) {	       
 		            // 1️⃣ Check if treatments exist
-		            if(saveDetails.getTreatments() != null &&
-		                saveDetails.getTreatments().getGeneratedData() != null &&
-		                !saveDetails.getTreatments().getGeneratedData().isEmpty()) {
-
-		                for (TreatmentDetailsDTO details : saveDetails.getTreatments().getGeneratedData().values()) {
-		                	//System.out.println(details);
-		                    if (details.getDates() != null) {
-		                        for (DatesDTO d : details.getDates()) {
-		                        	//System.out.println(d);
-		                            LocalDate treatmentDate = LocalDate.parse(d.getDate());
-		                           // System.out.println(treatmentDate);
-		                            LocalDate serviceDate = LocalDate.parse(booking.getServiceDate()); 
-		                            if (!treatmentDate.isBefore(today) && !treatmentDate.isAfter(sixthDate) && !treatmentDate.isBefore(serviceDate)) {
-		                            	Booking bkng = new Booking(booking);		                            	
-		                            	bkng.setFollowupDate(treatmentDate.toString());
-		                            	//System.out.println(bkng);
-		                            	bkng.setStatus("In-Progress");
-		                                finalList.add(toResponse(bkng));                         
-		                            }}}}
-		            }else if(saveDetails.getFollowUp() != null &&
+		        	   if(saveDetails.getTreatments() != null &&
+		   	                saveDetails.getTreatments().getGeneratedData() != null &&
+		   	                !saveDetails.getTreatments().getGeneratedData().isEmpty()) {
+		   	                for (TreatmentDetailsDTO details : saveDetails.getTreatments().getGeneratedData().values()) {
+		   	                	//System.out.println(details);
+		   	                    if (details != null) {
+		   	                    	booking.setSittings(details.getSittings());
+		   	                    	 finalList.add(toResponse(booking));
+		   	                    	 
+		   	                }}}else if(saveDetails.getFollowUp() != null &&
 		                    saveDetails.getFollowUp().getNextFollowUpDate() != null) {
 		                LocalDate followDate = LocalDate.parse(saveDetails.getFollowUp().getNextFollowUpDate());
 		               // System.out.println("followDate"+ followDate);
@@ -1313,16 +1303,24 @@ public class BookingService_ServiceImpl implements BookingService_Service {
                // System.out.println(saveDetails);
 	           if(saveDetails != null) {	       
 	            // 1️⃣ Check if treatments exist
-	            if(saveDetails.getTreatments() != null &&
-	                saveDetails.getTreatments().getGeneratedData() != null &&
-	                !saveDetails.getTreatments().getGeneratedData().isEmpty()) {
-	                for (TreatmentDetailsDTO details : saveDetails.getTreatments().getGeneratedData().values()) {
-	                	//System.out.println(details);
-	                    if (details != null) {
-	                    	booking.setSittings(details.getSittings());
-	                    	 finalList.add(toResponse(booking));
-	                    	 
-	                }}}else{
+	        	   if(saveDetails.getTreatments() != null &&
+			                saveDetails.getTreatments().getGeneratedData() != null &&
+			                !saveDetails.getTreatments().getGeneratedData().isEmpty()) {
+			                for (TreatmentDetailsDTO details : saveDetails.getTreatments().getGeneratedData().values()) {
+			                	//System.out.println(details);
+			                if(details.getDates() != null) {
+			                for (DatesDTO d : details.getDates()) {
+			                        	//System.out.println(d);
+			                LocalDate treatmentDate = LocalDate.parse(d.getDate());
+			                           // System.out.println(treatmentDate);
+			               LocalDate serviceDate = LocalDate.parse(booking.getServiceDate()); 
+			               if(!treatmentDate.isBefore(today) && !treatmentDate.isAfter(sixthDate) && !treatmentDate.isBefore(serviceDate)) {
+			               Booking bkng = new Booking(booking);		                            	
+			               bkng.setFollowupDate(treatmentDate.toString());
+			                            	//System.out.println(bkng);
+			               bkng.setStatus("In-Progress");
+			               finalList.add(toResponse(bkng));                         
+			        }}}}}else{
 	            	if(saveDetails.getFollowUp() != null &&
 	                    saveDetails.getFollowUp().getNextFollowUpDate() != null) {
 	                LocalDate followDate = LocalDate.parse(saveDetails.getFollowUp().getNextFollowUpDate());
