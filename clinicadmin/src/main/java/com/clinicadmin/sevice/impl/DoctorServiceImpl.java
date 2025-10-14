@@ -2858,11 +2858,13 @@ public class DoctorServiceImpl implements DoctorService {
 	            DoctorAvailableSlotDTO matchingSlot = matchingSlotOpt.get();
 	            // Check if slot already booked
 	            if (matchingSlot.isSlotbooked()) {
-	                return false;
+	                return true;
 	            }else{
 	            // Mark slot as booked
 	            matchingSlot.setSlotbooked(true);
 	            slotRepository.save(doctorSlots);
+	            tempBlockingSlot.setTimeInMillis(System.currentTimeMillis());
+	            slots.add(tempBlockingSlot);
 	            return true;} // Successfully blocked
 	        }else{
 	            return false;} // No matching slot found
@@ -2880,41 +2882,42 @@ public class DoctorServiceImpl implements DoctorService {
 	@Scheduled(fixedRate = 30000)
 	public void checkingSlots() {
 	    try {
-	        // Always use Asia/Kolkata timezone
-	        ZoneId zone = ZoneId.of("Asia/Kolkata");
-	        ZonedDateTime currentTime = ZonedDateTime.now(zone);
-	        long currentMillis = currentTime.toInstant().toEpochMilli();
-	        for (TempBlockingSlot n : slots) {
-	            long diff = Math.abs(currentMillis - n.getTimeInMillis());
-	            if (diff >= 90000) {
+	        long currentMillis = System.currentTimeMillis();
+	        // Filter only expired slots (diff >= 90 seconds)
+	        List<TempBlockingSlot> objectsToRemove = new CopyOnWriteArrayList<>();	    	
+	        List<TempBlockingSlot> expiredSlots = slots.stream()
+	                .filter(n -> Math.abs(currentMillis - n.getTimeInMillis()) >= 90000)
+	                .collect(Collectors.toList());
+	        expiredSlots.forEach(n -> {
+	            try {
+	                BookingResponse bkng = null;
 	                try {
 	                    bkng = bookingFeign.blockingSlot(n);
 	                } catch (Exception e) {
 	                    System.err.println("Feign error: " + e.getMessage());
 	                }
-
 	                if (bkng == null) {
 	                    DoctorSlot doctorSlots = slotRepository.findByDoctorIdAndDateAndBranchId(
 	                            n.getDoctorId(), n.getServiceDate(), n.getBranchId()
 	                    );
 	                    if (doctorSlots != null) {
-	                        for (DoctorAvailableSlotDTO slot : doctorSlots.getAvailableSlots()) {
-	                            if (slot.getSlot().equalsIgnoreCase(n.getServicetime())) {
-	                                slot.setSlotbooked(false);
-	                            }
-	                        }
-	                        slotRepository.save(doctorSlots);
-	                    }
-	                }
-	                slots.remove(n); // ✅ Safe in CopyOnWriteArrayList
-	            }
-	        }
-	        // Optional: log current server time in IST
-	        System.out.println("Slot check run at: " +
-	                currentTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss z")));
+	                        doctorSlots.getAvailableSlots().stream()
+	                                .filter(slot -> slot.getSlot().equalsIgnoreCase(n.getServicetime()))
+	                                .forEach(slot -> slot.setSlotbooked(false));
 
+	                        slotRepository.save(doctorSlots);
+	                        objectsToRemove.add(n);
+	                    }
+	                }else {
+	                	   objectsToRemove.add(n);
+	                }
+	            }catch(Exception e) {
+	                System.err.println("Error processing slot: " + e.getMessage());
+	            }});
+	        slots.removeAll(objectsToRemove);
 	    } catch (Exception e) {
 	        System.err.println("Error in checkingSlots: " + e.getMessage());
 	    }
 	}
+
 }
