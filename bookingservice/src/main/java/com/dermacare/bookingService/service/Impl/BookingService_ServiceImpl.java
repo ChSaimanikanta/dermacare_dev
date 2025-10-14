@@ -97,7 +97,7 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 	                    b.setVisitType(request.getVisitType());
 
 	                    // Decrement free follow-ups left
-	                    b.setFreeFollowUpsLeft(b.getFreeFollowUpsLeft() - 1);
+	                    //b.setFreeFollowUpsLeft(b.getFreeFollowUpsLeft() - 1);
 
 	                    Booking ety = repository.save(b);
 	                    ety.setReports(null);
@@ -1896,8 +1896,7 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 		                                    return dto;
 		                                }, Collectors.toList()),
 		                                list -> list.stream().distinct().collect(Collectors.toList()) // remove duplicates
-		                        )
-		                ));
+		                        )));
 		        res.setStatusCode(200);
 		        res.setHttpStatus(HttpStatus.OK);
 		        res.setData(data);
