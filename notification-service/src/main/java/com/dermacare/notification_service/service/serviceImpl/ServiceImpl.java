@@ -870,7 +870,7 @@ public class ServiceImpl implements ServiceInterface{
 				 imgdto.setImage(priceDropAlertDto.getImage());
 				 System.out.println(imgdto);
 				 cllinicFeign.uploadImageForNotification(imgdto);
-				 token = "http://3.6.119.57:9090/clinic-admin/retrieveImageForNotification";
+				 token = "https://3.6.119.57:9090/clinic-admin/retrieveImageForNotification";
 			 }else {
 				 token = ""; 
 			 }
@@ -946,7 +946,6 @@ public class ServiceImpl implements ServiceInterface{
 			 return n;}).toList();
 		 }catch(Exception e) {}
 		 
-	 }
-	 
+	 }	 
 	 
 }
