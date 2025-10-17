@@ -868,6 +868,7 @@ public class ServiceImpl implements ServiceInterface{
 			 if(priceDropAlertDto.getImage() != null) {
 				 ImageForNotificationDto imgdto = new ImageForNotificationDto();
 				 imgdto.setImage(priceDropAlertDto.getImage());
+				 System.out.println(imgdto);
 				 cllinicFeign.uploadImageForNotification(imgdto);
 				 token = "http://3.6.119.57:9090/clinic-admin/retrieveImageForNotification";
 			 }else {
@@ -891,7 +892,7 @@ public class ServiceImpl implements ServiceInterface{
              res.setSuccess(true);
 		 }catch(Exception e) {
 			 res.setStatus(500);
-             res.setMessage("failed to send notification");
+             res.setMessage(e.getMessage());
              res.setSuccess(false);
 		 }
 		 return ResponseEntity.status(res.getStatus()).body(res);
