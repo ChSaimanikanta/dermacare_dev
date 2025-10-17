@@ -93,7 +93,6 @@ public class NotificationController {
 	public ResponseEntity<?> priceDropNotification(@PathVariable String clinicId,@PathVariable String branchId ){
 		return notificationService.priceDropNotifications(clinicId, branchId);
 }	
-	
-	
+		
 	
 }

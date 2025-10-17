@@ -908,11 +908,12 @@ public class ServiceImpl implements ServiceInterface{
 			 for(PriceDropAlertEntity p : enty) {
 				 if(p != null) {
 				 for(String s : p.getTokens()){
-				 PriceDropAlertDto d = new ObjectMapper().convertValue(p, PriceDropAlertDto.class);		
+				 PriceDropAlertDto d = new ObjectMapper().convertValue(p, PriceDropAlertDto.class);					
 				 try {
 				 cdto = customerServiceFeignClient.getCustomerByToken(s);
 				 }catch(Exception e) {}
 				 if(cdto != null) {	
+				 d.setTokens(null);
 				 d.setCustomerName(cdto.getFullName());
 				 d.setMobileNumber(cdto.getMobileNumber());}
 				 dtoList.add(d);
