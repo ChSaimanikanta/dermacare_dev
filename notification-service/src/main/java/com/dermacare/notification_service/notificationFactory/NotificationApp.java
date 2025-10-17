@@ -25,11 +25,37 @@ public class NotificationApp implements SendAppNotification{
 	        .build();
 
 	    try {
-	        String response = FirebaseMessaging.getInstance().send(message);
-	        System.out.println("Successfully sent message: " + response);
+	       FirebaseMessaging.getInstance().send(message);
+	        //System.out.println("Successfully sent message: " + response);
 	    } catch (FirebaseMessagingException e) {
 	        e.printStackTrace();
 	    }
 	}
 
+	
+	
+	  public void sendPushNotificationForImage(String deviceToken, String title, String body, String type, String screen, String sound, String imageUrl) {
+	        try {
+	            Message message = Message.builder()
+	                .setToken(deviceToken)
+	                .setNotification(Notification.builder()
+	                    .setTitle(title)
+	                    .setBody(body)
+	                    .setImage(imageUrl) // ✅ Add image URL here
+	                    .build())
+	                .putData("type", type)
+	                .putData("screen", screen)
+	                .putData("sound", sound)
+	                .putData("image", imageUrl) // ✅ Include image in data payload for client handling
+	                .build();
+
+	            FirebaseMessaging.getInstance().send(message);
+	            //System.out.println("Notification sent successfully: " + response);
+
+	        } catch (Exception e) {
+	            e.printStackTrace();
+	            System.err.println("Error sending notification: " + e.getMessage());
+	        }
+	    }
+	
 }

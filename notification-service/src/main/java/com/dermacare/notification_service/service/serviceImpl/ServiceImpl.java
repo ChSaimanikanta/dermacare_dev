@@ -4,14 +4,17 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.MonthDay;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,21 +22,27 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import com.dermacare.notification_service.dto.BookingResponse;
+import com.dermacare.notification_service.dto.CustomerDTO;
 import com.dermacare.notification_service.dto.DoctorSaveDetails;
+import com.dermacare.notification_service.dto.ImageForNotificationDto;
 import com.dermacare.notification_service.dto.Medicines;
 import com.dermacare.notification_service.dto.NotificationDTO;
 import com.dermacare.notification_service.dto.NotificationResponse;
 import com.dermacare.notification_service.dto.NotificationToCustomer;
+import com.dermacare.notification_service.dto.PriceDropAlertDto;
 import com.dermacare.notification_service.dto.ResBody;
 import com.dermacare.notification_service.dto.Response;
 import com.dermacare.notification_service.dto.ResponseStructure;
 import com.dermacare.notification_service.entity.Booking;
 import com.dermacare.notification_service.entity.NotificationEntity;
+import com.dermacare.notification_service.entity.PriceDropAlertEntity;
 import com.dermacare.notification_service.feign.BookServiceFeign;
 import com.dermacare.notification_service.feign.CllinicFeign;
+import com.dermacare.notification_service.feign.CustomerServiceFeignClient;
 import com.dermacare.notification_service.feign.DoctorFeign;
 import com.dermacare.notification_service.notificationFactory.SendAppNotification;
 import com.dermacare.notification_service.repository.NotificationRepository;
+import com.dermacare.notification_service.repository.PriceDropAlertNotifications;
 import com.dermacare.notification_service.service.ServiceInterface;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -60,7 +69,13 @@ public class ServiceImpl implements ServiceInterface{
 		  
     @Autowired
     private DoctorFeign doctorFeign;
-	
+    
+    @Autowired
+    private CustomerServiceFeignClient customerServiceFeignClient;
+    
+    @Autowired
+    private PriceDropAlertNotifications priceDropAlertNotifications;
+    	
 	public String jwtToken;
 	public String tokenExpireTime;
 
@@ -69,6 +84,8 @@ public class ServiceImpl implements ServiceInterface{
 	 BookingResponse bookingResponse;
 	 
 	 private boolean isCalledAlready;
+	 
+	 String token = null;
 	
 	@Override
 	public void createNotification(BookingResponse bookingDTO) {
@@ -844,4 +861,91 @@ public class ServiceImpl implements ServiceInterface{
 	        }
 	    }
 		
+	 
+	 public ResponseEntity<?> sendImageNotifications(PriceDropAlertDto priceDropAlertDto){
+		 Response res = new Response();
+		 try {
+			 if(priceDropAlertDto.getImage() != null) {
+				 ImageForNotificationDto imgdto = new ImageForNotificationDto();
+				 imgdto.setImage(priceDropAlertDto.getImage());
+				 cllinicFeign.uploadImageForNotification(imgdto);
+				 token = "http://3.6.119.57:9090/clinic-admin/retrieveImageForNotification";
+			 }else {
+				 token = ""; 
+			 }
+			 if(priceDropAlertDto.getSendAll()) {
+			 List<CustomerDTO> cusmr =  new ObjectMapper().convertValue(customerServiceFeignClient.getAllCustomers().getBody().getData(), new TypeReference< List<CustomerDTO>>() {});			 
+			 cusmr.stream().map(n->{
+			 appNotification.sendPushNotificationForImage(n.getDeviceId(),priceDropAlertDto.getTitle(),priceDropAlertDto.getBody(), "BOOKING",
+					    "BookingScreen","default",token);
+			 return n;}).toList();
+			 }else {
+				 priceDropAlertDto.getTokens().stream().map(t->{appNotification.sendPushNotificationForImage(t,priceDropAlertDto.getTitle(),priceDropAlertDto.getBody(), "BOOKING",
+						    "BookingScreen","default",token);
+				 return t;}).toList(); 
+			 }
+			 PriceDropAlertEntity enty = new ObjectMapper().convertValue(priceDropAlertDto, PriceDropAlertEntity.class);
+			 priceDropAlertNotifications.save(enty);
+			 res.setStatus(200);
+             res.setMessage("successfully sent notification");
+             res.setSuccess(true);
+		 }catch(Exception e) {
+			 res.setStatus(500);
+             res.setMessage("failed to send notification");
+             res.setSuccess(false);
+		 }
+		 return ResponseEntity.status(res.getStatus()).body(res);
+	 }
+	 
+	 
+	 public ResponseEntity<?> priceDropNotifications(String clinicId,String branchId){
+		 Response res = new Response();
+		 try {
+			 List<PriceDropAlertEntity> enty = priceDropAlertNotifications.findByClinicIdAndBranchId(clinicId, branchId);
+			 List<PriceDropAlertDto> dtoList = new ArrayList<>();
+			 CustomerDTO cdto = null;
+			 for(PriceDropAlertEntity p : enty) {
+				 if(p != null) {
+				 for(String s : p.getTokens()){
+				 PriceDropAlertDto d = new ObjectMapper().convertValue(p, PriceDropAlertDto.class);		
+				 try {
+				 cdto = customerServiceFeignClient.getCustomerByToken(s);
+				 }catch(Exception e) {}
+				 if(cdto != null) {	
+				 d.setCustomerName(cdto.getFullName());
+				 d.setMobileNumber(cdto.getMobileNumber());}
+				 dtoList.add(d);
+				 }}}
+			 res.setData(dtoList);
+			 res.setMessage("fetched successfully");
+			 res.setStatus(200);
+			 res.setSuccess(true);
+		 }catch(Exception e) {
+			 res.setMessage(e.getMessage());
+			 res.setStatus(500);
+			 res.setSuccess(false);
+		 }
+		 return ResponseEntity.status(res.getStatus()).body(res);		 
+	 }
+	 	
+	 
+	 @Scheduled(cron = "0 30 8 * * ?")
+	 public void sendBirthdayWishes() {
+		 try {
+			 List<CustomerDTO> cusmr =  new ObjectMapper().convertValue(customerServiceFeignClient.getAllCustomers().getBody().getData(), new TypeReference< List<CustomerDTO>>() {});			 
+			 cusmr.stream().map(n->{ 
+				 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+			        LocalDate dob = LocalDate.parse(n.getDateOfBirth(), formatter);			       
+			        LocalDate today = LocalDate.now();			        
+			        MonthDay customerdobMonthDay = MonthDay.from(dob);
+			        MonthDay todayMonthDay = MonthDay.from(today);			        
+			        if (customerdobMonthDay.equals(todayMonthDay)) {			        
+			 appNotification.sendPushNotificationForImage(n.getDeviceId(),"🎉 Happy Birthday, " + n.getFullName() + "!","Your health and happiness are our priority. Have a great birthday!", "birthdayGreeting",
+					    "bithdayGreetingsScreen","default","");}
+			 return n;}).toList();
+		 }catch(Exception e) {}
+		 
+	 }
+	 
+	 
 }
