@@ -30,6 +30,7 @@ public class PharmacistDTO {
 	private String contactNumber;
 	private String governmentId;
 	private String pharmacyLicense;
+    private String yearsOfExperience;
 	private String dateOfJoining;
 	private String department;
 	@Valid
@@ -46,7 +47,6 @@ public class PharmacistDTO {
     private String experienceCertificates;
     private Map<String, List<String>> permissions;
     private String shiftTimingsOrAvailability;
-
 	
 	private String userName;
 	private String password;

@@ -1,6 +1,7 @@
 package com.clinicadmin.sevice.impl;
 
 import java.security.SecureRandom;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -127,7 +128,7 @@ public class PharmacistServiceImpl implements PharmacistService {
 		}).orElseGet(() -> {
 			response.setSuccess(false);
 			response.setMessage("Pharmacist not found");
-			response.setStatus(HttpStatus.NOT_FOUND.value());
+			response.setStatus(HttpStatus.OK.value());
 			return response;
 		});
 	}
@@ -160,6 +161,8 @@ public class PharmacistServiceImpl implements PharmacistService {
 			if (dto.getStatePharmacyCouncilRegistration() != null)
 				existing.setStatePharmacyCouncilRegistration(
 						Base64CompressionUtil.compressBase64(dto.getStatePharmacyCouncilRegistration()));
+			if (dto.getYearsOfExperience() != null)
+				existing.setYearsOfExperience(dto.getYearsOfExperience());
 			if (dto.getDateOfJoining() != null)
 				existing.setDateOfJoining(dto.getDateOfJoining());
 			if (dto.getDepartment() != null)
@@ -194,7 +197,7 @@ public class PharmacistServiceImpl implements PharmacistService {
 		}).orElseGet(() -> {
 			response.setSuccess(false);
 			response.setMessage("Pharmacist not found");
-			response.setStatus(HttpStatus.NOT_FOUND.value());
+			response.setStatus(HttpStatus.OK.value());
 			return response;
 		});
 	}
@@ -227,8 +230,8 @@ public class PharmacistServiceImpl implements PharmacistService {
 	    if (pharmacists.isEmpty()) {
 	        response.setSuccess(false);
 	        response.setMessage("No pharmacists found for hospital " + hospitalId + " and branch " + branchId);
-	        response.setStatus(HttpStatus.NOT_FOUND.value());
-	        response.setData(null);
+	        response.setStatus(HttpStatus.OK.value());
+	        response.setData(Collections.emptyList());
 	    } else {
 	        response.setSuccess(true);
 	        response.setMessage("Pharmacists retrieved successfully");
@@ -319,6 +322,7 @@ public class PharmacistServiceImpl implements PharmacistService {
 		pharmacist.setContactNumber(dto.getContactNumber());
 		pharmacist.setGovernmentId(dto.getGovernmentId());
 		pharmacist.setPharmacyLicense(dto.getPharmacyLicense());
+		pharmacist.setYearsOfExperience(dto.getYearsOfExperience());
 		pharmacist.setDateOfJoining(dto.getDateOfJoining());
 		pharmacist.setDepartment(dto.getDepartment());
 		pharmacist.setBankAccountDetails(dto.getBankAccountDetails());
@@ -333,6 +337,7 @@ public class PharmacistServiceImpl implements PharmacistService {
 		pharmacist.setExperienceCertificates(Base64CompressionUtil.compressBase64(dto.getExperienceCertificates()));
 		pharmacist.setDpharmaOrBPharmaCertificate(
 				Base64CompressionUtil.compressBase64(dto.getDpharmaOrBPharmaCertificate()));
+		
 		return pharmacist;
 	}
 
@@ -351,6 +356,7 @@ public class PharmacistServiceImpl implements PharmacistService {
 		dto.setContactNumber(pharmacist.getContactNumber());
 		dto.setGovernmentId(pharmacist.getGovernmentId());
 		dto.setPharmacyLicense(pharmacist.getPharmacyLicense());
+		dto.setYearsOfExperience(pharmacist.getYearsOfExperience());
 		dto.setDateOfJoining(pharmacist.getDateOfJoining());
 		dto.setDepartment(pharmacist.getDepartment());
 		dto.setBankAccountDetails(pharmacist.getBankAccountDetails());
@@ -366,6 +372,7 @@ public class PharmacistServiceImpl implements PharmacistService {
 		dto.setStatePharmacyCouncilRegistration(
 				Base64CompressionUtil.decompressBase64(pharmacist.getStatePharmacyCouncilRegistration()));
 		dto.setPermissions(pharmacist.getPermissions());
+		
 		return dto;
 	}
 
