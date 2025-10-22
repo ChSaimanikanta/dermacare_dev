@@ -1,10 +1,9 @@
 package com.clinicadmin.dto;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.util.Date;
+import jakarta.validation.constraints.NotBlank;
 
 
 @Data
@@ -13,6 +12,7 @@ import java.util.Date;
 public class ReferredDoctorDTO {
 	private String id;
     private String clinicId;
+    @NotBlank
     private String fullName;
     private String gender;
     private Date dateOfBirth;

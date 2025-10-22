@@ -204,21 +204,41 @@ public class PharmacistServiceImpl implements PharmacistService {
 
 	@Override
 	public Response deletePharmacist(String pharmacistId) {
-		Response response = new Response();
-		Optional<Pharmacist> existing = pharmacistRepository.findByPharmacistId(pharmacistId);
+	    Response response = new Response();
 
-		if (existing.isPresent()) {
-			pharmacistRepository.deleteByPharmacistId(pharmacistId);
-			response.setSuccess(true);
-			response.setMessage("Pharmacist deleted successfully");
-			response.setStatus(HttpStatus.NO_CONTENT.value());
-		} else {
-			response.setSuccess(false);
-			response.setMessage("Pharmacist not found");
-			response.setStatus(HttpStatus.NOT_FOUND.value());
-		}
-		return response;
+	    try {
+	        // ✅ Step 1: Check if Pharmacist exists
+	        Optional<Pharmacist> existing = pharmacistRepository.findByPharmacistId(pharmacistId);
+	        if (existing.isEmpty()) {
+	            response.setSuccess(false);
+	            response.setMessage("Pharmacist not found");
+	            response.setStatus(HttpStatus.NOT_FOUND.value());
+	            return response;
+	        }
+
+	        // ✅ Step 2: Delete pharmacist record
+	        pharmacistRepository.deleteByPharmacistId(pharmacistId);
+
+	        // ✅ Step 3: Delete corresponding login credentials (if any)
+	        Optional<DoctorLoginCredentials> credentials = credentialsRepository.findByStaffId(pharmacistId);
+	        if (credentials.isPresent()) {
+	            credentialsRepository.deleteById(credentials.get().getId());
+	        }
+
+	        // ✅ Step 4: Build response
+	        response.setSuccess(true);
+	        response.setMessage("Pharmacist and credentials deleted successfully");
+	        response.setStatus(HttpStatus.OK.value());
+
+	    } catch (Exception e) {
+	        response.setSuccess(false);
+	        response.setMessage("Error deleting Pharmacist: " + e.getMessage());
+	        response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+	    }
+
+	    return response;
 	}
+
 	
 	
 	@Override
