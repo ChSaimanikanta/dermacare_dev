@@ -623,15 +623,16 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 	       try {
 	    	 List<Booking> bookings = repository.findByMobileNumber(input);
 		        // If still not found, try customerId
+	    	 System.out.println(bookings);
 		    	 if(bookings == null || bookings.isEmpty()) {
 		            bookings = repository.findByCustomerId(input);
-		           // System.out.println(bookings);
+		            System.out.println(bookings);
 		    	} 
 	        	 if(bookings == null || bookings.isEmpty()) {
 		            bookings = repository.findByNameIgnoreCase(input);
 		          // System.out.println(bookings);
 		        }
-	        	if(bookings == null || bookings.isEmpty()) {
+	        	if(bookings != null && !bookings.isEmpty()) {
 		        for(Booking b : bookings) {
 		        	//System.out.println(b);
 		        BookingInfoByInput bkng = new BookingInfoByInput() ;	

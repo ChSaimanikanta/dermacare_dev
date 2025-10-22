@@ -868,10 +868,10 @@ public class ServiceImpl implements ServiceInterface{
 			 if(priceDropAlertDto.getImage() != null) {
 				 ImageForNotificationDto imgdto = new ImageForNotificationDto();
 				 imgdto.setImage(priceDropAlertDto.getImage());
-				 System.out.println(imgdto);
+				// System.out.println(imgdto);
 				 cllinicFeign.uploadImageForNotification(imgdto);
 				 token = "https://3.6.119.57:9090/clinic-admin/retrieveImageForNotification";
-			 }else {
+			 }else{
 				 token = ""; 
 			 }
 			 if(priceDropAlertDto.getSendAll()) {

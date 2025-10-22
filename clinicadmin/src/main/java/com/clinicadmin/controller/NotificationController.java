@@ -4,11 +4,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.clinicadmin.dto.ImageForNotificationDto;
+import com.clinicadmin.dto.PriceDropAlertDto;
 import com.clinicadmin.service.NotificationService;
 
 
@@ -32,5 +34,15 @@ public class NotificationController {
 	    }
 
 	
+	    @PostMapping("/pricedrop")
+	   	public ResponseEntity<?> pricedrop(@RequestBody PriceDropAlertDto priceDropAlertDto ){
+	       	 return serviceImpl.pricedrop(priceDropAlertDto);
+	    }
+	    
+	    @GetMapping("/priceDropNotification/{clinicId}/{branchId}")
+	   	public ResponseEntity<?> priceDropNotification(@PathVariable String clinicId,@PathVariable String branchId){
+	       	 return serviceImpl.priceDropNotification(clinicId, branchId);
+	    }
+
 
 }

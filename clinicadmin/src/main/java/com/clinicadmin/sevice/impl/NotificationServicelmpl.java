@@ -5,9 +5,14 @@ import java.util.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+
 import com.clinicadmin.dto.ImageForNotificationDto;
+import com.clinicadmin.dto.PriceDropAlertDto;
 import com.clinicadmin.dto.Response;
 import com.clinicadmin.entity.ImageForNotification;
+import com.clinicadmin.feignclient.NotificationFeign;
 import com.clinicadmin.repository.ImageForNotificationRepo;
 import com.clinicadmin.service.NotificationService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,6 +22,10 @@ public class NotificationServicelmpl implements NotificationService {
 	
 	@Autowired
 	private ImageForNotificationRepo imageForNotificationRepo;
+	
+	@Autowired
+	private NotificationFeign notificationFeign;
+	
 	
 	public ResponseEntity<?> storeImageForNotification(ImageForNotificationDto imageForNotificationDto){
 		Response response = new Response();
@@ -55,5 +64,33 @@ public class NotificationServicelmpl implements NotificationService {
 				return null;
 		}			
 }
-
+	
+	public ResponseEntity<?> pricedrop(PriceDropAlertDto priceDropAlertDto){
+		Response response = new Response();		
+		try {
+			return notificationFeign.pricedrop(priceDropAlertDto);
+		}catch(Exception e) {
+			response.setSuccess(false);	  	       
+  	        response.setMessage(e.getMessage());
+  	        response.setStatus(500);	
+		}
+		return ResponseEntity.status(response.getStatus()).body(response);		
+		
+	}
+	
+	
+	public ResponseEntity<?> priceDropNotification(String clinicId, String branchId ){
+		Response response = new Response();		
+		try {
+			return notificationFeign.priceDropNotification(clinicId, branchId);
+		}catch(Exception e) {
+			response.setSuccess(false);	  	       
+  	        response.setMessage(e.getMessage());
+  	        response.setStatus(500);	
+		}
+		return ResponseEntity.status(response.getStatus()).body(response);		
+		
+	}
+	
+	
 }
