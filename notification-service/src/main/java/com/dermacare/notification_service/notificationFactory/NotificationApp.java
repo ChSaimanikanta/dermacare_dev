@@ -41,7 +41,6 @@ public class NotificationApp implements SendAppNotification{
 	                .setNotification(Notification.builder()
 	                    .setTitle(title)
 	                    .setBody(body)
-	                    .setImage(imageUrl) // ✅ Add image URL here
 	                    .build())
 	                .putData("type", type)
 	                .putData("screen", screen)

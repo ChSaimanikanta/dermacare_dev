@@ -11,20 +11,17 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import com.dermacare.notification_service.config.FirbaseConfig;
 import com.dermacare.notification_service.dto.BookingResponse;
 import com.dermacare.notification_service.dto.CustomerDTO;
 import com.dermacare.notification_service.dto.DoctorSaveDetails;
-import com.dermacare.notification_service.dto.ImageForNotificationDto;
 import com.dermacare.notification_service.dto.Medicines;
 import com.dermacare.notification_service.dto.NotificationDTO;
 import com.dermacare.notification_service.dto.NotificationResponse;
@@ -48,7 +45,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-
 import feign.FeignException;
 
 
@@ -75,6 +71,9 @@ public class ServiceImpl implements ServiceInterface{
     
     @Autowired
     private PriceDropAlertNotifications priceDropAlertNotifications;
+    
+    @Autowired
+    private FirbaseConfig firbaseConfig;
     	
 	public String jwtToken;
 	public String tokenExpireTime;
@@ -85,8 +84,9 @@ public class ServiceImpl implements ServiceInterface{
 	 
 	 private boolean isCalledAlready;
 	 
-	 String token = null;
-	
+	 String imag = null;
+	 
+	 
 	@Override
 	public void createNotification(BookingResponse bookingDTO) {
 		if(!bookings.contains(bookingDTO.getBookingId())) {
@@ -866,23 +866,22 @@ public class ServiceImpl implements ServiceInterface{
 		 Response res = new Response();
 		 try {
 			 if(priceDropAlertDto.getImage() != null) {
-				 ImageForNotificationDto imgdto = new ImageForNotificationDto();
-				 imgdto.setImage(priceDropAlertDto.getImage());
-				// System.out.println(imgdto);
-				 cllinicFeign.uploadImageForNotification(imgdto);
-				 token = "https://3.6.119.57:9090/clinic-admin/retrieveImageForNotification";
-			 }else{
-				 token = ""; 
-			 }
+				 imag = priceDropAlertDto.getImage();
+				// firbaseConfig.uploadBase64Image(imag);
+			 }else {
+				 imag = "";
+			 }			 
 			 if(priceDropAlertDto.getSendAll()) {
 			 List<CustomerDTO> cusmr =  new ObjectMapper().convertValue(customerServiceFeignClient.getAllCustomers().getBody().getData(), new TypeReference< List<CustomerDTO>>() {});			 
 			 cusmr.stream().map(n->{
 			 appNotification.sendPushNotificationForImage(n.getDeviceId(),priceDropAlertDto.getTitle(),priceDropAlertDto.getBody(), "BOOKING",
-					    "BookingScreen","default",token);
+					    "BookingScreen","default","https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?auto=format&fit=crop&w=200&h=300\r\n"
+					    		+ "");
 			 return n;}).toList();
 			 }else {
 				 priceDropAlertDto.getTokens().stream().map(t->{appNotification.sendPushNotificationForImage(t,priceDropAlertDto.getTitle(),priceDropAlertDto.getBody(), "BOOKING",
-						    "BookingScreen","default",token);
+						    "BookingScreen","default","https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?auto=format&fit=crop&w=200&h=300\r\n"
+						    		+ "");
 				 return t;}).toList(); 
 			 }
 			 PriceDropAlertEntity enty = new ObjectMapper().convertValue(priceDropAlertDto, PriceDropAlertEntity.class);
@@ -934,18 +933,31 @@ public class ServiceImpl implements ServiceInterface{
 	 @Scheduled(cron = "0 30 8 * * ?")
 	 public void sendBirthdayWishes() {
 		 try {
-			 List<CustomerDTO> cusmr =  new ObjectMapper().convertValue(customerServiceFeignClient.getAllCustomers().getBody().getData(), new TypeReference< List<CustomerDTO>>() {});			 
+			 List<CustomerDTO> cusmr =  new ObjectMapper().convertValue(customerServiceFeignClient.getAllCustomers().getBody().getData(), new TypeReference< List<CustomerDTO>>() {});
+			 //System.out.println(cusmr);
 			 cusmr.stream().map(n->{ 
-				 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-			        LocalDate dob = LocalDate.parse(n.getDateOfBirth(), formatter);			       
-			        LocalDate today = LocalDate.now();			        
+				 if(n.getDateOfBirth() != null) {
+				 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+			        LocalDate dob = LocalDate.parse(n.getDateOfBirth(), formatter);	
+			        //System.out.println(dob);
+			        LocalDate today = LocalDate.now();	
+			       // System.out.println(today);
 			        MonthDay customerdobMonthDay = MonthDay.from(dob);
-			        MonthDay todayMonthDay = MonthDay.from(today);			        
-			        if (customerdobMonthDay.equals(todayMonthDay)) {			        
-			 appNotification.sendPushNotificationForImage(n.getDeviceId(),"🎉 Happy Birthday, " + n.getFullName() + "!","Your health and happiness are our priority. Have a great birthday!", "birthdayGreeting",
-					    "bithdayGreetingsScreen","default","");}
-			 return n;}).toList();
-		 }catch(Exception e) {}
+			        //System.out.println(customerdobMonthDay);
+			        MonthDay todayMonthDay = MonthDay.from(today);	
+			       // System.out.println(customerdobMonthDay);
+			        if (customerdobMonthDay.equals(todayMonthDay)) {
+			        	//System.out.println(n);
+			        	if(n.getDeviceId() != null) {
+			        		//System.out.println(n.getDeviceId());
+			 appNotification.sendPushNotification(n.getDeviceId(),"🎉 Happy Birthday, " + n.getFullName() + "!","Your health and happiness are our priority. Have a great birthday!", "birthdayGreeting",
+					    "bithdayGreetingsScreen","default");
+			        	//System.out.println("notifications sent successfully");
+			 }}
+			 return n;}return null;}).toList();
+		 }catch(Exception e) {
+			 System.out.println(e.getMessage());
+		 }
 		 
 	 }	 
 	 
