@@ -139,6 +139,8 @@ public class ReceptionistServiceImpl implements ReceptionistService {
 			existing.setAddress(dto.getAddress());
 		if (dto.getEmergencyContact() != null)
 			existing.setEmergencyContact(dto.getEmergencyContact());
+		if (dto.getPermissions() != null)
+			existing.setPermissions(dto.getPermissions());
 		if (dto.getBankAccountDetails() != null)
 			existing.setBankAccountDetails(dto.getBankAccountDetails());
 		if (dto.getEmailId() != null)

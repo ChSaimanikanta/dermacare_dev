@@ -7,7 +7,9 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.clinicadmin.dto.Address;
 import com.clinicadmin.dto.BankAccountDetails;
+import com.clinicadmin.validations.RequiredChecks;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,7 +23,12 @@ public class ReferredDoctor {
     @Id
     private String id;
     private String clinicId;
+	@NotBlank(message = "Full name is required", groups = RequiredChecks.class)
+
     private String fullName;
+	
+	@NotBlank(message = "Gender is required", groups = RequiredChecks.class)
+
     private String gender;
     private Date dateOfBirth;
     private String governmentId;
@@ -29,11 +36,13 @@ public class ReferredDoctor {
  
     private String medicalRegistrationNumber;
     private String specialization;
+	@NotBlank(message = "Experience is required", groups = RequiredChecks.class)
+
     private int yearsOfExperience;
     private String currentHospitalName;
     private String department;
 
-
+	@NotBlank(message = "Mobile is required", groups = RequiredChecks.class)
     private String mobileNumber;
     private String email;
     private Address address;
@@ -47,6 +56,8 @@ public class ReferredDoctor {
 
    
     private BankAccountDetails bankAccountNumber;
+	@NotBlank(message = "status required", groups = RequiredChecks.class)
+
     private String status;
 
    
