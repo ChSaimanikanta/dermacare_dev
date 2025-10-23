@@ -19,6 +19,8 @@ public class PriceDropAlertDto {
 	private List<String> tokens;
 	private String customerName;
 	private String mobileNumber;
+	private String customerId;
+    private String patientId;
 
 	
 	public boolean getSendAll() {
