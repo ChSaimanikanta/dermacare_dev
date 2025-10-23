@@ -1,6 +1,8 @@
 package com.dermacare.notification_service.dto;
 
 import java.util.List;
+import java.util.Map;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,10 +19,7 @@ public class PriceDropAlertDto {
 	private String image;
 	private boolean sendAll;
 	private List<String> tokens;
-	private String customerName;
-	private String mobileNumber;
-	private String customerId;
-    private String patientId;
+	private List<Map<String,CustomerInfo>> customerData;
 
 	
 	public boolean getSendAll() {

@@ -11,17 +11,18 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import com.dermacare.notification_service.config.FirbaseConfig;
 import com.dermacare.notification_service.dto.BookingResponse;
+import com.dermacare.notification_service.dto.CustomerInfo;
 import com.dermacare.notification_service.dto.CustomerOnbordingDTO;
 import com.dermacare.notification_service.dto.DoctorSaveDetails;
 import com.dermacare.notification_service.dto.Medicines;
@@ -910,24 +911,37 @@ public class ServiceImpl implements ServiceInterface{
 		 Response res = new Response();
 		 try {
 			 PriceDropAlertEntity enty = priceDropAlertNotifications.findByClinicIdAndBranchId(clinicId, branchId);
-			 List<PriceDropAlertDto> dtoList = new ArrayList<>();
+			//System.out.println(enty);
+			 PriceDropAlertDto dto = null;
 			 CustomerOnbordingDTO cdto = null;
 				 if(enty != null) {
+				 dto = new ObjectMapper().convertValue(enty, PriceDropAlertDto.class);				
+				 if( enty.getTokens() != null) {
 				 for(String s : enty.getTokens()){
-				 PriceDropAlertDto d = new ObjectMapper().convertValue(enty, PriceDropAlertDto.class);					
 				 try {
 				 cdto = cllinicFeign.getCustomerByToken(s);
-				 }catch(Exception e) {}
+				// System.out.println(cdto);
+				 }catch(Exception e) {}}}
+				 dto.setTokens(null);
+				 dto.setImage(null);
 				 if(cdto != null) {	
-				 d.setTokens(null);
-				 d.setImage(null);
-				 d.setCustomerName(cdto.getFullName());
-				 d.setMobileNumber(cdto.getMobileNumber());
-				 d.setPatientId(cdto.getPatientId());
-				 d.setCustomerId(cdto.getCustomerId());}
-				 dtoList.add(d);
-				 }}
-			 res.setData(dtoList);
+				 Map<String,CustomerInfo> info = new HashMap<>();
+				 CustomerInfo cInfo = new CustomerInfo();
+				 cInfo.setMobileNumber(cdto.getMobileNumber());
+				 cInfo.setCustomerId(cdto.getCustomerId());
+				 cInfo.setPatientId(cdto.getPatientId());
+				 info.put(cdto.getFullName(), cInfo);
+				 if(dto.getCustomerData() != null) {
+				 List<Map<String,CustomerInfo>> customerData =	dto.getCustomerData();
+				 customerData.add(info);
+				 dto.setCustomerData(customerData);
+				 }
+				 else {
+				 List<Map<String,CustomerInfo>> customerData = new ArrayList<>();
+				 customerData.add(info);
+				 dto.setCustomerData(customerData);
+				 }}}
+			 res.setData(dto);
 			 res.setMessage("fetched successfully");
 			 res.setStatus(200);
 			 res.setSuccess(true);
@@ -987,10 +1001,8 @@ public class ServiceImpl implements ServiceInterface{
 	             res.setSuccess(false);
 	             return ResponseEntity.status(404).body(res);
 	         }
-
 	         ObjectMapper mapper = new ObjectMapper();
 	         List<PriceDropAlertEntity> updatedList = new ArrayList<>();
-
 	             // Map DTO → temporary entity
 	             PriceDropAlertEntity updatedEntity = mapper.convertValue(dto, PriceDropAlertEntity.class);	            
 	             updatedEntity.setId(existingList.getId());	            
