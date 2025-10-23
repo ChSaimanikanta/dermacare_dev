@@ -916,14 +916,14 @@ public class ServiceImpl implements ServiceInterface{
 			 CustomerOnbordingDTO cdto = null;
 				 if(enty != null) {
 				 dto = new ObjectMapper().convertValue(enty, PriceDropAlertDto.class);				
-				 if( enty.getTokens() != null) {
+				 dto.setTokens(null);
+				 dto.setImage(null);
+				 if(enty.getTokens() != null) {
 				 for(String s : enty.getTokens()){
 				 try {
 				 cdto = cllinicFeign.getCustomerByToken(s);
 				// System.out.println(cdto);
-				 }catch(Exception e) {}}}
-				 dto.setTokens(null);
-				 dto.setImage(null);
+				 }catch(Exception e) {}				
 				 if(cdto != null) {	
 				 Map<String,CustomerInfo> info = new HashMap<>();
 				 CustomerInfo cInfo = new CustomerInfo();
@@ -940,7 +940,7 @@ public class ServiceImpl implements ServiceInterface{
 				 List<Map<String,CustomerInfo>> customerData = new ArrayList<>();
 				 customerData.add(info);
 				 dto.setCustomerData(customerData);
-				 }}}
+				 }}}}}
 			 res.setData(dto);
 			 res.setMessage("fetched successfully");
 			 res.setStatus(200);
