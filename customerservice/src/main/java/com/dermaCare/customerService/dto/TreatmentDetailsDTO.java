@@ -1,4 +1,4 @@
-package com.dermacare.doctorservice.dto;
+package com.dermaCare.customerService.dto;
 
 import java.util.List;
 

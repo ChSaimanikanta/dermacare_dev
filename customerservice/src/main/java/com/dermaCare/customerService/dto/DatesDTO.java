@@ -1,18 +1,14 @@
-
 package com.dermaCare.customerService.dto;
-
-import java.util.List;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Builder
-public class PrescriptionDetailsDTO {
-//    private String id;
-    private List<MedicinesDTO> medicines;
+public class DatesDTO {
+    private String date;
+    private Integer sitting;
+    private String status; 
 }
