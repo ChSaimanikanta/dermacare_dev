@@ -181,6 +181,7 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 	            entity.setChannelId(null);
 	        }}
 	    // Handle patient ID logic
+	    if(request.getBookingFor() != null) {
 	    if (request.getBookingFor().equalsIgnoreCase("Someone")) {
 	        if (request.getRelation() != null &&
 	            (request.getPatientId() == null || request.getPatientId().trim().isEmpty())) {
@@ -205,7 +206,7 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 	        } else {
 	            entity.setPatientId(request.getPatientId()); // Use provided patient ID
 	        }
-	    }
+	    }}
 
 	    return entity;
 	}
