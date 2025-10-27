@@ -13,7 +13,9 @@ import lombok.NoArgsConstructor;
 @Builder
 public class TreatmentResponseDTO {
     private List<String> selectedTestTreatment;
-    private Map<String, TreatmentDetailsDTO> generatedData; // dynamic treatment names  
+    private Map<String, TreatmentDetailsDTO> generatedData; // dynamic treatment names
+    private String followupStatus;
+    // ✅ Sitting summary fields (optional)
     private int totalSittings;
     private int pendingSittings;
     private int takenSittings;
