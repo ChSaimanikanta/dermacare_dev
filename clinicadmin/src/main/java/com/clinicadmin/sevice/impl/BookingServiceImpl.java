@@ -2,19 +2,16 @@ package com.clinicadmin.sevice.impl;
 
 import java.util.Collections;
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import com.clinicadmin.dto.BookingResponse;
-import com.clinicadmin.dto.BookingResponseDTO;
 import com.clinicadmin.dto.Response;
 import com.clinicadmin.dto.ResponseStructure;
 import com.clinicadmin.feignclient.BookingFeign;
 import com.clinicadmin.service.BookingService;
 import com.clinicadmin.utils.ExtractFeignMessage;
-
 import feign.FeignException;
 
 @Service
@@ -62,8 +59,8 @@ public class BookingServiceImpl implements BookingService {
 	}
 	
 	@Override
-	public ResponseEntity<ResponseStructure<List<BookingResponseDTO>>> getBookingsByClinicIdWithBranchId(String clinicId, String branchId) {
-	    ResponseStructure<List<BookingResponseDTO>> res = new ResponseStructure<>();
+	public ResponseEntity<ResponseStructure<List<BookingResponse>>> getBookingsByClinicIdWithBranchId(String clinicId, String branchId) {
+	    ResponseStructure<List<BookingResponse>> res = new ResponseStructure<>();
 	    try {
 	        return bookingFeign.getBookedServicesByClinicIdWithBranchId(clinicId, branchId);
 	    } catch (FeignException e) {
@@ -96,7 +93,7 @@ public class BookingServiceImpl implements BookingService {
 	}
 	
 	@Override
-	public ResponseEntity<?> updateAppointmentBasedOnBookingId(BookingResponseDTO bookingResponse) {
+	public ResponseEntity<?> updateAppointmentBasedOnBookingId(BookingResponse bookingResponse) {
 	    ResponseStructure<List<BookingResponse>> res = new ResponseStructure<>();
 	    try {
 	        return bookingFeign.updateAppointmentBasedOnBookingId(bookingResponse);

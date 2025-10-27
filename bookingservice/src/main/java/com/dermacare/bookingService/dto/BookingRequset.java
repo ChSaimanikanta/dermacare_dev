@@ -53,5 +53,4 @@ public class BookingRequset {
 	private String doctorRefCode;
 	private String foc;
 	private String bookedAt;
-
 }

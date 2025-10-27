@@ -36,6 +36,7 @@ import com.dermacare.bookingService.dto.DatesDTO;
 import com.dermacare.bookingService.dto.DoctorSaveDetailsDTO;
 import com.dermacare.bookingService.dto.RelationInfoDTO;
 import com.dermacare.bookingService.dto.TreatmentDetailsDTO;
+import com.dermacare.bookingService.dto.TreatmentResponseDTO;
 import com.dermacare.bookingService.entity.Booking;
 import com.dermacare.bookingService.entity.ReportsList;
 import com.dermacare.bookingService.feign.ClinicAdminFeign;
@@ -772,9 +773,7 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 		}
 		return toResponses(reversedBookings);
 	}
-	
-	
-	
+		
 	@Override
 	public List<BookingInfoByInput> bookingByInput(String input,String clinicId) {
 		   List<BookingInfoByInput> outpt = new ArrayList<>();
@@ -3584,18 +3583,23 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 			    if (dto.getBookedAt() != null && !dto.getBookedAt().isEmpty()) {
 			        entity.setBookedAt(dto.getBookedAt());
 			    }
-
-
 				if(dto.getFollowupStatus() != null && dto.getFollowupStatus().equalsIgnoreCase("no-followup")) {
 			        entity.setStatus("Completed");
 			    }else {
 			    	try {
+			    		//System.out.println(dto);
 			    		if(entity.getTreatments().getGeneratedData().containsKey(dto.getTreatmentName())) {
-			    			
-			    		}
-			    	}catch(Exception e) {}}
-         
-
+			    		TreatmentDetailsDTO	treatmentDetailsDTO = entity.getTreatments().getGeneratedData().get(dto.getTreatmentName());
+			    		//System.out.println(treatmentDetailsDTO);
+			    		if(treatmentDetailsDTO != null) {
+			    			for(DatesDTO datesDTO : treatmentDetailsDTO.getDates()) {
+			    				//System.out.println(datesDTO);
+			    				if(datesDTO.getDate().equals(dto.getTreatmentDate())){
+			    					datesDTO.setFollowupStatus(dto.getFollowupStatus());}
+			    				TreatmentResponseDTO treatmentResponseDTO = entity.getTreatments();
+			    				//System.out.println(treatmentResponseDTO);
+			    					entity.setTreatments(treatmentResponseDTO);		
+			    			}}}}catch(Exception e) {System.out.println(e.getMessage());}}
 			    if (dto.getVisitCount() != null) {
 			        entity.setVisitCount(dto.getVisitCount());
 			    }
@@ -3603,7 +3607,6 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 			    	List<byte[]> bte = new ObjectMapper().convertValue(dto.getAttachments(), new TypeReference<List<byte[]>>(){});
 			    	entity.setAttachments(bte);
 			    }
-
 			    if (dto.getConsentFormPdf() != null && !dto.getConsentFormPdf().isEmpty()) {
 			        entity.setConsentFormPdf(Base64.getDecoder().decode(dto.getConsentFormPdf()));
 			    }

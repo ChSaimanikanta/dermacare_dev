@@ -9,9 +9,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.clinicadmin.dto.BookingResponse;
-import com.clinicadmin.dto.BookingResponseDTO;
 import com.clinicadmin.dto.Response;
 import com.clinicadmin.service.BookingService;
 
@@ -50,7 +48,7 @@ public class BookingServiceController {
 	
 	
 	@PutMapping("/updateAppointmentBasedOnBookingId")
-	public ResponseEntity<?> updateAppointmentBasedOnBookingId(@RequestBody BookingResponseDTO bookingResponse) {
+	public ResponseEntity<?> updateAppointmentBasedOnBookingId(@RequestBody BookingResponse bookingResponse) {
 		return bookingService.updateAppointmentBasedOnBookingId(bookingResponse);
 		
 	}

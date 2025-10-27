@@ -1,15 +1,15 @@
 package com.clinicadmin.sevice.impl;
+
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import com.clinicadmin.dto.BookingResponseDTO;
+import com.clinicadmin.dto.BookingResponse;
 import com.clinicadmin.dto.ReportsDTO;
 import com.clinicadmin.dto.ReportsDtoList;
 import com.clinicadmin.dto.Response;
@@ -85,8 +85,8 @@ public class ReportsServiceImpl implements ReportsService {
             }
 
             // ✅ Fetch booking details via Feign Client
-            ResponseEntity<ResponseStructure<BookingResponseDTO>> response = bookingFeign.getBookedService(bookingId);
-            BookingResponseDTO bookingData = response.getBody() != null ? response.getBody().getData() : null;
+            ResponseEntity<ResponseStructure<BookingResponse>> response = bookingFeign.getBookedService(bookingId);
+            BookingResponse bookingData = response.getBody() != null ? response.getBody().getData() : null;
 
             if (bookingData != null) {
                 // Update booking with new reports
