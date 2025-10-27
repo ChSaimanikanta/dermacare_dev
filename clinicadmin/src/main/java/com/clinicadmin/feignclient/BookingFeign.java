@@ -85,4 +85,8 @@ public interface BookingFeign {
 	@PostMapping("/api/v1/appointments/serviceDate/serviceTime/DoctorId")
 	public BookingResponse blockingSlot(@RequestBody TempBlockingSlot temp);
 	
+	@GetMapping("/api/v1/appointments/byInput/{input}/{clinicId}")	
+	public ResponseEntity<?> retrieveAppointnmentsByInput(@PathVariable String input,@PathVariable String clinicId);
+	
+	
 }

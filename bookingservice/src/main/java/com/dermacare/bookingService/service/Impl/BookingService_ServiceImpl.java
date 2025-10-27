@@ -47,6 +47,8 @@ import com.dermacare.bookingService.util.Response;
 import com.dermacare.bookingService.util.ResponseStructure;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 @Service
 public class BookingService_ServiceImpl implements BookingService_Service {
@@ -619,18 +621,18 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 	
 	
 	@Override
-	public List<BookingInfoByInput> bookingByInput(String input) {
+	public List<BookingInfoByInput> bookingByInput(String input,String clinicId) {
 		   List<BookingInfoByInput> outpt = new ArrayList<>();
 	       try {
-	    	 List<Booking> bookings = repository.findByMobileNumber(input);
+	    	 List<Booking> bookings = repository.findByMobileNumberAndClinicId(input,clinicId);
 		        // If still not found, try customerId
-	    	 System.out.println(bookings);
+	    	// System.out.println(bookings);
 		    	 if(bookings == null || bookings.isEmpty()) {
-		            bookings = repository.findByCustomerId(input);
-		            System.out.println(bookings);
+		            bookings = repository.findByCustomerIdAndClinicId(input,clinicId);
+		            //System.out.println(bookings);
 		    	} 
 	        	 if(bookings == null || bookings.isEmpty()) {
-		            bookings = repository.findByNameIgnoreCase(input);
+		            bookings = repository.findByNameIgnoreCaseAndClinicId(input,clinicId);
 		          // System.out.println(bookings);
 		        }
 	        	if(bookings != null && !bookings.isEmpty()) {
@@ -649,7 +651,7 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 		        bkng.setRelation(b.getRelation());
 		        outpt.add(bkng);}}
 	        if(input.contains("_")){
-		    List<Booking> bookgs = repository.findByPatientId(input);
+		    List<Booking> bookgs = repository.findByPatientIdAndClinicId(input,clinicId);
 	    	if( bookgs != null && !bookgs.isEmpty()) {
 		        Booking b = bookgs.get(bookgs.size()-1);	
 		        BookingInfoByInput bkng = new BookingInfoByInput() ;	
@@ -688,8 +690,7 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 	    return outpt;
 	}
 
-	
-	
+		
 	@Override
 	public List<BookingResponse> bookingByClinicId(String clinicId) {
 		List<Booking> bookings = repository.findByClinicId(clinicId);
@@ -1261,7 +1262,7 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 	        if (bookingResponse.getFreeFollowUpsLeft() != null) entity.setFreeFollowUpsLeft(bookingResponse.getFreeFollowUpsLeft());
 	        if (bookingResponse.getFreeFollowUps() != null) entity.setFreeFollowUps(bookingResponse.getFreeFollowUps());
 	        if (bookingResponse.getVisitCount() != null) entity.setVisitCount(bookingResponse.getVisitCount());
-	        if (bookingResponse.getFollowupStatus() != null) entity.setFollowupStatus(bookingResponse.getFollowupStatus());
+//	        if (bookingResponse.getFollowupStatus() != null) entity.setFollowupStatus(bookingResponse.getFollowupStatus());
 	        if (bookingResponse.getFollowupDate() != null) entity.setFollowupDate(bookingResponse.getFollowupDate());
 
 	        // --- Update sitting summary ---
@@ -3432,12 +3433,11 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 
 				if(dto.getFollowupStatus() != null && dto.getFollowupStatus().equalsIgnoreCase("no-followup")) {
 			        entity.setStatus("Completed");
-			    }
-
-			    if (dto.getVisitCount() != null) {
-			        entity.setVisitCount(dto.getVisitCount());
-			    }
-
+			    }else {
+			    	try {
+			    		
+			    	}catch(Exception e) {}}
+               
 			    if (dto.getAttachments() != null && !dto.getAttachments().isEmpty()) {
 			    	List<byte[]> bte = new ObjectMapper().convertValue(dto.getAttachments(), new TypeReference<List<byte[]>>(){});
 			    	entity.setAttachments(bte);

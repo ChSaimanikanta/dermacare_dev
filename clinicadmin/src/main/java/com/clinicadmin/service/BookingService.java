@@ -19,6 +19,8 @@ public interface BookingService {
 	public ResponseEntity<?> retrieveAppointnmentsByServiceDate(String clinicId, String branchId,String date);
 	
 	public ResponseEntity<?> updateAppointmentBasedOnBookingId(BookingResponseDTO bookingResponse);
-
+ 
+	public ResponseEntity<?> retrieveAppointnmentsByInput(String input, String clinicId);
+		
 
 }
