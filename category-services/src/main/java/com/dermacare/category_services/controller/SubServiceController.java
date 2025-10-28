@@ -206,14 +206,19 @@ public class SubServiceController {
 		// System.out.println("invke");
 		return subServiceService.retrieveSubServicesBySubServiceId(subServiceId);
 	}
-
+ 
 	// ------------------------------------Amount calculation using cosultation type
 	// (1= FOC,2=paid)-----------------------
-	@GetMapping("/calculateAmountByConsultationType/{subServiceId}/{consultationType}")
+	@GetMapping("/calculateAmountByConsultationType/{hospitalId}/{subServiceId}/{subServiceName}/{consultationType}")
 	public ResponseEntity<ResponseStructure<SubServicesDto>> getSubServiceCostByConsultationType(
-			@PathVariable String subServiceId, @PathVariable int consultationType) {
+	        @PathVariable String hospitalId,
+	        @PathVariable String subServiceId,
+	        @PathVariable String subServiceName,
+	        @PathVariable int consultationType) {
 
-		return subServiceService.getSubServiceCostByConsultationType(subServiceId, consultationType);
+	    return subServiceService.getSubServiceCostByConsultationType(
+	            hospitalId, subServiceId, subServiceName, consultationType);
 	}
+
 
 }

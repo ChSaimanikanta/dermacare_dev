@@ -483,19 +483,25 @@ public class SubServicesServiceImpl implements SubServicesService {
 }
 //------------------------------------Amount calculation 	using cosultation type (1= FOC,2=paid)-----------------------
 	@Override
-	public ResponseEntity<ResponseStructure<SubServicesDto>> getSubServiceCostByConsultationType(String subServiceId, int consultationType) {
+	public ResponseEntity<ResponseStructure<SubServicesDto>> getSubServiceCostByConsultationType(
+	        String hospitalId, String subServiceId, String subServiceName, int consultationType) {
+
 	    ResponseStructure<SubServicesDto> response = new ResponseStructure<>();
 
 	    try {
-	        Optional<SubServices> optional = subServiceRepository.findById(new ObjectId(subServiceId));
-	        if (optional.isEmpty()) {
-	            response = new ResponseStructure<>(null, "SubService not found", null, 200);
-	            return ResponseEntity.status(200).body(response);
+	        // Fetch subservice using hospitalId, subServiceId, and subServiceName
+	        SubServices subService = subServiceRepository
+	                .findByHospitalIdAndSubServiceIdAndSubServiceNameIgnoreCase(
+	                        hospitalId, new ObjectId(subServiceId), subServiceName);
+
+	        if (subService == null) {
+	            response = new ResponseStructure<>(null,
+	                    "SubService not found for given Hospital ID, SubService ID, and Name",
+	                    null, HttpStatus.NOT_FOUND.value());
+	            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 	        }
 
-	        SubServices subService = optional.get();
-
-	        // Clone to avoid modifying DB object
+	        // Clone to avoid modifying DB entity
 	        SubServices tempSubService = new SubServices();
 	        tempSubService.setSubServiceId(subService.getSubServiceId());
 	        tempSubService.setSubServiceName(subService.getSubServiceName());
@@ -510,23 +516,31 @@ public class SubServicesServiceImpl implements SubServicesService {
 	        tempSubService.setPlatformFeePercentage(subService.getPlatformFeePercentage());
 	        tempSubService.setGst(subService.getGst());
 	        tempSubService.setConsultationFee(subService.getConsultationFee());
-	        // Apply consultation type logic
+
+	        // 🧮 Apply consultation type logic (1 = FOC, 2 = Paid)
 	        if (consultationType == 1) {
 	            tempSubService.setConsultationFee(0); // Free consultation
 	        } else if (consultationType == 2) {
 	            tempSubService.setConsultationFee(subService.getConsultationFee()); // Keep original
+	        } else {
+	            response = new ResponseStructure<>(null,
+	                    "Invalid consultation type. Allowed values: 1 = FOC, 2 = Paid",
+	                    null, HttpStatus.BAD_REQUEST.value());
+	            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
 	        }
 
-	        // Recalculate without saving
+	        // 🧾 Recalculate amount dynamically (no DB save)
 	        calculateAmounts(tempSubService);
 
 	        SubServicesDto dto = HelperForConversion.toDto(tempSubService);
-	        response = new ResponseStructure<>(dto, "Amount calculated successfully", null, 200);
+	        response = new ResponseStructure<>(dto, "Amount calculated successfully", null,
+	                HttpStatus.OK.value());
 	        return ResponseEntity.ok(response);
 
 	    } catch (Exception e) {
-	        response = new ResponseStructure<>(null, e.getMessage(), null, 500);
-	        return ResponseEntity.status(500).body(response);
+	        response = new ResponseStructure<>(null, e.getMessage(), null,
+	                HttpStatus.INTERNAL_SERVER_ERROR.value());
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
 	    }
 	}
 

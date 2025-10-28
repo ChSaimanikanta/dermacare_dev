@@ -80,11 +80,15 @@ public class SubServiceController {
 		return subServiceService.getAllSubServices();
 	}
 
-	@GetMapping("/calculateAmountByConsultationType/{subServiceId}/{consultationType}")
-	public ResponseEntity<ResponseStructure<SubServicesDto>> getSubServiceCostByConsultationType(
-			@PathVariable String subServiceId, @PathVariable int consultationType) {
+	  @GetMapping("/calculateAmountByConsultationType/{hospitalId}/{subServiceId}/{subServiceName}/{consultationType}")
+	    public ResponseEntity<ResponseStructure<SubServicesDto>> getSubServiceCostByConsultationType(
+	            @PathVariable String hospitalId,
+	            @PathVariable String subServiceId,
+	            @PathVariable String subServiceName,
+	            @PathVariable int consultationType) {
 
-		return subServiceService.getSubServiceCostByConsultationType(subServiceId, consultationType);
-	}
+	        return subServiceService.getSubServiceCostByConsultationType(
+	                hospitalId, subServiceId, subServiceName, consultationType);
+	    }
 
 }
