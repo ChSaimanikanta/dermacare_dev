@@ -4,11 +4,10 @@ import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
-<<<<<<< HEAD
+
 import java.util.Optional;
 
-=======
->>>>>>> eac34d4f6caf8d10d32b6b5978cea70095b3ea91
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
