@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -181,10 +182,9 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 	         }
 
 	         // 🩺 FOLLOW-UP CASE
-	         if (request.getVisitType().equalsIgnoreCase("follow-up")) {
+	         if (request.getVisitType().equalsIgnoreCase("follow-up")){
 	             Booking b = repository.findByMobileNumberAndPatientIdAndBookingId(
 	                     request.getMobileNumber(), request.getPatientId(), request.getBookingId());
-
 	             if (b == null) {
 	                 response = ResponseStructure.buildResponse(null,
 	                         "No Appointment Found.",
@@ -192,7 +192,6 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 	                         HttpStatus.NOT_FOUND.value());
 	                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
 	             }
-
 	             if (!"In-Progress".equalsIgnoreCase(b.getStatus())) {
 	                 response = ResponseStructure.buildResponse(null,
 	                         "No In-Progress Appointments Found With Provided AppointmentId.",
@@ -257,6 +256,7 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 	             b.setServicetime(request.getServicetime());
 	             b.setFollowupDate(request.getServiceDate());
 	             b.setVisitType(request.getVisitType());
+	             b.setBookingId(String.valueOf(new ObjectId()));
 	             // optionally decrement follow-ups left if needed
 	             // b.setFreeFollowUpsLeft(b.getFreeFollowUpsLeft() - 1);
 
