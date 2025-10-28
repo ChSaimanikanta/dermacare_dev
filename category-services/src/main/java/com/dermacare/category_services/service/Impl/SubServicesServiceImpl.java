@@ -480,4 +480,54 @@ public class SubServicesServiceImpl implements SubServicesService {
 	    }
 	    
 	    return ResponseEntity.status(res.getStatusCode()).body(res);
-}}
+}
+//------------------------------------Amount calculation 	using cosultation type (1= FOC,2=paid)-----------------------
+	@Override
+	public ResponseEntity<ResponseStructure<SubServicesDto>> getSubServiceCostByConsultationType(String subServiceId, int consultationType) {
+	    ResponseStructure<SubServicesDto> response = new ResponseStructure<>();
+
+	    try {
+	        Optional<SubServices> optional = subServiceRepository.findById(new ObjectId(subServiceId));
+	        if (optional.isEmpty()) {
+	            response = new ResponseStructure<>(null, "SubService not found", null, 200);
+	            return ResponseEntity.status(200).body(response);
+	        }
+
+	        SubServices subService = optional.get();
+
+	        // Clone to avoid modifying DB object
+	        SubServices tempSubService = new SubServices();
+	        tempSubService.setSubServiceId(subService.getSubServiceId());
+	        tempSubService.setSubServiceName(subService.getSubServiceName());
+	        tempSubService.setCategoryId(subService.getCategoryId());
+	        tempSubService.setCategoryName(subService.getCategoryName());
+	        tempSubService.setServiceId(subService.getServiceId());
+	        tempSubService.setServiceName(subService.getServiceName());
+	        tempSubService.setHospitalId(subService.getHospitalId());
+	        tempSubService.setPrice(subService.getPrice());
+	        tempSubService.setDiscountPercentage(subService.getDiscountPercentage());
+	        tempSubService.setTaxPercentage(subService.getTaxPercentage());
+	        tempSubService.setPlatformFeePercentage(subService.getPlatformFeePercentage());
+	        tempSubService.setGst(subService.getGst());
+	        tempSubService.setConsultationFee(subService.getConsultationFee());
+	        // Apply consultation type logic
+	        if (consultationType == 1) {
+	            tempSubService.setConsultationFee(0); // Free consultation
+	        } else if (consultationType == 2) {
+	            tempSubService.setConsultationFee(subService.getConsultationFee()); // Keep original
+	        }
+
+	        // Recalculate without saving
+	        calculateAmounts(tempSubService);
+
+	        SubServicesDto dto = HelperForConversion.toDto(tempSubService);
+	        response = new ResponseStructure<>(dto, "Amount calculated successfully", null, 200);
+	        return ResponseEntity.ok(response);
+
+	    } catch (Exception e) {
+	        response = new ResponseStructure<>(null, e.getMessage(), null, 500);
+	        return ResponseEntity.status(500).body(response);
+	    }
+	}
+
+}

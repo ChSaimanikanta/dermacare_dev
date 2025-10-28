@@ -49,6 +49,10 @@ public interface ServiceFeignClient {
 	
 	@GetMapping("/api/v1/subServices/getSubService/{hospitalId}")
 	public ResponseEntity<ResponseStructure<List<SubServicesDto>>> getSubServiceByHospitalId(@PathVariable String hospitalId);
+	// ------------------------------------Amount calculation using cosultation type (1= FOC,2=paid)-----------------------
+	@GetMapping("/api/v1/subServices/calculateAmountByConsultationType/{subServiceId}/{consultationType}")
+	public ResponseEntity<ResponseStructure<SubServicesDto>> getSubServiceCostByConsultationType(
+			@PathVariable String subServiceId, @PathVariable int consultationType); 
     
 	@GetMapping("/api/v1/SubServicesInfo/exists/{id}")
 	public boolean isSubServiceExists(@PathVariable("id") String id);
@@ -64,6 +68,7 @@ public interface ServiceFeignClient {
     
     @GetMapping("/api/v1/category/exists/{id}")
     boolean isCategoryExists(@PathVariable("id") String id);
+
 
     /*  -----------------------------------------------------------------------------------------------------------------------------------------
  	-----------------------------------------------------   Services       ----------------------------------------------------------------------

@@ -23,4 +23,7 @@ public interface SubServiceService {
 	ResponseEntity<ResponseStructure<List<SubServicesDto>>> getAllSubServices();
 
 	ResponseEntity<ResponseStructure<List<SubServicesDto>>> getSubServiceByHospitalId(String hospitalId);
+
+	ResponseEntity<ResponseStructure<SubServicesDto>> getSubServiceCostByConsultationType(String subServiceId,
+			int consultationType);
 }
