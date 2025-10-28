@@ -224,6 +224,7 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 	             } catch (Exception e) {
 	                 // fallback already handled
 	             }
+	             
 
 	             LocalDate plusDays = previousServiceDate.plusDays(days);
 
@@ -239,17 +240,17 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 	                                 HttpStatus.BAD_REQUEST.value()));
 	             }
 
-	             boolean isEligible = !currentAppointmentServiceDate.isBefore(previousServiceDate)
-	                     && !currentAppointmentServiceDate.isAfter(plusDays)
-	                     && (b.getFreeFollowUpsLeft() != null && b.getFreeFollowUpsLeft() > 0);
-
-	             if (!isEligible) {
-	                 response = ResponseStructure.buildResponse(null,
-	                         "Unable to proceed with booking. Please check service date and free follow-ups.",
-	                         HttpStatus.PAYMENT_REQUIRED,
-	                         HttpStatus.PAYMENT_REQUIRED.value());
-	                 return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED).body(response);
-	             }
+//	             boolean isEligible = !currentAppointmentServiceDate.isBefore(previousServiceDate)
+//	                     && !currentAppointmentServiceDate.isAfter(plusDays)
+//	                     && (b.getFreeFollowUpsLeft() != null && b.getFreeFollowUpsLeft() > 0);
+//
+//	             if (!isEligible) {
+//	                 response = ResponseStructure.buildResponse(null,
+//	                         "Unable to proceed with booking. Please check service date and free follow-ups.",
+//	                         HttpStatus.PAYMENT_REQUIRED,
+//	                         HttpStatus.PAYMENT_REQUIRED.value());
+//	                 return ResponseEntity.status(HttpStatus.PAYMENT_REQUIRED).body(response);
+//	             }
 
 	             // 🧩 Update booking
 	             b.setStatus("Confirmed");
