@@ -808,7 +808,7 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 	        if(input.contains("_")){
 		    List<Booking> bookgs = repository.findByPatientIdAndClinicId(input,clinicId);
 	    	if( bookgs != null && !bookgs.isEmpty()) {
-		        Booking b = bookgs.get(bookgs.size()-1);	
+		        Booking b = bookgs.get(0);	
 		        BookingInfoByInput bkng = new BookingInfoByInput() ;	
 		        bkng.setAge(b.getAge());
 		        bkng.setClinicId(b.getClinicId());
