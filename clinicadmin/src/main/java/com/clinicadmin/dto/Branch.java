@@ -25,4 +25,6 @@ public class Branch {
 	private double branchOverallRating;
 	private Map<String, List<String>> permissions;
 	private String name;
+	private String Name;
+	
 }
