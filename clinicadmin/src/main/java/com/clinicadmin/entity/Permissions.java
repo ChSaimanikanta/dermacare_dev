@@ -16,6 +16,7 @@ public class Permissions {
 	private String clinicId;
 	private String branchId;
 	private String userId;
+	 private String role; 
     private Map<String, List<String>> permissions;
 
 }

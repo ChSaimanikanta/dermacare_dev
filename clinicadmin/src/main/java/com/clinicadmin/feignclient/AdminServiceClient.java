@@ -1,5 +1,8 @@
 package com.clinicadmin.feignclient;
 
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -52,5 +55,8 @@ public interface AdminServiceClient {
 	                                                      @PathVariable String branchId);
 	@GetMapping("/admin/getBranchById/{branchId}")
 	public ResponseEntity<Response> getBranchById(@PathVariable String branchId);
+	
+	 @GetMapping("/admin/getDefaultAdminPermissions")
+	    ResponseEntity<Map<String, List<String>>> getDefaultAdminPermissions();
 
 }

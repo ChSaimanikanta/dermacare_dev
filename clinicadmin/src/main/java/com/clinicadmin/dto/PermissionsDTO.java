@@ -10,10 +10,11 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PermissionsDTO {
-    private String id;
+
     private String clinicId;
     private String branchId;
     private String userId;
+    private String role; 
     private Map<String, List<String>> permissions;
 }
 
