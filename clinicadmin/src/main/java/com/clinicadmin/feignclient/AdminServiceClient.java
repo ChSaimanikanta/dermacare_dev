@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import com.clinicadmin.dto.CategoryMediaCarouselDTO;
 import com.clinicadmin.dto.ClinicDTO;
 import com.clinicadmin.dto.ClinicLoginRequestDTO;
 import com.clinicadmin.dto.Response;
@@ -56,7 +57,14 @@ public interface AdminServiceClient {
 	@GetMapping("/admin/getBranchById/{branchId}")
 	public ResponseEntity<Response> getBranchById(@PathVariable String branchId);
 	
+<<<<<<< Updated upstream
 	 @GetMapping("/admin/getDefaultAdminPermissions")
 	    ResponseEntity<Map<String, List<String>>> getDefaultAdminPermissions();
+=======
+//	CategoryMediaCarouselDTO
+	
+    @GetMapping("/admin/categoryAdvertisement/getAll")
+    ResponseEntity<Iterable<CategoryMediaCarouselDTO>> getAllMedia();
+>>>>>>> Stashed changes
 
 }
