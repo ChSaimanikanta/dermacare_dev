@@ -3,7 +3,6 @@ import java.util.List;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -11,6 +10,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import com.AdminService.dto.AdministratorDTO;
 import com.AdminService.dto.DoctorSlotDTO;
 import com.AdminService.dto.DoctorsDTO;
 import com.AdminService.dto.LabTechnicianRequestDTO;
@@ -420,7 +420,48 @@ public interface ClinicAdminFeign {
              @PathVariable("clinicId") String clinicId,
              @PathVariable("branchId") String branchId
      );
- }
+     
+///////////Administrator//////////
+@PostMapping("/clinic-admin/addAdministrator")
+ResponseStructure<AdministratorDTO> addAdministrator(@RequestBody AdministratorDTO dto);
+
+@GetMapping("/clinic-admin/getAllAdministrators/{clinicId}")
+ResponseStructure<List<AdministratorDTO>> getAllAdministratorsByClinic(@PathVariable String clinicId);
+
+@GetMapping("/clinic-admin/getAllAdministrators/{clinicId}/{branchId}")
+ResponseStructure<List<AdministratorDTO>> getAllAdministratorsByClinicAndBranch(@PathVariable String clinicId,
+                                                                                @PathVariable String branchId);
+
+@GetMapping("/clinic-admin/getAdministrator/{clinicId}/{adminId}")
+ResponseStructure<AdministratorDTO> getAdministratorByClinicAndId(@PathVariable String clinicId,
+                                                                  @PathVariable String adminId);
+
+@GetMapping("/clinic-admin/getAdministrator/{clinicId}/{branchId}/{adminId}")
+ResponseStructure<AdministratorDTO> getAdministratorByClinicBranchAndAdminId(@PathVariable String clinicId,
+                                                                             @PathVariable String branchId,
+                                                                             @PathVariable String adminId);
+
+@PutMapping("/clinic-admin/updateAdministrator/{clinicId}/{adminId}")
+ResponseStructure<AdministratorDTO> updateAdministrator(@PathVariable String clinicId,
+                                                        @PathVariable String adminId,
+                                                        @RequestBody AdministratorDTO dto);
+
+@PutMapping("/clinic-admin/updateAdministrator/{clinicId}/{branchId}/{adminId}")
+ResponseStructure<AdministratorDTO> updateAdministratorUsingClinicBranchAndAdminId(@PathVariable String clinicId,
+                                                                                    @PathVariable String branchId,
+                                                                                    @PathVariable String adminId,
+                                                                                    @RequestBody AdministratorDTO dto);
+
+@DeleteMapping("/clinic-admin/deleteAdministrator/{clinicId}/{adminId}")
+ResponseStructure<String> deleteAdministrator(@PathVariable String clinicId,
+                                              @PathVariable String adminId);
+
+@DeleteMapping("/clinic-admin/deleteAdministrator/{clinicId}/{branchId}/{adminId}")
+ResponseStructure<String> deleteAdministratorUsingClinicBranchAndAdminId(@PathVariable String clinicId,
+                                                                         @PathVariable String branchId,
+                                                                         @PathVariable String adminId);
+}
+ 
  
         
     
