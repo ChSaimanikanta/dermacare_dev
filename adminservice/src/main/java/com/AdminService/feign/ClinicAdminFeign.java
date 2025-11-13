@@ -3,6 +3,7 @@ import java.util.List;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,6 +26,7 @@ import com.AdminService.dto.UpdateSlotRequestDTO;
 import com.AdminService.dto.WardBoyDTO;
 import com.AdminService.util.Response;
 import com.AdminService.util.ResponseStructure;
+
 
 @FeignClient(value = "clinicadmin")
 public interface ClinicAdminFeign {
@@ -298,10 +300,9 @@ public interface ClinicAdminFeign {
                 @PathVariable String clinicId,
                 @PathVariable String branchId);
         
-                        ////Nurse////////////
-        // ✅ Add Nurse
         @PostMapping("/clinic-admin/addNurse")
-        ResponseEntity<ResponseStructure<NurseDTO>> nurseOnBoarding(@RequestBody NurseDTO dto);
+        ResponseEntity<Response> nurseOnBoarding(@RequestBody NurseDTO dto);
+
 
         // ✅ Get All Nurses by Hospital
         @GetMapping("/clinic-admin/getAllNurses/{hospitalId}")
@@ -415,9 +416,10 @@ public interface ClinicAdminFeign {
      ResponseStructure<Void> deleteWardBoy(@PathVariable("id") String id);
 
      @GetMapping("/clinic-admin/getWardBoysByClinicIdAndBranchId/{clinicId}/{branchId}")
-     ResponseStructure<List<WardBoyDTO>> getWardBoysByClinicIdAndBranchId(
+     ResponseEntity<ResponseStructure<List<WardBoyDTO>>> getWardBoysByClinicIdAndBranchId(
              @PathVariable("clinicId") String clinicId,
-             @PathVariable("branchId") String branchId);
+             @PathVariable("branchId") String branchId
+     );
  }
  
         
