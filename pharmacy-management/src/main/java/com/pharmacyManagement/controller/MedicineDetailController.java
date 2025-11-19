@@ -16,7 +16,7 @@ import lombok.RequiredArgsConstructor;
 public class MedicineDetailController {
 
 	@Autowired
-    private  MedicineDetailService medicineDetailService;
+    private MedicineDetailService medicineDetailService;
 
     // CREATE MEDICINE
     @PostMapping("/addMedicine")
@@ -36,6 +36,21 @@ public class MedicineDetailController {
     @GetMapping("/getAllMedicines")
     public ResponseEntity<Response> getAllMedicines() {
         Response response = medicineDetailService.getAllMedicine();
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
+
+    // UPDATE MEDICINE BY ID
+    @PutMapping("/updateMedicineById/{id}")
+    public ResponseEntity<Response> updateMedicine(@PathVariable String id,
+                                                   @RequestBody MedicineDetailDTO dto) {
+        Response response = medicineDetailService.updateMedicine(id, dto);
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
+
+    // DELETE MEDICINE BY ID
+    @DeleteMapping("/deleteMedicineById/{id}")
+    public ResponseEntity<Response> deleteMedicine(@PathVariable String id) {
+        Response response = medicineDetailService.deleteMedicine(id);
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 }

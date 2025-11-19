@@ -20,7 +20,7 @@ public class MedicineDetailServiceImpl implements MedicineDetailService {
     private final MedicineDetailRepository repository;
 
     // ---------------------------------------------------------
-    // SAVE MEDICINE (WITH DUPLICATE NAME CHECK)
+    // SAVE MEDICINE
     // ---------------------------------------------------------
     @Override
     public Response saveMedicine(MedicineDetailDTO dto) {
@@ -87,6 +87,71 @@ public class MedicineDetailServiceImpl implements MedicineDetailService {
                         .map(this::mapToDTO)
                         .collect(Collectors.toList())
         );
+        response.setStatus(HttpStatus.OK.value());
+
+        return response;
+    }
+
+    // ---------------------------------------------------------
+    // UPDATE MEDICINE BY ID
+    // ---------------------------------------------------------
+    @Override
+    public Response updateMedicine(String id, MedicineDetailDTO dto) {
+
+        Response response = new Response();
+
+        MedicineDetail existing = repository.findById(id).orElse(null);
+
+        if (existing == null) {
+            response.setSuccess(false);
+            response.setMessage("Medicine not found");
+            response.setStatus(HttpStatus.NOT_FOUND.value());
+            return response;
+        }
+
+        // Update fields
+        existing.setProductName(dto.getProductName());
+        existing.setBatchNo(dto.getBatchNo());
+        existing.setExpDate(dto.getExpDate());
+        existing.setQuantity(dto.getQuantity());
+        existing.setPackSize(dto.getPackSize());
+        existing.setFree(dto.getFree());
+        existing.setGstPercent(dto.getGstPercent());
+        existing.setCostPrice(dto.getCostPrice());
+        existing.setMrp(dto.getMrp());
+        existing.setDiscPercent(dto.getDiscPercent());
+
+        repository.save(existing);
+
+        response.setSuccess(true);
+        response.setMessage("Medicine updated successfully");
+        response.setData(mapToDTO(existing));
+        response.setStatus(HttpStatus.OK.value());
+
+        return response;
+    }
+
+    // ---------------------------------------------------------
+    // DELETE MEDICINE BY ID
+    // ---------------------------------------------------------
+    @Override
+    public Response deleteMedicine(String id) {
+
+        Response response = new Response();
+
+        MedicineDetail existing = repository.findById(id).orElse(null);
+
+        if (existing == null) {
+            response.setSuccess(false);
+            response.setMessage("Medicine not found");
+            response.setStatus(HttpStatus.NOT_FOUND.value());
+            return response;
+        }
+
+        repository.deleteById(id);
+
+        response.setSuccess(true);
+        response.setMessage("Medicine deleted successfully");
         response.setStatus(HttpStatus.OK.value());
 
         return response;
