@@ -117,6 +117,8 @@ public class MedicineDetailServiceImpl implements MedicineDetailService {
         existing.setPackSize(dto.getPackSize());
         existing.setFree(dto.getFree());
         existing.setGstPercent(dto.getGstPercent());
+        existing.setCgstPercent(dto.getCgstPercent());
+        existing.setSgstPercent(dto.getSgstPercent());
         existing.setCostPrice(dto.getCostPrice());
         existing.setMrp(dto.getMrp());
         existing.setDiscPercent(dto.getDiscPercent());
@@ -172,6 +174,8 @@ public class MedicineDetailServiceImpl implements MedicineDetailService {
         entity.setPackSize(dto.getPackSize());
         entity.setFree(dto.getFree());
         entity.setGstPercent(dto.getGstPercent());
+        entity.setCgstPercent(dto.getCgstPercent());
+        entity.setSgstPercent(dto.getSgstPercent());
         entity.setCostPrice(dto.getCostPrice());
         entity.setMrp(dto.getMrp());
         entity.setDiscPercent(dto.getDiscPercent());
@@ -191,6 +195,8 @@ public class MedicineDetailServiceImpl implements MedicineDetailService {
         dto.setPackSize(entity.getPackSize());
         dto.setFree(entity.getFree());
         dto.setGstPercent(entity.getGstPercent());
+        dto.setCgstPercent(entity.getCgstPercent());
+        dto.setSgstPercent(entity.getSgstPercent());
         dto.setCostPrice(entity.getCostPrice());
         dto.setMrp(entity.getMrp());
         dto.setDiscPercent(entity.getDiscPercent());

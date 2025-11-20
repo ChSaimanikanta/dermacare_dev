@@ -16,6 +16,8 @@ public class MedicineDetailDTO {
     private int free;
 
     private double gstPercent;
+    private double cgstPercent;
+    private double sgstPercent;
     private double costPrice;
     private double mrp;
     private double discPercent;
