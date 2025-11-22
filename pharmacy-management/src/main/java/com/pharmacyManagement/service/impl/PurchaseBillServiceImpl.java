@@ -53,13 +53,13 @@ public class PurchaseBillServiceImpl implements PurchaseBillService {
             // ITEM CALCULATIONS
             // ============================
             List<PurchaseItem> items =
-                    (dto.getItems() == null || dto.getItems().isEmpty())
+                    (dto.getMedicineDetails() == null || dto.getMedicineDetails().isEmpty())
                             ? Collections.emptyList()
-                            : dto.getItems().stream()
+                            : dto.getMedicineDetails().stream()
                                 .map(i -> PurchaseCalcUtil.calculate(i, dto.getTaxType()))
                                 .collect(Collectors.toList());
 
-            bill.setItems(items);
+            bill.setMedicineDetails(items);
 
             // ============================
             // BASE TOTALS

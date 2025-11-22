@@ -26,7 +26,7 @@ public class PurchaseBillDTO {
     private String taxType;  // IGST / CGST-SGST
 
     @NotNull(message = "Items cannot be null")
-    private List<PurchaseItemDTO> items;
+    private List<PurchaseItemDTO> medicineDetails;
 
     private Double paidAmount;           // change made
     private Double previousAdjustment;   // change made

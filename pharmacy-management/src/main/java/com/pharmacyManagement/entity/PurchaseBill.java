@@ -17,10 +17,11 @@ public class PurchaseBill {
     private String supplierName;
     private String invoiceDate;
     private String receivingDate;
+    
 
     private String taxType; // IGST / CGST-SGST
 
-    private List<PurchaseItem> items;
+    private List<PurchaseItem> medicineDetails;
 
     private double totalAmount;
     private double discountAmountTotal;
