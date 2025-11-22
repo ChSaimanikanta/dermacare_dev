@@ -14,9 +14,9 @@
     </parent>
 
     <groupId>com.pharmacyManagement</groupId>
-    <artifactId>PharmacyManagement</artifactId>
+    <artifactId>pharmacy-management</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>PharmacyManagement</name>
+    <name>pharmacy-management</name>
     <description>PharmacyManagement</description>
 
     <properties>

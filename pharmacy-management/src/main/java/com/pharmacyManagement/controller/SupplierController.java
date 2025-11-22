@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/supplier")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
+
 public class SupplierController {
 
     private static final Logger log = LoggerFactory.getLogger(SupplierController.class);

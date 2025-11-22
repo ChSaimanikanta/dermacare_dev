@@ -17,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/purchase")
-@CrossOrigin(origins = "*")
+
 @RequiredArgsConstructor
 public class PurchaseBillController {
 
