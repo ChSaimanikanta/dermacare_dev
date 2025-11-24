@@ -8,7 +8,9 @@ import lombok.Data;
 
 @Data
 public class PurchaseBillDTO {
-
+    
+	private String id;
+	
     private String purchaseBillNo;
 
     @NotBlank(message = "Invoice No cannot be empty")
