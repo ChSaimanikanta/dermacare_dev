@@ -65,5 +65,15 @@ public class PurchaseBillController {
         Response response = purchaseBillService.deletePurchase(id);
         return ResponseEntity.status(response.getStatus()).body(response);
     }
+    
+    @GetMapping("/search/date/{fromDate}/{toDate}")
+    public ResponseEntity<Response> getByDateRange(
+            @PathVariable String fromDate,
+            @PathVariable String toDate) {
+
+        Response res = purchaseBillService.getPurchaseByDateRange(fromDate, toDate);
+        return ResponseEntity.status(res.getStatus()).body(res);
+    }
+
 
 }

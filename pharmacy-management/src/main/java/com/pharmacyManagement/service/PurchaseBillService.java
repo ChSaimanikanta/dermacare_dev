@@ -17,4 +17,6 @@ public interface PurchaseBillService {
 
 	Response getPurchaseByPurchaseBillNo(String purchaseBillNo);
 
+	Response getPurchaseByDateRange(String fromDate, String toDate);
+
 }

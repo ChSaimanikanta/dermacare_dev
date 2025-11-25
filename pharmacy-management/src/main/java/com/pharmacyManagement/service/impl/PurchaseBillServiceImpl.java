@@ -41,7 +41,8 @@ public class PurchaseBillServiceImpl implements PurchaseBillService {
 			log.info("Saving purchase bill: {}", dto);
 
 			PurchaseBill bill = new PurchaseBill();
-
+			bill.setDate(dto.getDate());
+			bill.setTime(dto.getTime());
 			bill.setPurchaseBillNo(dto.getPurchaseBillNo());
 			bill.setInvoiceNo(dto.getInvoiceNo());
 			bill.setSupplierName(dto.getSupplierName());
@@ -166,7 +167,7 @@ public class PurchaseBillServiceImpl implements PurchaseBillService {
             }
 
             // Delete old record and save new record
-            dto.setpu(id); // put same ID
+            dto.setId(id); // put same ID
             Response saveRes = savePurchase(dto);
 
             return saveRes;
@@ -294,4 +295,44 @@ public class PurchaseBillServiceImpl implements PurchaseBillService {
             return response;
         }
     }
+    @Override
+    public Response getPurchaseByDateRange(String fromDate, String toDate) {
+
+        Response response = new Response();
+
+        try {
+            if (fromDate == null || toDate == null) {
+                response.setSuccess(false);
+                response.setMessage("From-Date and To-Date are required");
+                response.setStatus(HttpStatus.BAD_REQUEST.value());
+                return response;
+            }
+
+            // Convert incoming dates: 20-11-2025 → 20/11/2025
+            fromDate = fromDate.replace("-", "/");
+            toDate = toDate.replace("-", "/");
+
+            List<PurchaseBill> list = repository.findByDateRange(fromDate, toDate);
+
+            if (list.isEmpty()) {
+                response.setSuccess(false);
+                response.setMessage("No Purchase Bills found between given dates");
+                response.setStatus(HttpStatus.NOT_FOUND.value());
+                return response;
+            }
+
+            response.setSuccess(true);
+            response.setData(list);
+            response.setMessage("Purchase Bills fetched successfully");
+            response.setStatus(HttpStatus.OK.value());
+            return response;
+
+        } catch (Exception e) {
+            response.setSuccess(false);
+            response.setMessage("Failed to fetch purchase bills: " + e.getMessage());
+            response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+            return response;
+        }
+    }
+
 }
