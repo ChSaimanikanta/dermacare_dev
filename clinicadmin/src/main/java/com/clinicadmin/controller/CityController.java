@@ -15,34 +15,34 @@ import com.clinicadmin.dto.Response;
 import com.clinicadmin.service.CityService;
 
 @RestController
-@RequestMapping("/clinic-admin/city")
+@RequestMapping("/clinic-admin")
 public class CityController {
 
 	@Autowired
     private  CityService cityService;
 
-    @PostMapping("/addCity")
+    @PostMapping("/api/pharmacy/city/save")
     public Response saveCity(@RequestBody CityDTO dto) {
         return cityService.saveCity(dto);
     }
 
-    @PutMapping("/updateByCityId/{id}")
+    @PutMapping("/api/pharmacy/city/update/{id}")
     public Response updateCity(@PathVariable String id,
                                @RequestBody CityDTO dto) {
         return cityService.updateCity(id, dto);
     }
 
-    @GetMapping("/getByCityId/{id}")
+    @GetMapping("/api/pharmacy/city/getById/{id}")
     public Response getByityById(@PathVariable String id) {
         return cityService.getCityById(id);
     }
 
-    @GetMapping("/getAllCitiesall")
+    @GetMapping("/api/pharmacy/city/all")
     public Response getAllCities() {
         return cityService.getAllCities();
     }
 
-    @DeleteMapping("/deleteCityById/{id}")
+    @DeleteMapping("api/pharmacy/city/delete/{id}")
     public Response deleteCityById(@PathVariable String id) {
         return cityService.deleteCity(id);
     }

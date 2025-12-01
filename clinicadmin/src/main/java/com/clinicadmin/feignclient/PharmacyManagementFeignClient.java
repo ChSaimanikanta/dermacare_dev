@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import com.clinicadmin.dto.AreaDTO;
 import com.clinicadmin.dto.CityDTO;
+import com.clinicadmin.dto.PurchaseBillDTO;
 import com.clinicadmin.dto.Response;
+import com.clinicadmin.dto.SupplierDTO;
 
 @FeignClient(name = "pharmacy-management")
 public interface PharmacyManagementFeignClient {
@@ -53,9 +55,59 @@ public interface PharmacyManagementFeignClient {
     // DELETE CITY
     @DeleteMapping("/api/pharmacy/city/delete/{id}")
     Response deleteCity(@PathVariable String id);
+    
+    
+    
+ // ==================== PURCHASE BILL APIs ====================
+
+ // SAVE
+ @PostMapping("/api/pharmacy/purchase/save")
+ Response savePurchase(@RequestBody PurchaseBillDTO dto);
+
+ // UPDATE
+ @PutMapping("/api/pharmacy/purchase/update/{id}")
+ Response updatePurchase(@PathVariable String id, @RequestBody PurchaseBillDTO dto);
+
+ // GET BY ID
+ @GetMapping("/api/pharmacy/purchase/getById/{id}")
+ Response getPurchaseById(@PathVariable String id);
+
+ // GET BY BILL NO
+ @GetMapping("/api/pharmacy/purchase/getByBillNo/{billNo}")
+ Response getPurchaseByBillNo(@PathVariable String billNo);
+
+ // GET ALL
+ @GetMapping("/api/pharmacy/purchase/all")
+ Response getAllPurchases();
+
+ // DELETE
+ @DeleteMapping("/api/pharmacy/purchase/delete/{id}")
+ Response deletePurchase(@PathVariable String id);
+
+ // SEARCH BY DATE RANGE
+ @GetMapping("/api/pharmacy/purchase/search/date/{fromDate}/{toDate}")
+ Response getByDateRange(@PathVariable String fromDate, @PathVariable String toDate);
+
+
+    
+    
+//==================== SUPPLIER APIs ====================
+
+@PostMapping("/api/pharmacy/supplier/add")
+Response addSupplier(@RequestBody SupplierDTO dto);
+
+@PutMapping("/api/pharmacy/supplier/update/{supplierId}")
+Response updateSupplier(@PathVariable String supplierId, @RequestBody SupplierDTO dto);
+
+@GetMapping("/api/pharmacy/supplier/get/{supplierId}")
+Response getSupplierById(@PathVariable String supplierId);
+
+@GetMapping("/api/pharmacy/supplier/getAll")
+Response getAllSuppliers();
+
+@DeleteMapping("/api/pharmacy/supplier/delete/{supplierId}")
+Response deleteSupplier(@PathVariable String supplierId);
+
 }
-    
-    
-    
     
 
