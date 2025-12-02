@@ -802,7 +802,7 @@ public class BookingService_ServiceImpl implements BookingService_Service {
 		            //System.out.println(bookings);
 		    	} 
 	        	 if(bookings == null || bookings.isEmpty()) {
-		            bookings = repository.findByNameIgnoreCaseAndClinicId(input,clinicId);
+		            bookings = repository.findByNameContainingIgnoreCaseAndClinicId(input,clinicId);
 		          // System.out.println(bookings);
 		        }
 	        	if(bookings != null && !bookings.isEmpty()) {
