@@ -6,12 +6,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.clinicadmin.dto.AreaDTO;
 import com.clinicadmin.dto.CityDTO;
 import com.clinicadmin.dto.MedicineDetailDTO;
 import com.clinicadmin.dto.PurchaseBillDTO;
 import com.clinicadmin.dto.Response;
+import com.clinicadmin.dto.StockDTO;
 import com.clinicadmin.dto.SupplierDTO;
 @FeignClient(name = "pharmacy-management")
 public interface PharmacyManagementFeignClient {
@@ -123,7 +125,31 @@ Response updateMedicine(@PathVariable String id, @RequestBody MedicineDetailDTO 
 
 @DeleteMapping("/api/pharmacy/medicine/deleteMedicineById/{id}")
 Response deleteMedicine(@PathVariable String id);
+
+                     ////////////Stock/////////////
+
+@PostMapping("/api/pharmacy/stockMaster/add")
+Response addStock(@RequestBody StockDTO stock);
+
+@PutMapping("/api/pharmacy/stockMaster/update/{id}")
+Response updateStock(@PathVariable("id") String id, @RequestBody StockDTO stock);
+
+@GetMapping("/api/pharmacy/stockMaster/{id}")
+Response getStockById(@PathVariable("id") String id);
+
+@GetMapping("/api/pharmacy/stockMaster/product//{productId}")
+Response getStockByProductId(@PathVariable("productId") String productId);
+
+@GetMapping("/api/pharmacy/stockMaster/all")
+Response getAllStock();
+
+@DeleteMapping("/api/pharmacy/stockMaster/delete/{id}")
+Response deleteStock(@PathVariable("id") String id);
+
+@PutMapping("/api/pharmacy/stockMaster/status/{id}")
+Response changeStatus(@PathVariable("id") String id, @RequestParam("status") String status);
 }
+
 
 
     

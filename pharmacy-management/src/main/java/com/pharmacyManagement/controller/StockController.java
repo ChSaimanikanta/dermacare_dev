@@ -9,7 +9,7 @@ import com.pharmacyManagement.service.StockService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/stockMaster")
+@RequestMapping("/stockMaster")
 @RequiredArgsConstructor
 public class StockController {
 
