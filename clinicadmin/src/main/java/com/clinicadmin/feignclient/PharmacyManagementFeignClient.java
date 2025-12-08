@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
-
 import com.clinicadmin.dto.AreaDTO;
 import com.clinicadmin.dto.CityDTO;
 import com.clinicadmin.dto.MedicineDetailDTO;
@@ -148,7 +147,39 @@ Response deleteStock(@PathVariable("id") String id);
 
 @PutMapping("/api/pharmacy/stockMaster/status/{id}")
 Response changeStatus(@PathVariable("id") String id, @RequestParam("status") String status);
+
+
+
+                     // STOCK LEDGER — PURCHASE STOCK////
+    @PostMapping("/stock/purchase/{purchaseBillNo}")
+    Response addPurchase(
+            @PathVariable("purchaseBillNo") String purchaseBillNo,
+            @RequestBody StockDTO dto
+    );
+
+    // ------------------------------------------------------------------------------
+    // STOCK LEDGER — SALE STOCK
+    // ------------------------------------------------------------------------------
+    @PostMapping("/stock/sale/{productId}/{batchNo}/{qty}/{saleId}")
+    Response addSale(
+            @PathVariable("productId") String productId,
+            @PathVariable("batchNo") String batchNo,
+            @PathVariable("qty") int qty,
+            @PathVariable("saleId") String saleId
+    );
+
+    // ------------------------------------------------------------------------------
+    // STOCK LEDGER — DAMAGE STOCK
+    // ------------------------------------------------------------------------------
+    @PostMapping("/stock/damage/{productId}/{batchNo}/{qty}/{reason}")
+    Response addDamage(
+            @PathVariable("productId") String productId,
+            @PathVariable("batchNo") String batchNo,
+            @PathVariable("qty") int qty,
+            @PathVariable("reason") String reason
+    );
 }
+
 
 
 
