@@ -82,11 +82,11 @@ public class DoctorMapper {
 		}
 
 		dto.setDoctorId(doctor.getDoctorId());
+		dto.setHospitalId(doctor.getHospitalId());
 		dto.setBranchId(doctor.getBranchId());
-		dto.setHospitalId(doctor.getHospitalName());
+		dto.setHospitalName(doctor.getHospitalName());
 		dto.setPermissions(dto.getPermissions());
 		dto.setRole(doctor.getRole());
-		dto.setHospitalId(doctor.getHospitalId());
 
 		// 🔹 Null checks before decompress
 		if (doctor.getDoctorPicture() != null && !doctor.getDoctorPicture().isBlank()) {
