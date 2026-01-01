@@ -466,6 +466,7 @@ public class DoctorServiceImpl implements DoctorService {
 				doctor.setDoctorSignature(Base64CompressionUtil.compressBase64(dto.getDoctorSignature()));
 			if (dto.getDoctorFees() != null)
 				doctor.setDoctorFees(DoctorMapper.mapDoctorFeeDTOtoEntity(dto.getDoctorFees()));
+			doctor.setUpdatedDate(LocalDate.now().toString());
 
 			// Booleans (we assume default false if not set, so be cautious)
 			doctor.setDoctorAvailabilityStatus(dto.isDoctorAvailabilityStatus());
