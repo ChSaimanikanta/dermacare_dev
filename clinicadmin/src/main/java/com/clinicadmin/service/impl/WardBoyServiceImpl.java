@@ -1,17 +1,16 @@
 package com.clinicadmin.service.impl;
 
 import java.security.SecureRandom;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
 import com.clinicadmin.dto.Branch;
 import com.clinicadmin.dto.Response;
 import com.clinicadmin.dto.ResponseStructure;
@@ -24,7 +23,6 @@ import com.clinicadmin.repository.WardBoyRepository;
 import com.clinicadmin.service.WardBoyService;
 import com.clinicadmin.utils.WardBoyMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

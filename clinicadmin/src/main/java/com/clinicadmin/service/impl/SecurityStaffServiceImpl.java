@@ -149,7 +149,7 @@ public class SecurityStaffServiceImpl implements SecurityStaffService {
 	    existing.setPoliceVerificationCertificate(SecurityStaffMapper.encode(staff.getPoliceVerificationCertificate()));
 	    existing.setMedicalFitnessCertificate(SecurityStaffMapper.encode(staff.getMedicalFitnessCertificate()));
 	    existing.setProfilePicture(SecurityStaffMapper.encode(staff.getProfilePicture()));
-
+	    existing.setUpdatedDate(LocalDate.now().toString());
 	    // ---------- Save ----------
 	    SecurityStaff updated = repository.save(existing);
 		log.info("SecurityStaff updated | securityStaffId={}", updated.getSecurityStaffId());
@@ -159,6 +159,7 @@ public class SecurityStaffServiceImpl implements SecurityStaffService {
 	    updated.setPoliceVerificationCertificate(SecurityStaffMapper.decode(updated.getPoliceVerificationCertificate()));
 	    updated.setMedicalFitnessCertificate(SecurityStaffMapper.decode(updated.getMedicalFitnessCertificate()));
 	    updated.setProfilePicture(SecurityStaffMapper.decode(updated.getProfilePicture()));
+	    
 
 	    return ResponseStructure.buildResponse(updated, "Security staff updated successfully",
 	            HttpStatus.OK, HttpStatus.OK.value());

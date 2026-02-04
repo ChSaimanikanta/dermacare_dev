@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
+import java.time.LocalDate;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
@@ -190,7 +191,7 @@ public class ReceptionistServiceImpl implements ReceptionistService {
 	        existing.setGraduationCertificate(encodeIfNotBase64(dto.getGraduationCertificate()));
 	    if (dto.getComputerSkillsProof() != null)
 	        existing.setComputerSkillsProof(encodeIfNotBase64(dto.getComputerSkillsProof()));
-
+	    existing.setUpdatedDate(LocalDate.now().toString());
 	    // 🔹 Save receptionist entity
 	    ReceptionistEntity updated = repository.save(existing);
 		log.info("Receptionist updated successfully | receptionistId={}", updated.getId());
