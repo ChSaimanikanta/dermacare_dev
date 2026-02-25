@@ -318,6 +318,8 @@ public class AdminServiceImpl implements AdminService {
 	        branch.setContactNumber(saved.getContactNumber());
 	        branch.setEmail(saved.getEmailAddress());
 	        branch.setRole("ADMIN");
+	        branch.setLatitude(String.valueOf(saved.getLatitude()));	
+	        branch.setLongitude(String.valueOf(saved.getLongitude()));
 	        branch.setPermissions(PermissionsUtil.getAdminPermissions());
 
 	        Branch savedBranch = branchRepository.save(branch);
@@ -838,7 +840,7 @@ public class AdminServiceImpl implements AdminService {
 	                clnc.setBranch(clinic.getBranch());
 	                clnc.setRole(clinic.getRole());
 	                clnc.setPermissions(clinic.getPermissions());
-
+                    clnc.setStatus(clinic.getStatus());
 	                clnc.setBranches(clinic.getBranches());
 
                     clnc.setHospitalLogo(
