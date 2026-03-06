@@ -87,10 +87,10 @@ public class StockLedgerServiceImpl implements StockLedgerService {
 			map.put("stock", stock);
 			map.put("ledger", ledger);
 
-			return new Response(true, map, "Purchase stock added successfully", 200);
+			return new Response(true, map, "Purchase stock added successfully", 200,null);
 
 		} catch (Exception e) {
-			return new Response(false, null, "Error: " + e.getMessage(), 500);
+			return new Response(false, null, "Error: " + e.getMessage(), 500,null);
 		}
 	}
 
@@ -105,7 +105,7 @@ public class StockLedgerServiceImpl implements StockLedgerService {
 			Optional<Stock> stockOpt = stockRepo.findByProductIdAndBatchNo(productId, batchNo);
 
 			if (stockOpt.isEmpty()) {
-				return new Response(false, null, "Stock not found to reverse", 404);
+				return new Response(false, null, "Stock not found to reverse", 404,null);
 			}
 
 			Stock stock = stockOpt.get();
@@ -126,10 +126,10 @@ public class StockLedgerServiceImpl implements StockLedgerService {
 			map.put("stock", stock);
 			map.put("ledger", ledger);
 
-			return new Response(true, map, "Purchase reversed for item", 200);
+			return new Response(true, map, "Purchase reversed for item", 200,null);
 
 		} catch (Exception e) {
-			return new Response(false, null, "Error: " + e.getMessage(), 500);
+			return new Response(false, null, "Error: " + e.getMessage(), 500,null);
 		}
 	}
 
@@ -139,7 +139,7 @@ public class StockLedgerServiceImpl implements StockLedgerService {
 	@Override
 	public Response reversePurchaseByBill(String purchaseBillNo, List<PurchaseItem> items) {
 		if (items == null || items.isEmpty()) {
-			return new Response(false, null, "No items available to reverse", 400);
+			return new Response(false, null, "No items available to reverse", 400, null);
 		}
 
 		for (PurchaseItem item : items) {
@@ -147,7 +147,7 @@ public class StockLedgerServiceImpl implements StockLedgerService {
 			reversePurchaseItem(item.getProductId(), item.getBatchNo(), totalQty, purchaseBillNo);
 		}
 
-		return new Response(true, null, "Purchase reversed for entire bill", 200);
+		return new Response(true, null, "Purchase reversed for entire bill", 200, null);
 	}
 
 	// -------------------------------------------------------------------------
@@ -159,13 +159,13 @@ public class StockLedgerServiceImpl implements StockLedgerService {
 			Optional<Stock> stockOpt = stockRepo.findByProductIdAndBatchNo(productId, batchNo);
 
 			if (stockOpt.isEmpty()) {
-				return new Response(false, null, "Stock not found", 404);
+				return new Response(false, null, "Stock not found", 404, null);
 			}
 
 			Stock stock = stockOpt.get();
 
 			if (stock.getClosingStock() < qty) {
-				return new Response(false, null, "Insufficient stock for sale", 400);
+				return new Response(false, null, "Insufficient stock for sale", 400, null);
 			}
 
 			stock.setOpeningStock(stock.getClosingStock());
@@ -184,10 +184,10 @@ public class StockLedgerServiceImpl implements StockLedgerService {
 			map.put("stock", stock);
 			map.put("ledger", ledger);
 
-			return new Response(true, map, "Sale recorded successfully", 200);
+			return new Response(true, map, "Sale recorded successfully", 200, null);
 
 		} catch (Exception e) {
-			return new Response(false, null, "Error: " + e.getMessage(), 500);
+			return new Response(false, null, "Error: " + e.getMessage(), 500, null);
 		}
 	}
 
@@ -200,13 +200,13 @@ public class StockLedgerServiceImpl implements StockLedgerService {
 			Optional<Stock> stockOpt = stockRepo.findByProductIdAndBatchNo(productId, batchNo);
 
 			if (stockOpt.isEmpty()) {
-				return new Response(false, null, "Stock not found", 404);
+				return new Response(false, null, "Stock not found", 404,null);
 			}
 
 			Stock stock = stockOpt.get();
 
 			if (stock.getClosingStock() < qty) {
-				return new Response(false, null, "Insufficient stock for damage", 400);
+				return new Response(false, null, "Insufficient stock for damage", 400,null);
 			}
 
 			stock.setOpeningStock(stock.getClosingStock());
@@ -225,10 +225,10 @@ public class StockLedgerServiceImpl implements StockLedgerService {
 			map.put("stock", stock);
 			map.put("ledger", ledger);
 
-			return new Response(true, map, "Damage recorded successfully", 200);
+			return new Response(true, map, "Damage recorded successfully", 200,null);
 
 		} catch (Exception e) {
-			return new Response(false, null, "Error: " + e.getMessage(), 500);
+			return new Response(false, null, "Error: " + e.getMessage(), 500,null);
 		}
 	}
 

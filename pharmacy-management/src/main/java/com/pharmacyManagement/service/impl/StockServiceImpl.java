@@ -24,20 +24,20 @@ public class StockServiceImpl implements StockService {
 	public Response addStock(Stock stock) {
 
 		if (stock.getProductId() == null || stock.getBatchNo() == null) {
-			return new Response(false, null, "productId & batchNo required", 400);
+			return new Response(false, null, "productId & batchNo required", 400,null);
 		}
 
 		Optional<Stock> exists = stockRepo.findByProductIdAndBatchNo(stock.getProductId(), stock.getBatchNo());
 
 		if (exists.isPresent()) {
-			return new Response(false, null, "Stock already exists for this batch", 409);
+			return new Response(false, null, "Stock already exists for this batch", 409,null);
 		}
 
 		stock.setClosingStock(
 				stock.getOpeningStock() + stock.getStockIn() - stock.getStockOut() - stock.getDamageStock());
 
 		Stock saved = stockRepo.save(stock);
-		return new Response(true, saved, "Stock added", 200);
+		return new Response(true, saved, "Stock added", 200,null);
 	}
 
 	// ----------------------------------------------------------------------------
@@ -48,7 +48,7 @@ public class StockServiceImpl implements StockService {
 
 		Optional<Stock> stockOpt = stockRepo.findById(id);
 		if (stockOpt.isEmpty()) {
-			return new Response(false, null, "Stock not found", 404);
+			return new Response(false, null, "Stock not found", 404,null);
 		}
 
 		Stock stock = stockOpt.get();
@@ -71,7 +71,7 @@ public class StockServiceImpl implements StockService {
 				stock.getOpeningStock() + stock.getStockIn() - stock.getStockOut() - stock.getDamageStock());
 
 		stockRepo.save(stock);
-		return new Response(true, stock, "Stock updated", 200);
+		return new Response(true, stock, "Stock updated", 200,null);
 	}
 
 	// ----------------------------------------------------------------------------
@@ -81,8 +81,8 @@ public class StockServiceImpl implements StockService {
 	public Response getStockById(String id) {
 
 		Optional<Stock> stock = stockRepo.findById(id);
-		return stock.isPresent() ? new Response(true, stock.get(), "Stock found", 200)
-				: new Response(false, null, "Stock not found", 404);
+		return stock.isPresent() ? new Response(true, stock.get(), "Stock found", 200,null)
+				: new Response(false, null, "Stock not found", 404,null);
 	}
 
 	// ----------------------------------------------------------------------------
@@ -91,7 +91,7 @@ public class StockServiceImpl implements StockService {
 	@Override
 	public Response getStockByProductId(String productId) {
 
-		return new Response(true, stockRepo.findByProductId(productId), "Stock list", 200);
+		return new Response(true, stockRepo.findByProductId(productId), "Stock list", 200,null);
 	}
 
 	// ----------------------------------------------------------------------------
@@ -99,7 +99,7 @@ public class StockServiceImpl implements StockService {
 	// ----------------------------------------------------------------------------
 	@Override
 	public Response getAllStock() {
-		return new Response(true, stockRepo.findAll(), "All stock list", 200);
+		return new Response(true, stockRepo.findAll(), "All stock list", 200,null);
 	}
 
 	// ----------------------------------------------------------------------------
@@ -110,14 +110,14 @@ public class StockServiceImpl implements StockService {
 		Optional<Stock> stockOpt = stockRepo.findById(id);
 
 		if (stockOpt.isEmpty()) {
-			return new Response(false, null, "Stock not found", 404);
+			return new Response(false, null, "Stock not found", 404,null);
 		}
 
 		Stock stock = stockOpt.get();
 		stock.setStatus("Inactive");
 		stockRepo.save(stock);
 
-		return new Response(true, null, "Stock deleted (status=Inactive)", 200);
+		return new Response(true, null, "Stock deleted (status=Inactive)", 200,null);
 	}
 	@Override
 	public Response deleteStockById(String id) {
@@ -148,13 +148,13 @@ public class StockServiceImpl implements StockService {
 		Optional<Stock> stockOpt = stockRepo.findById(id);
 
 		if (stockOpt.isEmpty()) {
-			return new Response(false, null, "Stock not found", 404);
+			return new Response(false, null, "Stock not found", 404,null);
 		}
 
 		Stock stock = stockOpt.get();
 		stock.setStatus(status);
 		stockRepo.save(stock);
 
-		return new Response(true, stock, "Status updated", 200);
+		return new Response(true, stock, "Status updated", 200,null);
 	}
 }
