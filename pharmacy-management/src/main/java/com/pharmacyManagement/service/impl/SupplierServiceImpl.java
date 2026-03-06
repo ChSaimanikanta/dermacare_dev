@@ -1,10 +1,14 @@
 package com.pharmacyManagement.service.impl;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+
 import com.pharmacyManagement.dto.Response;
 import com.pharmacyManagement.dto.SupplierDTO;
 import com.pharmacyManagement.entity.Supplier;
@@ -20,6 +24,7 @@ public class SupplierServiceImpl implements SupplierService {
 	private static final Logger log = LoggerFactory.getLogger(SupplierServiceImpl.class);
 
 	private final SupplierRepository supplierRepository;
+	private final EmailService emailService;
 
 	// ---------------------------------------------------------
 	// CREATE SUPPLIER
@@ -75,9 +80,22 @@ public class SupplierServiceImpl implements SupplierService {
 			supplier.setUserName(supplierId);
 
 			// Generate Password
-			supplier.setPassword(generatePassword());
+			String password = generatePassword();
+			supplier.setPassword(password);
 
 			supplierRepository.save(supplier);
+
+			// Send credentials to email
+			Map<String, String> emailData = new HashMap<>();
+			emailData.put("subject", "Supplier Account Created");
+			emailData.put("message", "Your supplier account has been created successfully.");
+			emailData.put("username", supplier.getUserName());
+			emailData.put("password", password);
+
+			emailService.sendEmail(
+			        supplier.getContactDetails().getEmail(),
+			        emailData
+			);
 
 			log.info("Supplier added successfully: {}", supplier.getSupplierId());
 
