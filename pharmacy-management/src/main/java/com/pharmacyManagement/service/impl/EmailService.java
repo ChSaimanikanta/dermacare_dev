@@ -28,7 +28,7 @@ public class EmailService {
         );
         this.clinicLoginUrl = env.getProperty(
                 "notification.clinic-login-url",
-                "http://52.66.144.177:3000/supplier-Dashboard"
+                "http://52.66.144.177:9090/supplier-Dashboard"
         );
     }
 
