@@ -28,7 +28,7 @@ public class EmailService {
         );
         this.clinicLoginUrl = env.getProperty(
                 "notification.clinic-login-url",
-                "https://glowkartclinic.ashokfruit.shop/login"
+                "http://52.66.144.177:3000/supplier-Dashboard"
         );
     }
 
