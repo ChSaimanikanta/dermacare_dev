@@ -1,7 +1,5 @@
 package com.pharmacyManagement.dto;
 
-import org.springframework.data.annotation.Id;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,4 +23,6 @@ public class SupplierDTO {
 	private boolean nonLocalSupplier;
 	private boolean active;
 	private SupplierContactDetails contactDetails;
+	private String userName;
+	private String password;
 }
