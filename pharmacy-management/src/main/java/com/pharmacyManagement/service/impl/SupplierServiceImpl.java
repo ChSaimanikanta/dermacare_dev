@@ -66,6 +66,17 @@ public class SupplierServiceImpl implements SupplierService {
 
 			// -------- SAVE SUPPLIER --------
 			Supplier supplier = mapToEntity(dto);
+
+			// Generate Supplier ID
+			String supplierId = generateSupplierId();
+			supplier.setSupplierId(supplierId);
+
+			// Username = Supplier ID
+			supplier.setUserName(supplierId);
+
+			// Generate Password
+			supplier.setPassword(generatePassword());
+
 			supplierRepository.save(supplier);
 
 			log.info("Supplier added successfully: {}", supplier.getSupplierId());
@@ -281,6 +292,8 @@ public class SupplierServiceImpl implements SupplierService {
 		supplier.setNonLocalSupplier(dto.isNonLocalSupplier());
 		supplier.setActive(dto.isActive());
 		supplier.setContactDetails(dto.getContactDetails());
+		supplier.setUserName(dto.getUserName());
+		supplier.setPassword(dto.getPassword());
 
 		return supplier;
 	}
@@ -303,6 +316,11 @@ public class SupplierServiceImpl implements SupplierService {
 		dto.setNonLocalSupplier(supplier.isNonLocalSupplier());
 		dto.setActive(supplier.isActive());
 		dto.setContactDetails(supplier.getContactDetails());
+		dto.setUserName(supplier.getUserName());
+		dto.setUserName(supplier.getUserName());
+		dto.setPassword(supplier.getPassword());
+		
+		
 
 		return dto;
 	}
@@ -317,5 +335,11 @@ public class SupplierServiceImpl implements SupplierService {
 		r.setStatus(status.value());
 		return r;
 	}
-
+	
+	private String generateSupplierId() {
+	    return "SUP-" + java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+	}
+	private String generatePassword() {
+	    return java.util.UUID.randomUUID().toString().substring(0,8);
+	}
 }
