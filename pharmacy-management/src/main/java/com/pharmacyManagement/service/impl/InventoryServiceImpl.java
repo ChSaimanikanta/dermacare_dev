@@ -153,7 +153,9 @@ public class InventoryServiceImpl implements InventoryService {
 
 		long daysLeft = ChronoUnit.DAYS.between(LocalDate.now(), expiry);
 
+		dto.setDaysLeft(daysLeft);
 
+		// STATUS LOGIC
 	    if (inv.getAvailableQty() == 0) {
 	        dto.setStatus("OUT_OF_STOCK");
 	    } 
