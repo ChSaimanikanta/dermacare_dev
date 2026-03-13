@@ -28,9 +28,23 @@ public class MedicineTypeController {
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 
-    @GetMapping("/getMedicineTypes/{clinicId}")
-    public ResponseEntity<Response> getMedicineTypes(@PathVariable String clinicId) {
-        Response response = service.getMedicineTypesByClinicId(clinicId);
-        return ResponseEntity.status(response.getStatus()).body(response);
+    @GetMapping("/getMedicineTypes/{id}")
+    public ResponseEntity<Response> getMedicineTypes(@PathVariable String id) {
+
+        Response response = service.getMedicineTypesById(id);
+
+        return ResponseEntity
+                .status(response.getStatus())
+                .body(response);
+    }
+    
+    @GetMapping("/getAllMedicineTypes")
+    public ResponseEntity<Response> getAllMedicineTypes() {
+
+        Response response = service.getAllMedicineTypes();
+
+        return ResponseEntity
+                .status(response.getStatus())
+                .body(response);
     }
 }

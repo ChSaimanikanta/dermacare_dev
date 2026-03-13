@@ -22,7 +22,12 @@ public class SupplierDTO {
 	private String area;
 	private boolean nonLocalSupplier;
 	private boolean active;
+	private double previousAdjustment;
+	private String duePaidBill; 
 	private SupplierContactDetails contactDetails;
 	private String userName;
 	private String password;
+	
+	private String clinicId;
+	private String branchId;
 }

@@ -11,21 +11,36 @@ import lombok.NoArgsConstructor;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class InventoryResponseDTO {
 
-    private String medicineId;
-    private String medicineName;
+	private String inventoryId;
 
-    private String batchNo;
-    private String mfgDate;
-    private String expiryDate;
-    private long daysLeft;
+	private String medicineId;
+	private String medicineName;
 
-    private double availableQty;
-    private double minStock;
+	private String brand;
+	private String productType;
+	private String pack;
 
-    private double purchaseRate;
-    private double mrp;
-    private double gstPercent;
+	private String batchNo;
+	private String mfgDate;
+	private String expiryDate;
+	private String hsnCode;
 
-    private String supplier;
-    private String status;
+	private double daysLeft;
+
+	private double availableQty;
+	private double minStock;
+
+	private double purchaseRate;
+	private double mrp;
+	private double gstPercent;
+
+	private String supplierId;
+	private String supplier;
+
+	private String status;
+
+	// ✅ Multi tenant
+	private String clinicId;
+	private String branchId;
+
 }

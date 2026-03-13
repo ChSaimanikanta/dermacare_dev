@@ -1,4 +1,3 @@
-// ---------- PurchaseBillServiceImpl.java ----------
 package com.pharmacyManagement.service.impl;
 
 import java.time.LocalDateTime;
@@ -14,9 +13,11 @@ import com.pharmacyManagement.dto.PurchaseBillDTO;
 import com.pharmacyManagement.dto.Response;
 import com.pharmacyManagement.dto.Summary;
 import com.pharmacyManagement.entity.Inventory;
+import com.pharmacyManagement.entity.Medicine;
 import com.pharmacyManagement.entity.PurchaseBill;
 import com.pharmacyManagement.entity.PurchaseItem;
 import com.pharmacyManagement.repository.InventoryRepository;
+import com.pharmacyManagement.repository.MedicineRepository;
 import com.pharmacyManagement.repository.PurchaseBillRepository;
 import com.pharmacyManagement.service.PurchaseBillService;
 
@@ -32,57 +33,57 @@ public class PurchaseBillServiceImpl implements PurchaseBillService {
 	@Autowired
 	private InventoryRepository inventoryRepository;
 
+	@Autowired
+	private MedicineRepository medicineRepository;
+
 	@Override
 	public Response createPurchase(PurchaseBillDTO dto) {
 
-	    log.info("Creating purchase for Bill No: {}", dto.getPurchaseBillNo());
+		log.info("Creating purchase for Bill No: {}", dto.getPurchaseBillNo());
 
-	    Response res = new Response();
+		Response res = new Response();
 
-	    try {
+		try {
 
-	        PurchaseBill purchase = new PurchaseBill();
+			PurchaseBill purchase = new PurchaseBill();
 
-	        purchase.setPurchaseBillNo(dto.getPurchaseBillNo());
-	        purchase.setOrderId(dto.getOrderId());
-	        purchase.setInvoiceNo(dto.getInvoiceNo());
-	        purchase.setFinancialYear(dto.getFinancialYear());
-	        purchase.setDates(dto.getDates());
-	        purchase.setTaxDetails(dto.getTaxDetails());
-	        purchase.setSupplierDetails(dto.getSupplierDetails());
-	        purchase.setPaymentDetails(dto.getPaymentDetails());
-	        purchase.setItems(dto.getItems());
-	        
+			purchase.setPurchaseBillNo(dto.getPurchaseBillNo());
+			purchase.setOrderId(dto.getOrderId());
+			purchase.setInvoiceNo(dto.getInvoiceNo());
+			purchase.setFinancialYear(dto.getFinancialYear());
+			purchase.setDates(dto.getDates());
+			purchase.setTaxDetails(dto.getTaxDetails());
+			purchase.setSupplierDetails(dto.getSupplierDetails());
+			purchase.setPaymentDetails(dto.getPaymentDetails());
+			purchase.setItems(dto.getItems());
 
-	        purchase.setStatus("CREATED");
-	        purchase.setCreatedAt(LocalDateTime.now().toString());
+			purchase.setClinicId(dto.getClinicId());
+			purchase.setBranchId(dto.getBranchId());
 
-	        // calculate bill amounts
-	        calculateAmounts(purchase);
+			purchase.setStatus("CREATED");
+			purchase.setCreatedAt(LocalDateTime.now().toString());
 
-	        // update inventory
-	        updateInventory(purchase);
+			calculateAmounts(purchase);
 
-	        // save purchase
-	        PurchaseBill savedPurchase = purchaseRepository.save(purchase);
+			updateInventory(purchase);
 
-	        log.info("Purchase created successfully with ID: {}", savedPurchase.getPurchaseId());
+			PurchaseBill savedPurchase = purchaseRepository.save(purchase);
 
-	        res.setSuccess(true);
-	        res.setData(savedPurchase);
-	        res.setMessage("Purchase created successfully");
-	        res.setStatus(HttpStatus.OK.value());
+			res.setSuccess(true);
+			res.setData(savedPurchase);
+			res.setMessage("Purchase created successfully");
+			res.setStatus(HttpStatus.OK.value());
 
-	    } catch (Exception e) {
+		} catch (Exception e) {
 
-	        log.error("Error while creating purchase", e);
+			log.error("Error while creating purchase", e);
 
-	        res.setSuccess(false);
-	        res.setMessage("Exception occurred while creating purchase");
-	        res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
-	    }
+			res.setSuccess(false);
+			res.setMessage("Exception occurred while creating purchase : " + e.getMessage());
+			res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+		}
 
-	    return res;
+		return res;
 	}
 
 	private void calculateAmounts(PurchaseBill purchase) {
@@ -92,39 +93,59 @@ public class PurchaseBillServiceImpl implements PurchaseBillService {
 		double totalQty = 0;
 		double totalGST = 0;
 		double grandTotal = 0;
+		double totalDiscountAmount = 0;
+		double totalCostPrice = 0;
+		double totalActualMedicineCost=0;
 
 		for (PurchaseItem item : purchase.getItems()) {
 
-			double base = item.getQuantity() * item.getCostPrice();
-			double discount = base * item.getDiscountPercent() / 100;
+			double baseAmount = item.getQuantity() * item.getCostPrice(); // T
 
-			item.setDiscountAmount(discount);
+			item.setTotalLineCostAmount(baseAmount);
 
-			double taxable = base - discount;
-			double gst = taxable * item.getGstPercent() / 100; // have doubt gst calculate on after discount before dis
+			double discountAmount = baseAmount * item.getDiscountPercent() / 100;
 
-			item.setGstAmount(gst);
-			item.setCgstAmount(gst / 2);
-			item.setSgstAmount(gst / 2);
+			item.setDiscountAmount(discountAmount);
 
-			double net = taxable + gst;
-			item.setNetAmount(net);
+			double taxableAmount = baseAmount - discountAmount; // after discount
 
-			totalQty += item.getQuantity();
-			totalGST += gst;
-			grandTotal += net;
+			double gstAmount = baseAmount * item.getGstPercent() / 100;
+
+			item.setGstAmount(gstAmount);
+			item.setCgstAmount(gstAmount / 2);
+			item.setSgstAmount(gstAmount / 2);
+
+			double acutalMedicineCost = baseAmount - gstAmount;
+			item.setActualMedicineCostExculdeGst(acutalMedicineCost);
+
+			double netAmount = taxableAmount;
+
+			item.setNetAmount(netAmount);
+			double totalQtyforLine = item.getQuantity() + item.getFreeQuantity();
+			item.setTotalQty(totalQtyforLine);
+			totalQty += item.getQuantity() + item.getFreeQuantity();
+			totalGST += gstAmount;
+			grandTotal += netAmount;
+			totalDiscountAmount += discountAmount;
+			totalCostPrice += baseAmount;
+			totalActualMedicineCost+=acutalMedicineCost;
 		}
 
 		Summary summary = new Summary();
 		summary.setTotalQuantity(totalQty);
+		summary.setActualMedicineExcludedCost(totalActualMedicineCost);
+		summary.setTotalDiscountedAmount(totalDiscountAmount);
 		summary.setTotalGSTAmount(totalGST);
+		summary.setTotalCostPrice(totalCostPrice);
 		summary.setGrandTotal(grandTotal);
 
 		purchase.setSummary(summary);
 
 		PaymentDetails payment = purchase.getPaymentDetails();
-		double due = grandTotal - payment.getPaidAmount();
-		payment.setDueAmount(due);
+
+		double dueAmount = grandTotal - payment.getPaidAmount();
+
+		payment.setDueAmount(dueAmount);
 
 		log.info("Purchase calculation completed. Grand Total: {}", grandTotal);
 	}
@@ -135,71 +156,113 @@ public class PurchaseBillServiceImpl implements PurchaseBillService {
 
 		for (PurchaseItem item : purchase.getItems()) {
 
-			Inventory inventory = inventoryRepository.findByProductIdAndBatchNo(item.getProductId(), item.getBatchNo());
+			Medicine medicine = medicineRepository.findById(item.getProductId())
+					.orElseThrow(() -> new RuntimeException("Medicine not found with id: " + item.getProductId()));
+
+			// Validate clinic
+			if (!medicine.getClinicId().equals(purchase.getClinicId())) {
+				throw new RuntimeException("ClinicId mismatch between Medicine and PurchaseBill");
+			}
+
+			// Validate branch
+			if (!medicine.getBranchId().equals(purchase.getBranchId())) {
+				throw new RuntimeException("BranchId mismatch between Medicine and PurchaseBill");
+			}
+
+			Inventory inventory = inventoryRepository.findByMedicineIdAndBatchNoAndClinicIdAndBranchId(
+					item.getProductId(), item.getBatchNo(), purchase.getClinicId(), purchase.getBranchId());
+
+			double totalQty = item.getQuantity() + item.getFreeQuantity();
 
 			if (inventory != null) {
 
-				log.info("Existing stock found for product {} batch {}", item.getProductId(), item.getBatchNo());
+				log.info("Existing inventory found for medicine {} batch {}", item.getProductId(), item.getBatchNo());
 
-				inventory.setAvailableQty(inventory.getAvailableQty() + item.getQuantity() + item.getFreeQuantity());
+				inventory.setAvailableQty(inventory.getAvailableQty() + totalQty);
+				inventory.setPurchaseRate(item.getCostPrice());
+				inventory.setMrp(medicine.getMrp());
+				inventory.setExpiryDate(item.getExpiryDate());
+
 			} else {
 
-				log.info("Creating new inventory entry for product {}", item.getProductId());
+				log.info("Creating new inventory entry for medicine {}", item.getProductId());
 
 				inventory = new Inventory();
-				inventory.setProductId(item.getProductId());
-				inventory.setProductName(item.getProductName());
+
+				inventory.setMedicineId(medicine.getId());
+				inventory.setMedicineName(medicine.getProductName());
+				inventory.setBrand(medicine.getBrandName());
+				inventory.setHsnCode(medicine.getHsnCode());
+				inventory.setProductType(medicine.getCategory());
+				inventory.setPack(medicine.getPackSize());
+				inventory.setGstPercent(medicine.getGstPercent());
+				inventory.setHsnCode(medicine.getHsnCode());
+				inventory.setMinStock(medicine.getMinStock());
+
 				inventory.setBatchNo(item.getBatchNo());
+				inventory.setMfgDate(item.getMfgDate());
 				inventory.setExpiryDate(item.getExpiryDate());
-				inventory.setAvailableQty(item.getQuantity() + item.getFreeQuantity());
+
+				inventory.setAvailableQty(totalQty);
+				inventory.setTotalQty(totalQty);
+
 				inventory.setPurchaseRate(item.getCostPrice());
-				inventory.setMrp(item.getMrp());
-				inventory.setGstPercent(item.getGstPercent());
+				inventory.setMrp(medicine.getMrp());
+
 				inventory.setSupplierId(purchase.getSupplierDetails().getSupplierId());
+				inventory.setSupplier(purchase.getSupplierDetails().getSupplierName());
+
+				inventory.setClinicId(medicine.getClinicId());
+				inventory.setBranchId(medicine.getBranchId());
+
+				inventory.setStatus("ACTIVE");
 			}
 
 			inventoryRepository.save(inventory);
 		}
-
-		log.info("Inventory update completed.");
 	}
+
 	@Override
 	public Response getPuchaseByPurchasedId(String purchaseId) {
-		Response res= new Response();
-		try {
-			Optional<PurchaseBill> purchaseBill=purchaseRepository.findById(purchaseId);
-			if(purchaseBill.isPresent()) {
-				PurchaseBill dbData=purchaseBill.get();
-				res.setSuccess(true);
-				res.setData(dbData);
-				res.setMessage("Puchased data fetched successfully");
-				res.setStatus(HttpStatus.OK.value());
-			}
-			else {
-				res.setSuccess(false);
-				res.setMessage("Puchased data not found with this Id: "+purchaseId);
-				res.setStatus(HttpStatus.OK.value());	
-			}
-		}
-		catch(Exception e) {
+
+		Response res = new Response();
+
+		Optional<PurchaseBill> purchaseBill = purchaseRepository.findById(purchaseId);
+
+		if (purchaseBill.isPresent()) {
+
+			res.setSuccess(true);
+			res.setData(purchaseBill.get());
+			res.setMessage("Purchased data fetched successfully");
+			res.setStatus(HttpStatus.OK.value());
+
+		} else {
+
 			res.setSuccess(false);
-			res.setMessage("Exception occured while fitching puchased data ");
-			res.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());	
+			res.setMessage("Purchased data not found with id: " + purchaseId);
+			res.setStatus(HttpStatus.NOT_FOUND.value());
 		}
+
 		return res;
 	}
 
+	@Override
 	public Response getAll() {
+
 		log.info("Fetching all purchases");
+
 		List<PurchaseBill> purchasedData = purchaseRepository.findAll();
+
 		Response res = new Response();
+
 		res.setSuccess(true);
 		res.setData(purchasedData);
-		res.setMessage("Fetched Purchased data");
+		res.setMessage("Fetched purchase data");
 		res.setStatus(HttpStatus.OK.value());
-		return res;
 
+		return res;
 	}
+
 	@Override
 	public Response updatePurchase(String purchaseId, PurchaseBillDTO dto) {
 
@@ -220,7 +283,7 @@ public class PurchaseBillServiceImpl implements PurchaseBillService {
 		PurchaseBill purchase = optional.get();
 
 		purchase.setPurchaseBillNo(dto.getPurchaseBillNo());
-        purchase.setOrderId(dto.getOrderId());
+		purchase.setOrderId(dto.getOrderId());
 		purchase.setInvoiceNo(dto.getInvoiceNo());
 		purchase.setFinancialYear(dto.getFinancialYear());
 		purchase.setDates(dto.getDates());
@@ -228,9 +291,14 @@ public class PurchaseBillServiceImpl implements PurchaseBillService {
 		purchase.setSupplierDetails(dto.getSupplierDetails());
 		purchase.setPaymentDetails(dto.getPaymentDetails());
 		purchase.setItems(dto.getItems());
+
+		purchase.setClinicId(dto.getClinicId());
+		purchase.setBranchId(dto.getBranchId());
+
 		purchase.setUpdatedAt(LocalDateTime.now().toString());
 
 		calculateAmounts(purchase);
+
 		updateInventory(purchase);
 
 		PurchaseBill updated = purchaseRepository.save(purchase);

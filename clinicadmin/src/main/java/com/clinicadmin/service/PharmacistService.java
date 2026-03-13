@@ -31,6 +31,8 @@ public interface PharmacistService {
 	ResponseEntity<Response> updateMedicine(String medicineId, MedicineDTO dto);
 //	Response getPharmacistsByClinicAndBranch(String clinicId, String branchId);
 	Response getPharmacistsByClinicIdAndBranchId(String clinicId, String branchId);
+	ResponseEntity<Response> getMedicineType(String Id);
+	ResponseEntity<Response> getAllMedicineTypes();
 	
 //	Response getPharmacistsByClinicIdAndBranchId(String clinicId, String branchId);
 
