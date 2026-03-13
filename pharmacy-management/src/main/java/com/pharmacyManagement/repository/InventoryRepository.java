@@ -8,5 +8,6 @@ public interface InventoryRepository extends MongoRepository<Inventory, String> 
 	void deleteByProductIdAndBatchNo(String productId, String batchNo);
 
 	Inventory findByProductIdAndBatchNo(String productId, String batchNo);
+	
 
 }
