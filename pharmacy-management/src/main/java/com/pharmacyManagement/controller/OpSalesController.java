@@ -24,7 +24,6 @@ public class OpSalesController {
 	@Autowired
     private Opservice opSalesService;
     
-
     // ─────────────────────────────────────────────────────────────
     // 1. CREATE
     // ─────────────────────────────────────────────────────────────
@@ -39,13 +38,12 @@ public class OpSalesController {
     // ─────────────────────────────────────────────────────────────
     // 2. UPDATE
     // ─────────────────────────────────────────────────────────────
-    @PutMapping("/updateSale/{id}")
+    @PutMapping("/updateSale")
     public ResponseEntity<Response> updateOpSales(
-            @PathVariable String id,
             @RequestBody OpSalesRequest request) {
 
-        log.info("REST request to update OP Sales id: {}", id);
-        return opSalesService.updateOpSales(id, request);
+        log.info("REST request to update OP Sales id: {}", request.getBillNo());
+        return opSalesService.updateOpSales(request);
     }
 
     // ─────────────────────────────────────────────────────────────
