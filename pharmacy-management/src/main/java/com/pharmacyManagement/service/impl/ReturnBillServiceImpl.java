@@ -247,6 +247,35 @@ public class ReturnBillServiceImpl implements ReturnBillService {
 
             ReturnBill entity = optional.get();
 
+            // =========================
+            // 🔥 STEP 1: REVERSE OLD STOCK
+            // =========================
+            if (entity.getItems() != null) {
+                for (ReturnItem oldItem : entity.getItems()) {
+
+                    Optional<Inventory> optionalInventory =
+                            inventoryRepository.findByMedicineIdAndBatchNoAndClinicIdAndBranchId(
+                                    oldItem.getProductId(),
+                                    oldItem.getBatchNo(),
+                                    entity.getClinicId(),
+                                    entity.getBranchId());
+
+                    if (optionalInventory.isPresent()) {
+
+                        Inventory inventory = optionalInventory.get();
+
+                        // ✅ ADD BACK OLD RETURN QTY
+                        double updatedQty = inventory.getAvailableQty() + oldItem.getReturnQty();
+
+                        inventory.setAvailableQty(updatedQty);
+                        inventoryRepository.save(inventory);
+                    }
+                }
+            }
+
+            // =========================
+            // 🔥 STEP 2: UPDATE FIELDS
+            // =========================
             entity.setBillNo(dto.getBillNo());
             entity.setSupplierName(dto.getSupplierName());
             entity.setSupplierId(dto.getSupplierId());
@@ -256,7 +285,9 @@ public class ReturnBillServiceImpl implements ReturnBillService {
             entity.setBranchId(dto.getBranchId());
             entity.setCreatedBy(dto.getCreatedBy());
 
-         
+            // =========================
+            // 🔥 STEP 3: APPLY NEW STOCK REDUCTION
+            // =========================
             List<ReturnItem> items = dto.getItems().stream().map(i -> {
 
                 ReturnItem item = new ReturnItem();
@@ -270,9 +301,36 @@ public class ReturnBillServiceImpl implements ReturnBillService {
                 item.setReason(i.getReason());
                 item.setAvailableStock(i.getAvailableStock());
 
-                //  calculation
                 double returnAmount = i.getReturnQty() * i.getNetRate();
                 item.setReturnAmount(returnAmount);
+
+                // =========================
+                // 🔥 REDUCE NEW STOCK
+                // =========================
+                Optional<Inventory> optionalInventory =
+                        inventoryRepository.findByMedicineIdAndBatchNoAndClinicIdAndBranchId(
+                                i.getProductId(),
+                                i.getBatchNo(),
+                                dto.getClinicId(),
+                                dto.getBranchId());
+
+                if (optionalInventory.isPresent()) {
+
+                    Inventory inventory = optionalInventory.get();
+
+                    double currentQty = inventory.getAvailableQty();
+                    double updatedQty = currentQty - i.getReturnQty();
+
+                    if (updatedQty < 0) {
+                        throw new RuntimeException("Stock not sufficient for product: " + i.getProductName());
+                    }
+
+                    inventory.setAvailableQty(updatedQty);
+                    inventoryRepository.save(inventory);
+
+                } else {
+                    throw new RuntimeException("Inventory not found for product: " + i.getProductId());
+                }
 
                 return item;
 
@@ -280,7 +338,9 @@ public class ReturnBillServiceImpl implements ReturnBillService {
 
             entity.setItems(items);
 
-         
+            // =========================
+            // 🔥 TOTAL CALCULATION
+            // =========================
             double totalAmount = items.stream()
                     .mapToDouble(ReturnItem::getReturnAmount)
                     .sum();
@@ -289,7 +349,6 @@ public class ReturnBillServiceImpl implements ReturnBillService {
 
             repository.save(entity);
 
-          
             ReturnBillDTO responseDTO = mapToDTO(entity);
 
             res.setSuccess(true);
@@ -306,7 +365,6 @@ public class ReturnBillServiceImpl implements ReturnBillService {
 
         return res;
     }
-
     //  Generate Receipt No
     private String generateReceiptNo(String supplierName) {
 
