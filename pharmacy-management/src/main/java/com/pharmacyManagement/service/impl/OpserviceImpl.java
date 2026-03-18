@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pharmacyManagement.dto.CustomerOnbordingDTO;
 import com.pharmacyManagement.dto.DoctorSaveDetailsDTO;
 import com.pharmacyManagement.dto.OpMedicineDTO;
 import com.pharmacyManagement.dto.OpNoResponse;
@@ -26,6 +27,7 @@ import com.pharmacyManagement.entity.Medicine;
 import com.pharmacyManagement.entity.OpMedicine;
 import com.pharmacyManagement.entity.OpSales;
 import com.pharmacyManagement.entity.PaymentEntry;
+import com.pharmacyManagement.feign.ClinicAdminFeign;
 import com.pharmacyManagement.feign.DoctorFeign;
 import com.pharmacyManagement.repository.InventoryRepository;
 import com.pharmacyManagement.repository.MedicineRepository;
@@ -46,6 +48,9 @@ public class OpserviceImpl implements Opservice {
     
     @Autowired
     private MedicineRepository inventoryRepository;
+    
+    @Autowired
+    private ClinicAdminFeign clinicAdminFeign;
 
     // ── FIX: inject ObjectMapper as a Spring bean instead of using new ObjectMapper() ──
     @Autowired
@@ -61,8 +66,8 @@ public class OpserviceImpl implements Opservice {
     	Response res = new Response();
     	OpSales opsale = null;
     	try {
-    		OpSales opsales = opSalesRepository.findByBillNo(request.getBillNo()).get();
-    		if(opsales != null) {
+    		Optional<OpSales> opsales = opSalesRepository.findByBillNo(request.getBillNo());
+    		if(opsales.isPresent()) {
     			res.setMessage("Bill Number already exist");
     			res.setStatus(409);
     			res.setSuccess(false);
@@ -81,56 +86,67 @@ public class OpserviceImpl implements Opservice {
    
     public ResponseEntity<Response> updateOpSales(OpSalesRequest request){
     	Response res = new Response();
-    	OpSales opsale = null;
     	try {
-    		OpSales opsales = opSalesRepository.findByBillNo(request.getBillNo()).get();
-    		if(opsales != null) {
+    		Optional<OpSales> opsales = opSalesRepository.findByBillNo(request.getBillNo());
+    		if(opsales.isPresent()) {
     			if (request.getBillNo() != null || !request.getBillNo().isBlank()) {
-    				opsales.setBillNo(request.getBillNo());
+    				opsales.get().setBillNo(request.getBillNo());
+    				//System.out.println(request.getBillNo());
     		    }
     		    // ── billDate ─────────────────────────────────────────────────────────────
     		    if (request.getBillDate() != null || !request.getBillDate().isBlank()) {
-    		    	opsales.setBillDate(request.getBillDate());
+    		    	opsales.get().setBillDate(request.getBillDate());
+    		    	//System.out.println(request.getBillDate());
     		    }
 
     		    // ── billTime ─────────────────────────────────────────────────────────────
     		    if (request.getBillTime() != null || !request.getBillTime().isBlank()) {
-    		    	opsales.setBillTime(request.getBillTime());
+    		    	opsales.get().setBillTime(request.getBillTime());
+    		    	//System.out.println(request.getBillTime() );
     		    }
 
     		    // ── patientName ──────────────────────────────────────────────────────────
     		    if (request.getPatientName() != null || !request.getPatientName().isBlank()) {
-    		    	opsales.setPatientName(request.getPatientName());
+    		    	opsales.get().setPatientName(request.getPatientName());
+    		    	//System.out.println(request.getPatientName());
     		    }
 
     		    // ── includeReturns ───────────────────────────────────────────────────────
     		    if (request.getIncludeReturns() != null) {
-    		    	opsales.setIncludeReturns(request.getIncludeReturns());
+    		    	opsales.get().setIncludeReturns(request.getIncludeReturns());
+    		    	//System.out.println(request.getIncludeReturns());
     		    }
-
-    		    // ── medicines ────────────────────────────────────────────────────────────
+    		   // System.out.println(request.getMedicines());
+    		  // ── medicines ────────────────────────────────────────────────────────────
     		    if (request.getMedicines() != null || !request.getMedicines().isEmpty()) {
+    		    	//System.out.println("yyy");
     		    	List<OpMedicine> lst = validateMedicines(request.getMedicines());
-    		    	List<OpMedicine> reqList = opsales.getMedicines();
+    		    	List<OpMedicine> reqList = opsales.get().getMedicines();
     		    	reqList.addAll(lst);
-    		    	opsales.setMedicines(reqList);
+    		    	opsales.get().setMedicines(reqList);
+    		    	//System.out.println(reqList);
+    		    	//System.out.println(lst);
     		    }
    		    
     		    // ── clinicId ─────────────────────────────────────────────────────────────
     		    if (request.getClinicId() != null || !request.getClinicId().isBlank()) {
-    		    	opsales.setClinicId(request.getClinicId() );
+    		    	opsales.get().setClinicId(request.getClinicId() );
+    		    	//System.out.println(request.getClinicId());
     		    }
 
     		    // ── branchId ─────────────────────────────────────────────────────────────
     		    if (request.getBranchId() != null || !request.getBranchId().isBlank()) {
-    		    	opsales.setBranchId(request.getBranchId());
-    		    	OpSales opsle = calculateAndUpdateValues(request.getAmountPaid(),opsales);
+    		    	opsales.get().setBranchId(request.getBranchId());}
+    		    
+    		    	OpSales opsle = calculateAndUpdateValues(request.getAmountPaid(),opsales.get());
+    		    	//System.out.println(opsle);
     		    	if(opsle != null) {
-    		    		opSalesRepository.save(opsale);
+    		    		OpSales op = opSalesRepository.save(opsle);  
+    		    		//System.out.println(op);
     		    		res.setMessage("Opsales updated successfully");
     					res.setStatus(200);
     					res.setSuccess(true);
-    		        }}}else {  		 
+    		        }}else {  		 
     		res.setMessage("Opsale Not Found to Update");
 			res.setStatus(404);
 			res.setSuccess(false);
@@ -216,38 +232,59 @@ public class OpserviceImpl implements Opservice {
     //  5. GET BY OPNO
     // =========================================================================
     @Override
-    public ResponseEntity<Response> getByOpNo(String clinicId, String branchId, String opNo) {
+    public ResponseEntity<Response> getByOpNo(String clinicId, String branchId, String opNo,String mobileNumber) {
         Response res = new Response();
+        CustomerOnbordingDTO customerOnbordingDTO = null;
         log.info("Fetching by opNo: {}, clinicId: {}, branchId: {}", opNo, clinicId, branchId);
         try {
-        DoctorSaveDetailsDTO doctorSaveDetailsDTO = doctorFeign.getDoctorSaveDetails(opNo).getBody();
-        //System.out.println(doctorSaveDetailsDTO);
-        List<String> lst = doctorSaveDetailsDTO.getPrescription().getMedicines().stream().map(n->n.getId()).toList();
+        if(opNo != null) {
+        System.out.println(opNo);
+        System.out.println(clinicAdminFeign.getCustomerById(opNo));
+        ResponseEntity<Response> respnse = clinicAdminFeign.getCustomerById(opNo);
+        System.out.println(respnse);
+        if(respnse.hasBody()){ 	
+        customerOnbordingDTO = objectMapper.convertValue(clinicAdminFeign.getCustomerById(opNo).getBody().getData(),CustomerOnbordingDTO.class);}
+        System.out.println(customerOnbordingDTO);
+        }else{
+        ResponseEntity<Response> respnse = clinicAdminFeign.getCustomerById(opNo);
+        if(respnse.hasBody()){ 
+        customerOnbordingDTO = objectMapper.convertValue(clinicAdminFeign.getCustomerByMobileNumber(mobileNumber).getBody().getData(),CustomerOnbordingDTO.class);}}
+        if(customerOnbordingDTO.getCustomerId() != null) {
+        ResponseEntity<DoctorSaveDetailsDTO>  doctorSaveDetailsDTO = doctorFeign.getDoctorSaveDetails(opNo);
+        System.out.println(doctorSaveDetailsDTO);
+        if(doctorSaveDetailsDTO.hasBody() && !doctorSaveDetailsDTO.getBody().getPrescription().getMedicines().isEmpty()) {
+        List<String> lst = doctorSaveDetailsDTO.getBody().getPrescription().getMedicines().stream().map(n->n.getId()).toList();
+        System.out.println(lst);
         List<Medicine> lt = new ArrayList<>();
         for(String s : lst) {
          Medicine invent = inventoryRepository.findById(s).get();
         lt.add(invent);}
         List<OpSales> lsts = opSalesRepository.findByClinicIdAndBranchIdAndOpNo(clinicId, branchId, opNo);
-        OpSales opSales = lsts.get(lsts.size()-1);
+        if(!lsts.isEmpty()) {
+        //OpSales opSales = lsts.get(lsts.size()-1);
         OpNoResponse opNoResponse = new OpNoResponse();
-        opNoResponse.setAge(opSales.getAge());
-        opNoResponse.setBranchId(opSales.getBranchId());
-        opNoResponse.setClinicId(opSales.getClinicId());
+        opNoResponse.setAge(Integer.valueOf(customerOnbordingDTO.getAge()));
+        opNoResponse.setBranchId(customerOnbordingDTO.getBranchId());
+        opNoResponse.setClinicId(customerOnbordingDTO.getHospitalId());
         opNoResponse.setMedicines(lt);
-        opNoResponse.setMobile(opSales.getMobile());
-        opNoResponse.setOpNo(opSales.getOpNo());
-        opNoResponse.setPatientName(opSales.getPatientName());
-        opNoResponse.setSex(opSales.getSex());
-        opNoResponse.setVisitType(opSales.getVisitType());
-        if(opNoResponse == null) {
-            res.setMessage("OP Sales Not Found with OpNo");
+        opNoResponse.setMobile(customerOnbordingDTO.getMobileNumber());
+        opNoResponse.setOpNo(customerOnbordingDTO.getCustomerId());
+        opNoResponse.setPatientName(customerOnbordingDTO.getFullName());
+        opNoResponse.setSex(customerOnbordingDTO.getGender());
+       // opNoResponse.setVisitType();
+        }else{
+            res.setMessage("OP Sales Found with clincId,BranchId,OpNo");
             res.setStatus(404);
             res.setSuccess(false);
-        }else{       
-        res.setMessage("OP Sales Found with OpNo");
-        res.setStatus(200);
-        res.setData(lt);
-        res.setSuccess(true);
+        }}else{
+        	 res.setMessage("medicines Not found with OpNo in Doctorsavedetails");
+             res.setStatus(404);
+             res.setSuccess(false);
+      
+        }}else{
+        	 res.setMessage("Customer Not Found");
+             res.setStatus(404);
+             res.setSuccess(false);	
         }}catch(Exception e) {}
         return ResponseEntity.status(res.getStatus()).body(res);}
   
@@ -315,7 +352,7 @@ public class OpserviceImpl implements Opservice {
             res.setData(lst);
             res.setSuccess(true);
         } else {
-            res.setMessage("Unable to retrieve OP Sales");
+            res.setMessage("OP Sales Not Found");
             res.setStatus(404);
             res.setSuccess(false);
         }
@@ -374,7 +411,8 @@ public class OpserviceImpl implements Opservice {
     }
     
     public OpSales calculateAndUpdateValues(double amountPaid, OpSales opsales ) {
-         	Double totalAmt = 0.0;
+         	try {
+    	    Double totalAmt = 0.0;
         	double totalDiscPct = 0.0;
         	double totalDiscAmt = 0.0;
         	for(OpMedicine o : opsales.getMedicines()) {
@@ -390,7 +428,7 @@ public class OpserviceImpl implements Opservice {
             opsales.setNetAmount(netAmount);
             opsales.setFinalTotal(netAmount);
             opsales.setCurrentPaymentAmount(amountPaid);
-           // opsales.setAlreadyPaidAmount());
+            opsales.setAlreadyPaidAmount(opsales.getTotalPaidAmount());
             opsales.setTotalPaidAmount(amountPaid + opsales.getAlreadyPaidAmount());
             opsales.setDueAmount(netAmount - opsales.getTotalPaidAmount());
             PaymentEntry paymentEntry = new PaymentEntry();
@@ -401,7 +439,8 @@ public class OpserviceImpl implements Opservice {
             List<PaymentEntry> pEntry = opsales.getPaymentHistory();
             pEntry.add(paymentEntry);
             opsales.setPaymentHistory(pEntry);
-        	return opsales;
+         	}catch(Exception e) {}
+         	return opsales;
         }
         
 }

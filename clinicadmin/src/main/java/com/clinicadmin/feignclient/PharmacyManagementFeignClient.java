@@ -202,9 +202,8 @@ Response changeStatus(@PathVariable("id") String id, @RequestParam("status") Str
     public ResponseEntity<Response> createOpSales(
             @RequestBody OpSalesRequest request);
     
-    @PutMapping("/api/pharmacy/op-sales/updateSale/{id}")
+    @PutMapping("/api/pharmacy/op-sales/updateSale")
     public ResponseEntity<Response> updateOpSales(
-            @PathVariable String id,
             @RequestBody OpSalesRequest request);
     
     @GetMapping("/api/pharmacy/op-sales/getAllOpSales/{clinicId}/{branchId}")

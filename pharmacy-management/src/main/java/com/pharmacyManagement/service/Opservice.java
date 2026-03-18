@@ -21,8 +21,8 @@ public interface Opservice {
     ResponseEntity<Response> getById(String id);
 
     // 5. GET BY OPNO
-    ResponseEntity<Response> getByOpNo(String clinicId, String branchId, String opNo);
-
+    public ResponseEntity<Response> getByOpNo(String clinicId, String branchId, String opNo,String mobileNumber);
+        
     // 6. DELETE
     ResponseEntity<Response> deleteOpSales(String clinicId, String branchId, String id);
 

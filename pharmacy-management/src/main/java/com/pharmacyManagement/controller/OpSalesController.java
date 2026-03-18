@@ -83,14 +83,17 @@ public class OpSalesController {
     // ─────────────────────────────────────────────────────────────
     // 5. GET BY OPNO
     // ─────────────────────────────────────────────────────────────
-    @GetMapping("/{clinicId}/{branchId}/opno/{opNo}")
+    @GetMapping("/{clinicId}/{branchId}/opno/{opNo}/{mobileNumber}")
     public ResponseEntity<Response> getByOpNo(
     		 @PathVariable String clinicId,
     		 @PathVariable String branchId,
-    		 @PathVariable String opNo) {
+    		 @PathVariable String opNo,
+    		 @PathVariable String mobileNumber) {
 
         log.info("REST request to fetch OP Sales by opNo");
-        return opSalesService.getByOpNo(clinicId, branchId, opNo);
+        System.out.println(opNo); 
+        System.out.println(mobileNumber);
+        return opSalesService.getByOpNo(clinicId, branchId, opNo,mobileNumber);
     }
 
     // ─────────────────────────────────────────────────────────────

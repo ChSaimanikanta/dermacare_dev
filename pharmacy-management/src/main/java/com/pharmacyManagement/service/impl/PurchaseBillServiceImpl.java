@@ -168,9 +168,14 @@ public class PurchaseBillServiceImpl implements PurchaseBillService {
 			if (!medicine.getBranchId().equals(purchase.getBranchId())) {
 				throw new RuntimeException("BranchId mismatch between Medicine and PurchaseBill");
 			}
-
-			Inventory inventory = inventoryRepository.findByMedicineIdAndBatchNoAndClinicIdAndBranchId(
-					item.getProductId(), item.getBatchNo(), purchase.getClinicId(), purchase.getBranchId());
+			   // Updated search condition
+	        Inventory inventory = inventoryRepository
+	                .findByMedicineIdAndBatchNoAndExpiryDateAndClinicIdAndBranchId(
+	                        item.getProductId(),
+	                        item.getBatchNo(),
+	                        item.getExpiryDate(),
+	                        purchase.getClinicId(),
+	                        purchase.getBranchId());
 
 			double totalQty = item.getQuantity() + item.getFreeQuantity();
 
@@ -335,5 +340,96 @@ public class PurchaseBillServiceImpl implements PurchaseBillService {
 		res.setStatus(HttpStatus.OK.value());
 
 		return res;
+	}
+	@Override
+	public Response getPurchaseByClinicIdAndBranchId(String clinicId, String branchId) {
+
+	    Response res = new Response();
+
+	    List<PurchaseBill> bills =
+	            purchaseRepository.findByClinicIdAndBranchId(clinicId, branchId);
+
+	    if (!bills.isEmpty()) {
+
+	        for (PurchaseBill bill : bills) {
+
+	            for (PurchaseItem item : bill.getItems()) {
+
+	                Optional<Inventory> inventory =
+	                        inventoryRepository.findByMedicineIdAndClinicIdAndBranchId(
+	                                item.getProductId(),
+	                                clinicId,
+	                                branchId);
+
+	                if (inventory.isPresent()) {
+	                    item.setAvailableQty(inventory.get().getAvailableQty());
+	                } else {
+	                    item.setAvailableQty(0);
+	                }
+	            }
+	        }
+
+	        res.setSuccess(true);
+	        res.setData(bills);
+	        res.setMessage("Purchase bills fetched successfully");
+	        res.setStatus(HttpStatus.OK.value());
+
+	    } else {
+
+	        res.setSuccess(false);
+	        res.setMessage("No purchase bills found");
+	        res.setStatus(HttpStatus.NOT_FOUND.value());
+	    }
+
+	    return res;
+	}
+	@Override
+	public Response getPurchaseByClinicBranchAndBillNo(
+	        String clinicId,
+	        String branchId,
+	        String purchaseBillNo) {
+
+	    Response res = new Response();
+
+	    Optional<PurchaseBill> purchaseBill =
+	            purchaseRepository.findByClinicIdAndBranchIdAndPurchaseBillNo(
+	                    clinicId, branchId, purchaseBillNo);
+
+	    if (purchaseBill.isPresent()) {
+
+	        PurchaseBill bill = purchaseBill.get();
+
+	        // 🔹 Fetch availableQty from Inventory
+	        if (bill.getItems() != null) {
+
+	            for (PurchaseItem item : bill.getItems()) {
+
+	                Optional<Inventory> inventory =
+	                        inventoryRepository.findByMedicineIdAndClinicIdAndBranchId(
+	                                item.getProductId(),
+	                                clinicId,
+	                                branchId);
+
+	                if (inventory.isPresent()) {
+	                    item.setAvailableQty(inventory.get().getAvailableQty());
+	                } else {
+	                    item.setAvailableQty(0);
+	                }
+	            }
+	        }
+
+	        res.setSuccess(true);
+	        res.setData(bill);
+	        res.setMessage("Purchase bill fetched successfully");
+	        res.setStatus(HttpStatus.OK.value());
+
+	    } else {
+
+	        res.setSuccess(false);
+	        res.setMessage("Purchase bill not found");
+	        res.setStatus(HttpStatus.NOT_FOUND.value());
+	    }
+
+	    return res;
 	}
 }
