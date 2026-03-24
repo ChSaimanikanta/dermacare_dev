@@ -1,11 +1,10 @@
 package com.pharmacyManagement.entity;
 
-import java.util.List;
-
+import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import lombok.Data;
+import java.util.List;
 
 @Data
 @Document(collection = "orders")
@@ -14,20 +13,28 @@ public class Order {
     @Id
     private String id;
 
-    private String orderId; // custom ID
+    private String orderId;
 
-    private String clinicId;
-    private String clinicName;
+  
+    private Clinic clinic;
+    private Branch branch;
+    private Suppliers supplier;
 
-    private String branchId;
-    private String branchName;
-
-    private String supplierId;
-    private String supplierName;
-    private String supplierEmail;
-    private List<StatusHistory> statusHistory;
     private int expectedDeliveryDays;
     private String expectedDeliveryDate;
 
+
+    private String overallStatus;
+    private String overallReason;
+
+    private List<StatusHistory> statusHistory;
+
+ 
     private List<Product> products;
+
+    
+    private String createdBy;
+    private String createdAt;
+    private String updatedBy;
+    private String updatedAt;
 }
