@@ -189,7 +189,7 @@ public class SalesReturnServiceImpl implements SalesReturnService {
       List<SalesReturnResponse> list = new LinkedList<>();
       try {
        List<SalesReturn> entity = repository.findAll();
-       if(!entity.isEmpty()) {
+       if(entity != null || !entity.isEmpty()) {
        for(SalesReturn s : entity) {
        SalesReturnResponse response = mapper.toResponse(s);
        response.setItems(mapper.toItemDtoList(s.getItems()));
