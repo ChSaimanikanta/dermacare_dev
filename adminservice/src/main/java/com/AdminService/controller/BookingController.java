@@ -20,7 +20,7 @@ import com.AdminService.util.Response;
 import com.AdminService.util.ResponseStructure;
 @RestController
 @RequestMapping("/admin")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
+//@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
 public class BookingController {
     @Autowired
     private BookingServiceImpl serviceImpl;

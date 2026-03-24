@@ -22,7 +22,7 @@ import com.dermacare.notification_service.service.ServiceInterface;
 
 @RestController
 @RequestMapping("/notificationservice")
-@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
+//@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
 public class NotificationController {
 	
 	@Autowired
