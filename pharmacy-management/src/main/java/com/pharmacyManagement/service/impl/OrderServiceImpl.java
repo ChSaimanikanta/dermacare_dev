@@ -225,7 +225,7 @@ public class OrderServiceImpl implements OrderService {
                 pr.setQuantityRequested(p.getQuantityRequested());
                 pr.setCategory(p.getCategory());
                 pr.setMrp(p.getMrp());
-
+                pr.setGst(p.getGst());
                 pr.setStatus(p.getStatus());
                 pr.setRejectionReason(p.getRejectionReason());
 
@@ -367,6 +367,7 @@ public class OrderServiceImpl implements OrderService {
                 product.setPackSize(p.getPackSize());
                 product.setCategory(p.getCategory());
                 product.setMrp(p.getMrp());
+                product.setGst(p.getGst());
                 product.setPackSize(p.getPackSize());
                 product.setQuantityRequested(p.getQuantityRequested());
 
@@ -465,7 +466,7 @@ public class OrderServiceImpl implements OrderService {
                 pdto.setQuantityRequested(p.getQuantityRequested());
                 pdto.setCategory(p.getCategory());
                 pdto.setMrp(p.getMrp());
-
+                pdto.setGst(p.getGst());
                 pdto.setStatus(p.getStatus());
                 pdto.setRejectionReason(p.getRejectionReason());
 
