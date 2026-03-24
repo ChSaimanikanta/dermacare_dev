@@ -60,8 +60,8 @@ public class CustomerOnboardingController {
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 
-    // ✅ Get Customer By ID
-    @GetMapping("/customers/customerId/{customerId}")
+    // ✅ Get Customer By ID   
+    @GetMapping("/customers/id/{customerId}")
     public ResponseEntity<Response> getCustomerById(@PathVariable String customerId) {
         Response response = customerOnboardingService.getCustomerById(customerId);
         return ResponseEntity.status(response.getStatus()).body(response);
