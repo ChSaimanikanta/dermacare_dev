@@ -61,13 +61,13 @@ public class CustomerOnboardingController {
     }
 
     // ✅ Get Customer By ID
-    @GetMapping("/customers/{customerId}")
+    @GetMapping("/customers/customerId/{customerId}")
     public ResponseEntity<Response> getCustomerById(@PathVariable String customerId) {
         Response response = customerOnboardingService.getCustomerById(customerId);
         return ResponseEntity.status(response.getStatus()).body(response);
     }
     
-    @GetMapping("/customers/{mobileNumber}")
+    @GetMapping("/customers/mobileNumber/{mobileNumber}")
     public ResponseEntity<Response> getCustomerByMobileNumber(@PathVariable String mobileNumber) {
         Response response = customerOnboardingService.getCustomerByMobiileNumber(mobileNumber);
         return ResponseEntity.status(response.getStatus()).body(response);
@@ -80,7 +80,7 @@ public class CustomerOnboardingController {
     }
 
     // ✅ Update Customer
-    @PutMapping("/customers/{customerId}")
+    @PutMapping("/customers/updatecustomer/{customerId}")
     public ResponseEntity<Response> updateCustomer(@PathVariable String customerId,
                                                    @RequestBody CustomerOnbordingDTO dto) {
         Response response = customerOnboardingService.updateCustomer(customerId, dto);
@@ -88,7 +88,7 @@ public class CustomerOnboardingController {
     }
 
     // ✅ Delete Customer
-    @DeleteMapping("/customers/{customerId}")
+    @DeleteMapping("/customers/deletecustomer/{customerId}")
     public ResponseEntity<Response> deleteCustomer(@PathVariable String customerId) {
         Response response = customerOnboardingService.deleteCustomer(customerId);
         return ResponseEntity.status(response.getStatus()).body(response);
