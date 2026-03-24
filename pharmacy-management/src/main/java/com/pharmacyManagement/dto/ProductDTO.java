@@ -11,7 +11,8 @@ public class ProductDTO {
     private String packSize;
 
     private int quantityRequested;
-
+    private String category;
+    private int mrp;
     private String status;
     private String rejectionReason;
 }
