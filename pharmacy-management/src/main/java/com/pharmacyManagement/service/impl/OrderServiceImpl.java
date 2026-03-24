@@ -1,9 +1,10 @@
 package com.pharmacyManagement.service.impl;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,8 +13,10 @@ import org.springframework.stereotype.Service;
 import com.pharmacyManagement.dto.OrderDTO;
 import com.pharmacyManagement.dto.ProductDTO;
 import com.pharmacyManagement.dto.Response;
+import com.pharmacyManagement.dto.StatusHistoryDTO;
 import com.pharmacyManagement.entity.Order;
 import com.pharmacyManagement.entity.Product;
+import com.pharmacyManagement.entity.StatusHistory;
 import com.pharmacyManagement.repository.OrderRepository;
 import com.pharmacyManagement.service.OrderService;
 
@@ -108,7 +111,6 @@ public class OrderServiceImpl implements OrderService {
         return res;
     }
     
-    // ================= UPDATE =================
     @Override
     public Response updateOrder(String orderId, OrderDTO dto) {
 
@@ -125,7 +127,7 @@ public class OrderServiceImpl implements OrderService {
 
         Order order = optional.get();
 
-        // 🔥 Manual update (NO mapToEntity)
+        // 🔥 Manual update
         if (dto.getClinicId() != null) order.setClinicId(dto.getClinicId());
         if (dto.getClinicName() != null) order.setClinicName(dto.getClinicName());
         if (dto.getBranchId() != null) order.setBranchId(dto.getBranchId());
@@ -138,8 +140,27 @@ public class OrderServiceImpl implements OrderService {
         if (dto.getExpectedDeliveryDate() != null)
             order.setExpectedDeliveryDate(dto.getExpectedDeliveryDate());
 
-        if (dto.getStatus() != null)
-            order.setStatus(dto.getStatus());
+        // ✅ STATUS HISTORY UPDATE (MAIN LOGIC 🔥)
+        if (dto.getStatusHistory() != null && !dto.getStatusHistory().isEmpty()) {
+
+            if (order.getStatusHistory() == null) {
+                order.setStatusHistory(new ArrayList<>());
+            }
+
+            for (StatusHistoryDTO shDto : dto.getStatusHistory()) {
+
+                StatusHistory sh = new StatusHistory();
+                sh.setStatus(shDto.getStatus());
+                sh.setTimestamp(
+                        shDto.getTimestamp() != null
+                                ? shDto.getTimestamp()
+                                : Instant.now().toString()
+                );
+
+                // 👉 ADD new status (don't replace)
+                order.getStatusHistory().add(sh);
+            }
+        }
 
         // Product update
         if (dto.getProducts() != null) {
@@ -165,7 +186,6 @@ public class OrderServiceImpl implements OrderService {
 
         return res;
     }
-
     // ================= DELETE =================
     @Override
     public Response deleteOrder(String orderId) {
@@ -196,7 +216,7 @@ public class OrderServiceImpl implements OrderService {
     private Order mapToEntity(OrderDTO dto) {
 
         Order order = new Order();
-
+        order.setOrderId(dto.getOrderId());
         order.setClinicId(dto.getClinicId());
         order.setClinicName(dto.getClinicName());
 
@@ -206,9 +226,35 @@ public class OrderServiceImpl implements OrderService {
         order.setSupplierId(dto.getSupplierId());
         order.setSupplierName(dto.getSupplierName());
         order.setSupplierEmail(dto.getSupplierEmail());
-        order.setStatus("PENDING");
+
         order.setExpectedDeliveryDays(dto.getExpectedDeliveryDays());
         order.setExpectedDeliveryDate(dto.getExpectedDeliveryDate());
+
+        // ✅ STATUS HISTORY (DEFAULT)
+        List<StatusHistory> historyList = new ArrayList<>();
+
+        if (dto.getStatusHistory() != null && !dto.getStatusHistory().isEmpty()) {
+
+            historyList = dto.getStatusHistory().stream().map(h -> {
+                StatusHistory sh = new StatusHistory();
+                sh.setStatus(h.getStatus());
+                sh.setTimestamp(
+                        h.getTimestamp() != null
+                                ? h.getTimestamp()
+                                : Instant.now().toString()
+                );
+                return sh;
+            }).toList();
+
+        } else {
+            // 👉 Default PENDING
+            StatusHistory sh = new StatusHistory();
+            sh.setStatus("PENDING");
+            sh.setTimestamp(Instant.now().toString());
+            historyList.add(sh);
+        }
+
+        order.setStatusHistory(historyList);
 
         // Product Mapping
         if (dto.getProducts() != null) {
@@ -218,9 +264,10 @@ public class OrderServiceImpl implements OrderService {
                 product.setProductName(p.getProductName());
                 product.setHsnCode(p.getHsnCode());
                 product.setPackSize(p.getPackSize());
+                product.setStatus("PENDING");
                 product.setQuantityRequested(p.getQuantityRequested());
                 return product;
-            }).collect(Collectors.toList());
+            }).toList();
 
             order.setProducts(productList);
         }
@@ -234,7 +281,7 @@ public class OrderServiceImpl implements OrderService {
     private OrderDTO mapToDTO(Order order) {
 
         OrderDTO dto = new OrderDTO();
-
+        dto.setOrderId(order.getOrderId());
         dto.setClinicId(order.getClinicId());
         dto.setClinicName(order.getClinicName());
 
@@ -244,9 +291,21 @@ public class OrderServiceImpl implements OrderService {
         dto.setSupplierId(order.getSupplierId());
         dto.setSupplierName(order.getSupplierName());
         dto.setSupplierEmail(order.getSupplierEmail());
-        dto.setStatus(order.getStatus());
+
         dto.setExpectedDeliveryDays(order.getExpectedDeliveryDays());
         dto.setExpectedDeliveryDate(order.getExpectedDeliveryDate());
+
+        // ✅ STATUS HISTORY
+        if (order.getStatusHistory() != null) {
+            List<StatusHistoryDTO> historyDTOList = order.getStatusHistory().stream().map(h -> {
+                StatusHistoryDTO sh = new StatusHistoryDTO();
+                sh.setStatus(h.getStatus());
+                sh.setTimestamp(h.getTimestamp());
+                return sh;
+            }).toList();
+
+            dto.setStatusHistory(historyDTOList);
+        }
 
         // Product Mapping
         if (order.getProducts() != null) {
@@ -256,9 +315,10 @@ public class OrderServiceImpl implements OrderService {
                 pdto.setProductName(p.getProductName());
                 pdto.setHsnCode(p.getHsnCode());
                 pdto.setPackSize(p.getPackSize());
+                pdto.setStatus("PENDING");
                 pdto.setQuantityRequested(p.getQuantityRequested());
                 return pdto;
-            }).collect(Collectors.toList());
+            }).toList();
 
             dto.setProducts(productDTOList);
         }

@@ -1,10 +1,11 @@
 package com.pharmacyManagement.entity;
 
-import lombok.Data;
+import java.util.List;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.util.List;
+import lombok.Data;
 
 @Data
 @Document(collection = "orders")
@@ -24,7 +25,7 @@ public class Order {
     private String supplierId;
     private String supplierName;
     private String supplierEmail;
-    private String status;
+    private List<StatusHistory> statusHistory;
     private int expectedDeliveryDays;
     private String expectedDeliveryDate;
 

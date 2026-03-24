@@ -9,5 +9,6 @@ public class ProductDTO {
     private String productName;
     private String hsnCode;
     private String packSize;
+    private String status;
     private int quantityRequested;
 }

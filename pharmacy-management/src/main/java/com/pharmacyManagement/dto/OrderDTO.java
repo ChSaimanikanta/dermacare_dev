@@ -5,7 +5,8 @@ import java.util.List;
 
 @Data
 public class OrderDTO {
-
+	
+    private String orderId;
     private String clinicId;
     private String clinicName;
 
@@ -15,9 +16,9 @@ public class OrderDTO {
     private String supplierId;
     private String supplierName;
     private String supplierEmail;
-    private String status;
+
     private int expectedDeliveryDays;
     private String expectedDeliveryDate;
-
+    private List<StatusHistoryDTO> statusHistory;
     private List<ProductDTO> products;
 }
